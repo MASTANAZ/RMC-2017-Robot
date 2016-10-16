@@ -7,7 +7,7 @@ import numpy as np
 
 train_x,train_y,test_x,test_y = create_feature_sets_and_labels('TEST_DATA/formatted_positive','TEST_DATA/formatted_negative')
 
-n_nodes_hl1 = 15 #1500
+n_nodes_hl1 = 1500 #1500
 n_nodes_hl2 = 15 #1500
 n_nodes_hl3 = 15 #1500
 
