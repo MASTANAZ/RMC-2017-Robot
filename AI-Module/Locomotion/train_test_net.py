@@ -79,6 +79,7 @@ def neural_network_model(data):
 saver = tf.train.Saver()
 tf_log = 'tf.log'
 
+'''
 def train_neural_network(x):
 	prediction = neural_network_model(x)
 	cost = tf.reduce_mean( tf.nn.softmax_cross_entropy_with_logits(prediction,y) )
@@ -110,10 +111,46 @@ def train_neural_network(x):
 
 		print('Accuracy:',accuracy.eval({x:test_x, y:test_y}))
 
-
-
-
 train_neural_network(x)
+'''
+
+def use_neural_network(input_data):
+	prediction = neural_network_model(x)
+
+	sess = tf.Session()
+	sess.run(tf.initialize_all_variables())
+	saver.restore(sess, checkpoint_dir + "model.ckpt")
+
+	ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+	if ckpt:
+   		print("CKPT obtained.")
+    	#saver.restore(sess, ckpt.model_checkpoint_path)
+	else:
+		raise ValueError('Checkpoint not found in directory: ' + checkpoint_dir)
 
 
+	print("Data to test against: " + str(input_data))
+
+
+	'''
+	NOTE: This form of use outputs an argmax value relating to the binary classification
+		  of the provided tensor. This method must be changed when the neural network model is 
+		  updated to have classifiers for each data point.
+	'''
+	# pos: [1,0] , argmax: 0
+	# neg: [0,1] , argmax: 1
+	predictions = sess.run(tf.argmax(prediction.eval(session=sess,feed_dict={x:np.array([input_data])}), 1))
+
+	if predictions[0] == 0: 
+		print("Positive " + str(predictions) + "; Data: " + str(input_data))
+	
+
+	if predictions[0] == 1:
+		print("Negative " + str(predictions) + "; Data: " + str(input_data))
+	
+
+
+	sess.close()
+
+use_neural_network([3.0, 4.0, 5.3432, 6.134])
 
