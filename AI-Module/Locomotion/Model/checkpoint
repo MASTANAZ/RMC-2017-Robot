@@ -1,0 +1,2 @@
+model_checkpoint_path: "/Users/BlakeNaz/tensorflow/rmc_2017_robot/AI-Module/Locomotion/Model/model.ckpt"
+all_model_checkpoint_paths: "/Users/BlakeNaz/tensorflow/rmc_2017_robot/AI-Module/Locomotion/Model/model.ckpt"

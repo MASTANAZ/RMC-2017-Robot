@@ -5,6 +5,8 @@ import tensorflow as tf
 import pickle
 import numpy as np
 
+checkpoint_dir = "/Users/BlakeNaz/tensorflow/rmc_2017_robot/AI-Module/Locomotion/Model/"
+
 train_x,train_y,test_x,test_y = create_feature_sets_and_labels('TEST_DATA/formatted_positive','TEST_DATA/formatted_negative')
 
 n_nodes_hl1 = 15 #1500
@@ -98,6 +100,9 @@ def train_neural_network(x):
 				                                              y: batch_y})
 				epoch_loss += c
 				i+=batch_size
+
+			saver.save(sess, checkpoint_dir + 'model.ckpt')
+
 				
 			print('Epoch', epoch+1, 'completed out of',hm_epochs,'loss:',epoch_loss)
 		correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
@@ -109,4 +114,6 @@ def train_neural_network(x):
 
 
 train_neural_network(x)
+
+
 
