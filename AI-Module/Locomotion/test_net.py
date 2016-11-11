@@ -158,10 +158,11 @@ def create_feature_sets_and_labels(pos,neg,test_size = 0.1):
                        ]
 	'''
 	features = []
+	#features += list(sample_handling(pos,lexicon[0],[1,0])) #[1,0] corresponds to positive classification
+	#features += list(sample_handling(neg,lexicon[1],[0,1])) #[0,1] corresponds to negative classification
 	features += list(sample_handling(pos,lexicon[0],[1,0])) #[1,0] corresponds to positive classification
 	features += list(sample_handling(neg,lexicon[1],[0,1])) #[0,1] corresponds to negative classification
-
-	#print("FEATURES BEFORE SHUFFLING: \n" + str(np.array(features)))
+	print("FEATURES BEFORE SHUFFLING: \n" + str(np.array(features)))
 
 
 	random.shuffle(features)
