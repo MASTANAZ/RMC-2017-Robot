@@ -16,7 +16,7 @@ disp("As of 11/11/2018, the input received only corresponds to what angle the ro
 
 % Some simulaton parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-gridDims = [12 4 16 4 4 2]; % number of rows, number of columns in the three regions, number of rows and columns of unload station
+gridDims = [12 5 10 9 4 2]; % number of rows, number of columns in the three regions, number of rows and columns of unload station
 pObstacle = 0.1;  % per-cell probability of obstacle being present (in region 2)
 pStartTop = 0.5;  % probability of rover starting in top-left (vs bottom-left) corner
 pTransSpd = 0.01; % rover's translational speed (assuming flat terrain, in units of world width per decision stage)
