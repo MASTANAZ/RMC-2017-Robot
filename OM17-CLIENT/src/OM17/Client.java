@@ -1,11 +1,12 @@
 package OM17;
 
 import javafx.application.Application;
-import javafx.scene.Group;
-import javafx.scene.Node;
+import javafx.concurrent.Task;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by OSPREY MINERS on 11/18/2016.
@@ -30,11 +31,10 @@ public class Client extends Application {
         primaryStage.setMinWidth(WINDOW_WIDTH);
         primaryStage.setFullScreenExitHint("");
         primaryStage.setFullScreen(true);
-        primaryStage.setTitle("OM17 - MISSION CONTROL");
+        primaryStage.setTitle("OM17-CLIENT");
+        primaryStage.show();
 
         changeState(STATE_CONNECT);
-
-        primaryStage.show();
     }
 
     public void changeState(int newState) {
@@ -46,7 +46,7 @@ public class Client extends Application {
         if (programState == STATE_CONNECT) {
             newParent = new ConnectPane(this);
         } else if (programState == STATE_CONTROL) {
-            newParent = new ControlPane();
+            newParent = new ControlPane(this);
         // tried to switch to a state that doesn't exist
         } else {
             System.err.println("Attempted to switch to undefined program state.");
@@ -68,6 +68,10 @@ public class Client extends Application {
         }
 
         primaryStage.setScene(primaryScene);
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
     }
 
     public static void main(String[] args) {

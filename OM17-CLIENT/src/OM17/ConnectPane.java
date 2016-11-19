@@ -52,12 +52,8 @@ public class ConnectPane extends BorderPane {
         connectButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                // used for development purposes to bypass needing to connect to a server
-                if (Global.DEV) {
-                    client.changeState(client.STATE_CONTROL);
-                } else {
-                    // connect through RNI
-                }
+                // connect through RNI
+                client.changeState(client.STATE_CONTROL);
             }
         });
 
