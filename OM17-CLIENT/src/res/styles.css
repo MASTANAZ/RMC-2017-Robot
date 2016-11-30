@@ -1,0 +1,12 @@
+.root {
+    -fx-font-size: 12pt;
+    /*-fx-font-family: "Comic Sans MS"*/
+}
+
+.label, .button {
+    -fx-font-weight: bold;
+}
+
+.button {
+
+}
