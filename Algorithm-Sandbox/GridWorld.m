@@ -11,7 +11,7 @@ create_actions
 
 % Display new restriction message to user
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp("As of 11/11/2018, the input received only corresponds to what angle the robot is to move to.")
+disp("As of 11/11/2016, the input received only corresponds to what angle the robot is to move to.")
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Some simulaton parameters
@@ -36,6 +36,10 @@ global trueCells = [region1 region2 region3];
 
 
 % Initialize true state of rover
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 if rand < pStartTop % set initial position within top-left corner
   vPos = (floor(gridDims(1)/2 - gridDims(5)/2) + gridDims(5) + rand*(gridDims(1) - (floor(gridDims(1)/2 - gridDims(5)/2) + gridDims(5))))/gridDims(1);
 else
@@ -46,7 +50,16 @@ endif
 trueRover.pos = [vPos*gridDims(1)/sum(gridDims(2:4)); ... % vertical position in units of world height
                  rand*gridDims(6)/sum(gridDims(2:4)); ... % horizontal position in units of world width
                  rand*360]; % angular position in degrees (with 0 = facing due east, 90 = facing due north)
-             
+                 
+% Insert current position of rover at step k = 0
+true_coordinate_matrix(1,1) = trueRover.pos(2);
+true_coordinate_matrix(2,1) = trueRover.pos(1);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 % Initialze estimated state of 3-region grid
 estiCells = [region1 2.5*ones(size(region2)) region3];
 
@@ -98,11 +111,13 @@ if progCmd == 1
   disp("-----------------------------------")
   disp("\n")
   
+  persistent distVtime = [];
+  inter_dvt = zeros(2,1)
   k = 0;
   while(1) % Enter control loop
-      
     visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
-  
+    
+    %distVtime = [];
     
     % If current theta > 360, subtract 360 iteratively to prevent
     % reduntant theta representations
@@ -148,10 +163,26 @@ if progCmd == 1
       % Command exists in "actions" list
       if find(actions==result)
         [nextX, nextY, nextTheta, deltaTheta, deltaStep_Theta, deltaStep_Move] = user_update_position(result, spacesToMove, trueRover, actions, pTransSpd, pAngleSpd)
+        
+        % Create persistent distVtime matrix to plot net translation over time steps
+        
   
         % Cycle through the steps here.
         % First, rotate the rover
         for iStep = k+1:1:ceil(deltaStep_Theta + k)
+          
+          %Plot lateral distance vs time steps
+          % THIS IS BUGGED
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          subplot(3,1,2)
+          %hold on;
+          title('Net Translation vs Time-Steps');
+          %distVtime(2,k+1) = 0; % 0 translational delta when rotating
+          distVtime(1,iStep) = iStep;
+          distVtime(2,iStep) = inter_dvt(2,1);
+          plot(distVtime(1,:), distVtime(2,:));
+          %hold off;
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           
           % Correctly represent rotation to new theta
           if (sqrt(((trueRover.pos(3) - nextTheta))^2)) <= 180
@@ -178,36 +209,76 @@ if progCmd == 1
              
             % Add angle to rotate counter clockwise
             else 
-            %disp("\n*** delta > 180 : Rotate counter-clockwise, Theta_1 >= Theta_2\n") 
-            trueRover.pos(3) += sqrt((min([nextTheta, trueRover.pos(3)]) - max([nextTheta, trueRover.pos(3)]) + 360)^2);
+              %disp("\n*** delta > 180 : Rotate counter-clockwise, Theta_1 >= Theta_2\n") 
+              trueRover.pos(3) += sqrt((min([nextTheta, trueRover.pos(3)]) - max([nextTheta, trueRover.pos(3)]) + 360)^2);
             endif
           endif
           
           k = iStep;
           
+          
+          % Load updated values
+          true_coordinate_matrix;
+          
+          % Update coordinate matrix 
+          % NOTE: These coordinates should remain the same,
+          %       but will be inserted to maintain continuity 
+          %       of position at any k-step
+          %true_coordinate_matrix(1,k) = trueRover.pos(2);
+          %true_coordinate_matrix(2,k) = trueRover.pos(1);
+          
+          
           % pause for animation
-          %pause(0.1)
+          pause(.1)
           % SPRITE ANIMATION FUNCTION HERE
           % Animate current step in iteration
-          %visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
+          visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
         endfor
         
+        % Translate the rover
         for jStep = k+1:1:ceil(deltaStep_Move + k)
+          
+          %Plot lateral distance vs time steps
+          % THIS IS BUGGED
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          subplot(3,1,2)
+          %hold on;
+          
+          distVtime(2,jStep) = sqrt(((nextY - trueRover.pos(1))^2) + ((nextX - trueRover.pos(1))^2)) + distVtime(2,jStep-1);
+          distVtime(1,jStep) = jStep;
+          plot(distVtime(1,:), distVtime(2,:));
+          %hold off;
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          
           trueRover.pos(2) += (((nextX-trueRover.pos(2))/pTransSpd) / deltaStep_Move) * pTransSpd;
           trueRover.pos(1) += (((nextY-trueRover.pos(1))/pTransSpd) / deltaStep_Move) * pTransSpd;
           
           k = ceil(jStep);
           
+          
+          % Load updated values
+          %true_coordinate_matrix;
+          
+          % Update coordinate matrix 
+          %true_coordinate_matrix(1,k) = trueRover.pos(2);
+          %true_coordinate_matrix(2,k) = trueRover.pos(1);          
+          
+          
           % pause for animation
-          %pause(0.1)
+          pause(.1)
           % SPRITE ANIMATION FUNCTION HERE
           % Animate current step in iteration
-          %visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
+          visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
+          
         endfor
         
         % steps are integers >= 0, round k towards positive infinity.
         k = ceil(k);
-       
+        
+        
+        
+        
+        
       % The command is invalid
       else
         disp("\n\n*** Error: Invalid input- input must be any integer 1 through 9.\n\n")
@@ -217,15 +288,23 @@ if progCmd == 1
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    
+    if (k!= 0) 
+      inter_dvt(1,1) = distVtime(1,k)
+      inter_dvt(2,1) = distVtime(2,k)
+    endif
+    inter_dvt(inter_dvt == 0) = [];
+    pause(.5);
     
     disp('--> This is where the outcome of that goal/command/control is simulated (including uncertainty due to system disturbance, sensor noise, etc.), the true state is updated and the single-stage cost is recorded');
     k = k + 1;
     disp(' ');
+    
+    
+    
   end
 
 else 
-
+  
   disp("*****************************************************************")
   disp("************************* AI SIMULATION *************************")
   disp("*****************************************************************\n")
