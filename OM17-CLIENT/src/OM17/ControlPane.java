@@ -1,6 +1,5 @@
 package OM17;
 
-import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
@@ -28,5 +27,8 @@ public class ControlPane extends GridPane {
         setGridLinesVisible(true);
 
         add(new FieldPane(client), 0, 1);
+        add(new StatusPane(), 1, 1);
     }
+
+
 }

@@ -1,12 +1,11 @@
 package OM17;
 
 import javafx.application.Application;
-import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import java.util.concurrent.ExecutorService;
+import javafx.stage.WindowEvent;
 
 /**
  * Created by OSPREY MINERS on 11/18/2016.
@@ -27,14 +26,20 @@ public class Client extends Application {
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
 
+        changeState(STATE_CONNECT);
+
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                cleanup();
+            }
+        });
         primaryStage.setMinHeight(WINDOW_HEIGHT);
         primaryStage.setMinWidth(WINDOW_WIDTH);
         primaryStage.setFullScreenExitHint("");
         primaryStage.setFullScreen(true);
         primaryStage.setTitle("OM17-CLIENT");
         primaryStage.show();
-
-        changeState(STATE_CONNECT);
     }
 
     public void changeState(int newState) {
@@ -68,6 +73,10 @@ public class Client extends Application {
         }
 
         primaryStage.setScene(primaryScene);
+    }
+
+    public void cleanup() {
+        RNI.cleanup();
     }
 
     public Stage getPrimaryStage() {

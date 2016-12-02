@@ -1,12 +1,9 @@
 package OM17;
 
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * Created by OSPREY MINERS on 11/19/2016.
@@ -17,10 +14,12 @@ public class FieldPane extends Canvas {
     private final static int TARGET_WIDTH = 1280;
     private final static int TARGET_HEIGHT = 720;
 
-    private int rot = 0;
+    private Robot a;
 
     public FieldPane(Client client) {
         gc = this.getGraphicsContext2D();
+
+        a = new Robot();
 
         Task task = new Task<Void>() {
             @Override public Void call() {
@@ -43,7 +42,6 @@ public class FieldPane extends Canvas {
     }
 
     private void updateField() {
-        rot += 5;
         // fetch data from RNI and update values
     }
 
@@ -61,13 +59,7 @@ public class FieldPane extends Canvas {
         gc.setFill(Color.SANDYBROWN);
         gc.fillRect(0,0, TARGET_WIDTH, TARGET_HEIGHT);
 
-        gc.setFill(Color.BLACK);
-
-        //
-        gc.translate(720, 400);
-        gc.rotate(rot);
-        gc.scale(2.0, 2.0);
-        gc.fillText("ROBOT A", 0, 0);
+        a.draw(gc);
 
         // pop graphics transform matrix
         gc.setTransform(1, 0, 0, 1, 0, 0);
