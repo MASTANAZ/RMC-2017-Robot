@@ -1,23 +1,34 @@
 package OM17;
 
 import javafx.concurrent.Task;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 /**
  * Created by OSPREY MINERS on 11/19/2016.
  */
-public class FieldPane extends Canvas {
+public class FieldPane extends GridPane {
     private GraphicsContext gc;
+    private Canvas canvas;
 
-    private final static int TARGET_WIDTH = 1280;
-    private final static int TARGET_HEIGHT = 720;
+    private final static int TARGET_WIDTH = 640;
+    private final static int TARGET_HEIGHT = 360;
 
     private Robot a;
 
     public FieldPane(Client client) {
-        gc = this.getGraphicsContext2D();
+        canvas = new Canvas();
+        canvas.setWidth(TARGET_WIDTH);
+        canvas.setHeight(TARGET_HEIGHT);
+
+        gc = canvas.getGraphicsContext2D();
+
+        getChildren().add(canvas);
+
+        setAlignment(Pos.TOP_RIGHT);
 
         a = new Robot();
 
@@ -26,7 +37,7 @@ public class FieldPane extends Canvas {
                 while (client.getPrimaryStage().isShowing()) {
 
                     updateField();
-                    drawField(client);
+                    drawField();
 
                     try {
                         Thread.sleep(100);
@@ -43,17 +54,11 @@ public class FieldPane extends Canvas {
 
     private void updateField() {
         // fetch data from RNI and update values
+        a.update();
     }
 
-    private void drawField(Client client) {
-        // resize drawing box based on current window size
-        setWidth(client.getPrimaryStage().getScene().getWidth() / 2.0f);
-        setHeight(client.getPrimaryStage().getScene().getHeight() / 2.0f);
-
-        gc.clearRect(0, 0, getWidth(), getHeight());
-
-        // scaling the graphics to display properly inside the drawing box
-        gc.scale((double)getWidth() / (double)TARGET_WIDTH, (double)getHeight() / (double)TARGET_HEIGHT);
+    private void drawField() {
+        gc.clearRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
         // draw base color
         gc.setFill(Color.SANDYBROWN);

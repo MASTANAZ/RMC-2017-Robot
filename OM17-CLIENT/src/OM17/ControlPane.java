@@ -1,8 +1,7 @@
 package OM17;
 
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
+import javafx.geometry.Pos;
+import javafx.scene.layout.*;
 
 /**
  * Created by OSPREY MINERS on 11/19/2016.

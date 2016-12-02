@@ -5,17 +5,18 @@ import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 /**
  * Created by OSPREY MINERS on 11/18/2016.
  */
 public class Client extends Application {
+    public static final int TARGET_WIDTH = 1280;
+    public static final int TARGET_HEIGHT = 720;
+
     public static final int STATE_CONNECT = 0;
     public static final int STATE_CONTROL = 1;
-
-    public static final int WINDOW_WIDTH = 1280;
-    public static final int WINDOW_HEIGHT = 720;
 
     public int programState;
 
@@ -34,12 +35,13 @@ public class Client extends Application {
                 cleanup();
             }
         });
-        primaryStage.setMinHeight(WINDOW_HEIGHT);
-        primaryStage.setMinWidth(WINDOW_WIDTH);
         primaryStage.setFullScreenExitHint("");
-        primaryStage.setFullScreen(true);
         primaryStage.setTitle("OM17-CLIENT");
         primaryStage.show();
+
+        // ensure our window can't make our root content smaller than TARGET_WIDTH x TARGET_HEIGHT
+        primaryStage.setMinWidth(primaryStage.getWidth());
+        primaryStage.setMinHeight(primaryStage.getHeight());
     }
 
     public void changeState(int newState) {
@@ -60,10 +62,14 @@ public class Client extends Application {
 
         // set the parent of the primaryScene to the new state
         if (primaryScene == null) {
-            primaryScene = new Scene(newParent, WINDOW_WIDTH, WINDOW_HEIGHT);
+            primaryScene = new Scene(newParent, TARGET_WIDTH, TARGET_HEIGHT);
         } else {
             primaryScene.setRoot(newParent);
         }
+
+        // scale our root container so the GUI looks uniform at any resolution
+        newParent.scaleXProperty().bind(primaryScene.widthProperty().divide(TARGET_WIDTH));
+        newParent.scaleYProperty().bind(primaryScene.heightProperty().divide(TARGET_HEIGHT));
 
         // attach styles.css to current scene
         try {
