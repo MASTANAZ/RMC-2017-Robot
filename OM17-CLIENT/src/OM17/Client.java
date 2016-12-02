@@ -25,6 +25,8 @@ public class Client extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        setUserAgentStylesheet(STYLESHEET_MODENA);
+
         this.primaryStage = primaryStage;
 
         changeState(STATE_CONNECT);

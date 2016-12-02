@@ -7,7 +7,11 @@ import javafx.scene.layout.*;
  * Created by OSPREY MINERS on 11/19/2016.
  */
 public class ControlPane extends GridPane {
+    ManualControl mc;
+
     public ControlPane(Client client) {
+        mc = new ManualControl();
+
         ColumnConstraints c0 = new ColumnConstraints();
         ColumnConstraints c1 = new ColumnConstraints();
 
