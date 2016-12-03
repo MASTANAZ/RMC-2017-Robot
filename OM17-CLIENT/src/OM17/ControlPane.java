@@ -1,37 +1,33 @@
 package OM17;
 
-import javafx.geometry.Pos;
-import javafx.scene.layout.*;
+import javafx.geometry.Insets;
+import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 
 /**
- * Created by OSPREY MINERS on 11/19/2016.
+ * Created by OSPREY MINERS on 12/3/2016.
  */
 public class ControlPane extends GridPane {
-    ManualControl mc;
+    HBox hbox;
+    Button roundStartButton;
+    ToggleButton manualControlButton;
+    public ControlPane() {
+        setPadding(new Insets(10, 10, 10, 10));
 
-    public ControlPane(Client client) {
-        mc = new ManualControl();
+        roundStartButton = new Button();
+        roundStartButton.setText("START ROUND");
 
-        ColumnConstraints c0 = new ColumnConstraints();
-        ColumnConstraints c1 = new ColumnConstraints();
+        manualControlButton = new ToggleButton();
+        manualControlButton.setText("MANUAL CONTROL");
+        //manualControlButton.setDisable(true);
 
-        RowConstraints r0 = new RowConstraints();
-        RowConstraints r1 = new RowConstraints();
+        hbox = new HBox();
+        hbox.getChildren().addAll(roundStartButton, manualControlButton);
 
-        c0.setPercentWidth(50);
-        c1.setPercentWidth(50);
+        hbox.setSpacing(5.0);
 
-        r0.setPercentHeight(50);
-        r1.setPercentHeight(50);
-
-        getColumnConstraints().addAll(c0, c1);
-        getRowConstraints().addAll(r0, r1);
-
-        setGridLinesVisible(true);
-
-        add(new FieldPane(client), 0, 1);
-        add(new StatusPane(), 1, 1);
+        getChildren().add(hbox);
     }
-
-
 }

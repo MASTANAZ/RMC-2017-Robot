@@ -12,6 +12,7 @@ public class ManualControl {
     public ManualControl() {
         Controller[] controllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
         for (int i = 0; i < controllers.length; ++i) {
+            System.out.println(controllers[i].getName());
             if (controllers[i].getType() == Controller.Type.STICK) {
                 joystick = controllers[i];
                 break;

@@ -2,12 +2,12 @@
     -fx-font-size: 12pt;
 }
 
-.label, .button {
+.label, .button, .toggle-button {
     -fx-font-weight: bold;
 }
 
-.button {
-
+.toggle-button:selected {
+    -fx-background-color: #A9DAA7;
 }
 
 .slider {

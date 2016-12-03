@@ -5,7 +5,6 @@ import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 /**
@@ -55,7 +54,7 @@ public class Client extends Application {
         if (programState == STATE_CONNECT) {
             newParent = new ConnectPane(this);
         } else if (programState == STATE_CONTROL) {
-            newParent = new ControlPane(this);
+            newParent = new MissionPane(this);
         // tried to switch to a state that doesn't exist
         } else {
             System.err.println("Attempted to switch to undefined program state.");
