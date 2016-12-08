@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -37,14 +36,10 @@
             <Insets />
          </opaqueInsets>
       </HBox>
-      <HBox prefHeight="100.0" prefWidth="200.0" style="-fx-background-color: #EAEAeA;" styleClass="card" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <HBox fx:id="statusPane" prefHeight="100.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: #EAEAeA;" styleClass="card" GridPane.columnIndex="1" GridPane.rowIndex="1">
          <GridPane.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </GridPane.margin>
-         <children>
-            <Slider min="-100.0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" />
-            <Slider min="-100.0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" />
-         </children>
       </HBox>
       <Pane fx:id="fieldPane" GridPane.rowIndex="1" />
    </children>

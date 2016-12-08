@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" styleClass="card" stylesheets="@material-fx-v0_3.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label styleClass="card-title" text="ROBOT" />
+      <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@material-fx-v0_3.css">
+         <children>
+            <VBox alignment="CENTER">
+               <children>
+                  <Label text="LCV" />
+                  <Slider min="-100.0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" />
+               </children>
+            </VBox>
+            <VBox alignment="CENTER">
+               <children>
+                  <Label text="RCV" />
+                  <Slider min="-100.0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</VBox>
