@@ -34,6 +34,8 @@ public class Client extends Application {
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
 
+        Round.initialize();
+
         setState(State.CONNECT);
 
         stage.setTitle("OM17-CLIENT");
@@ -48,6 +50,9 @@ public class Client extends Application {
                 Global.setRunning(false);
             }
         });
+
+        stage.setFullScreenExitHint("");
+        stage.setFullScreen(true);
     }
 
     public void setState(State state) {
@@ -75,12 +80,11 @@ public class Client extends Application {
         Scene scene = null;
 
         if (getPrimaryScene() != null) {
-            scene = new Scene(root, getPrimaryScene().getWidth(), getPrimaryScene().getHeight());
+            primaryScene.setRoot(root);
         } else {
             scene = new Scene(root, TARGET_WIDTH, TARGET_HEIGHT);
+            primaryStage.setScene(scene);
         }
-
-        primaryStage.setScene(scene);
 
         primaryScene = scene;
     }
