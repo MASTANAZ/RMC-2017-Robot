@@ -1,13 +1,11 @@
 function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
-  
+    
   % Create persistent matrix to hold all coordinates to draw the path of 
   % the rover  
   persistent true_coords;
   true_coords(1,k+1) = trueRover.pos(2);
   true_coords(2,k+1) = trueRover.pos(1);
-  
-  
-  
+    
   % True State
   [dims,xPatches,yPatches,rgbColors] = cells2patches(trueCells);
   
@@ -29,13 +27,7 @@ function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
         
   % Plot "bounding box" of rover
   hold on; plot(trueRover.pos(2),trueRover.pos(1),'rs','markersize',30, 'linewidth',2); hold off;
-  
-  % Plot current path of rover
-  hold on; 
-  x = true_coords(1,:);
-  y = true_coords(2,:);
-  plot(x,y,'linewidth',2,'c--');
-  hold off;
+
   
   hold on; plot(trueRover.pos(2),trueRover.pos(1),'bo','LineWidth',2); hold off; % circle
   hold on; plot(trueRover.pos(2)+[0 vel(2)],trueRover.pos(1)+[0 vel(1)],'b-','LineWidth',2); hold off; %line
@@ -47,6 +39,18 @@ function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
   %hold on;
   %title('Net Translation vs Time-Steps');
   
+    
+  % Plot current path of rover
+  
+  %if (size(true_coords(1)) ~= 1)
+    hold on; 
+  
+    %x = true_coords(1)
+    %y = true_coords(2)
+ 
+    plot(true_coords(1,:),true_coords(2,:),'c--','LineWidth',2);
+    hold off;
+  %end
   
   % Estimated State
   [dims,xPatches,yPatches,rgbColors] = cells2patches(estiCells);
