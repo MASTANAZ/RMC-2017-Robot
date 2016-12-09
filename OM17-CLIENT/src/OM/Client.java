@@ -35,6 +35,7 @@ public class Client extends Application {
         primaryStage = stage;
 
         Round.initialize();
+        RNI.initialize();
 
         setState(State.CONNECT);
 
@@ -47,12 +48,12 @@ public class Client extends Application {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                Global.setRunning(false);
+                cleanup();
             }
         });
 
         stage.setFullScreenExitHint("");
-        stage.setFullScreen(true);
+        stage.setFullScreen(false);
     }
 
     public void setState(State state) {
@@ -91,6 +92,12 @@ public class Client extends Application {
 
     public Scene getPrimaryScene() {
         return primaryScene;
+    }
+
+    private void cleanup() {
+        Global.setRunning(false);
+        Round.cleanup();
+        RNI.cleanup();
     }
 
     public static void main(String[] args) {

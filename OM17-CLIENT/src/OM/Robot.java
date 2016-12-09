@@ -22,20 +22,20 @@ public class Robot {
         y = 1.5f;
         lcv = rcv = 0.0f;
 
-        positionPropertyString = new SimpleStringProperty("X: " + String.format("%.2f", x) + " | Y: " + String.format("%.2f", y));
+        positionPropertyString = new SimpleStringProperty("X: " + String.format("%.2fm", x) + "    Y: " + String.format("%.2fm", y));
     }
 
     public void draw(GraphicsContext gc) {
+        // grab our transformation matrix before we render so we can reset it when we're done
         Affine old = gc.getTransform();
 
+        // update our string property for the robot_status_pane on the JAVAFX main thread
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                positionPropertyString.set("X: " + String.format("%.2f", x) + " | Y: " + String.format("%.2f", y));
+                positionPropertyString.set("X: " + String.format("%.2fm", x) + "    Y: " + String.format("%.2fm", y));
             }
         });
-
-        x += 0.01;
 
         gc.setFill(Color.CORNFLOWERBLUE);
         gc.translate(x, y);
@@ -47,5 +47,10 @@ public class Robot {
 
     public StringProperty getPositionPropertyString() {
         return positionPropertyString;
+    }
+
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
     }
 }

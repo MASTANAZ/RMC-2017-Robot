@@ -19,6 +19,9 @@ public class MissionController implements Initializable {
     @FXML
     private Pane statusPane;
 
+    @FXML
+    private Pane roundControlPane;
+
     public MissionController() {
 
     }
@@ -30,6 +33,7 @@ public class MissionController implements Initializable {
         try {
             statusPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/robot_status_pane.fxml")));
             statusPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/robot_status_pane.fxml")));
+            roundControlPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/round_control_pane.fxml")));
         } catch (IOException e) {
             e.printStackTrace();
         }

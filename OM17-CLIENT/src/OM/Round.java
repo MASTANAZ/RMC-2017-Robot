@@ -18,4 +18,8 @@ public class Round {
     public static Robot getRobotB() {
         return b;
     }
+
+    public static void cleanup() {
+
+    }
 }

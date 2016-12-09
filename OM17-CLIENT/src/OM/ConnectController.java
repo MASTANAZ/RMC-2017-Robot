@@ -9,6 +9,6 @@ import javafx.fxml.FXML;
 public class ConnectController {
     @FXML
     void connect(ActionEvent event) {
-        Global.getClientInstance().setState(Client.State.MISSION);
+        if (RNI.connect()) Global.getClientInstance().setState(Client.State.MISSION);
     }
 }
