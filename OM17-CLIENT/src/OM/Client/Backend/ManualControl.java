@@ -45,7 +45,7 @@ public class ManualControl {
 
         // create a hash map of values for each available controller (if possible)
         if (!controllerAvailable) {
-            System.err.println("> ERROR: NO SUITABLE CONTROLLERS FOUND");
+            System.err.println("! ERROR: NO SUITABLE CONTROLLERS FOUND");
             return;
         } else {
             controllerValues = new HashMap[controllers.size()];
@@ -81,7 +81,7 @@ public class ManualControl {
 
         // TODO: Fix this shit
 
-        /*
+        if (controllers.size() < 1) return;
 
         Robot a = Global.getBackendInstance().getMission().getRobotA();
 
@@ -98,6 +98,8 @@ public class ManualControl {
                 a.getOrientation() + ((float)controllerValues[0].get("rx") * dt * (float)Math.PI * 0.5f)
         );
 
+        if (controllers.size() < 2) return;
+
         Robot b = Global.getBackendInstance().getMission().getRobotB();
 
         orientation = b.getOrientation();
@@ -111,6 +113,6 @@ public class ManualControl {
 
         b.setOrientation(
                 b.getOrientation() + ((float)controllerValues[1].get("rx") * dt * (float)Math.PI * 0.5f)
-        );*/
+        );
     }
 }

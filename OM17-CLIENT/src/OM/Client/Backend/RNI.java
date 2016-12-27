@@ -16,7 +16,7 @@ import java.util.ArrayList;
  */
 public class RNI {
     // network usage in total bytes of data
-    private static long received, sent, total;
+    private static long received = 0, sent = 0, total = 0;
     private static ServerSocket server = null;
 
     private static ArrayList<Socket> clients;
@@ -28,6 +28,8 @@ public class RNI {
 
     private static SimpleDoubleProperty connectionAProperty = null;
     private static SimpleDoubleProperty connectionBProperty = null;
+
+    private static final String CONNECTION_KEY = "MINERS_WIN";
 
     private static final byte CB_STATEMENT_END = 0x00;
 
@@ -62,6 +64,10 @@ public class RNI {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    public static void synchronizedTick() {
+
+    }
+
     public static void cleanup() {
         System.out.println("> DESTROYING SERVER AT \"localhost:12000\"");
         try {
@@ -82,16 +88,22 @@ public class RNI {
 
     private static void processClient(Socket client) throws Exception {
         System.out.println("> PROCESSING NEW CLIENT CONNECTION");
+        System.out.flush();
         InputStreamReader in = new InputStreamReader(client.getInputStream());
 
         String key = "";
 
         while (in.ready()) {
-            System.out.print((char)in.read());
+            key += (char)in.read();
+            ++received;
         }
 
-        //System.out.println(key);
-        //client.close();
-        System.out.println("> SUCCESSFULLY ADDED NEW CLIENT \"\"");
+        if (key.equals(CONNECTION_KEY)) {
+            System.out.println("> CLIENT KEY ACCEPTED");
+            System.out.println("> SUCCESSFULLY ADDED NEW CLIENT \"\"");
+        } else {
+            System.err.println("! ERROR: UNRECOGNIZED CLIENT, TERMINATING CONNECTION");
+            client.close();
+        }
     }
 }

@@ -59,39 +59,35 @@ public class Mission {
 
         robotA.tick(dt);
         robotB.tick(dt);
+    }
 
-        // the canvas drawing has to be synchronized with the JavaFX thread
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                int minutes = (int)Math.floor(activeTime / 60);
-                int seconds = (int)Math.floor(activeTime) - (minutes * 60);
-                int deciseconds = (int)Math.floor(activeTime * 100) - (seconds * 100);
+    public void synchronizedTick() {
+        int minutes = (int)Math.floor(activeTime / 60);
+        int seconds = (int)Math.floor(activeTime) - (minutes * 60);
+        int deciseconds = (int)Math.floor(activeTime * 100) - (seconds * 100);
 
-                String mstring, sstring, dstring;
+        String mstring, sstring, dstring;
 
-                if (minutes < 10) {
-                    mstring = "0" + Integer.toString(minutes);
-                } else {
-                    mstring = Integer.toString(minutes);
-                }
+        if (minutes < 10) {
+            mstring = "0" + Integer.toString(minutes);
+        } else {
+            mstring = Integer.toString(minutes);
+        }
 
-                if (seconds < 10) {
-                    sstring = "0" + Integer.toString(seconds);
-                } else {
-                    sstring = Integer.toString(seconds);
-                }
+        if (seconds < 10) {
+            sstring = "0" + Integer.toString(seconds);
+        } else {
+            sstring = Integer.toString(seconds);
+        }
 
-                if (deciseconds < 10) {
-                    dstring = "0" + Integer.toString(deciseconds);
-                } else {
-                    dstring = Integer.toString(deciseconds);
-                }
+        if (deciseconds < 10) {
+            dstring = "0" + Integer.toString(deciseconds);
+        } else {
+            dstring = Integer.toString(deciseconds);
+        }
 
-                timeProperty.set("+" + mstring + ":" + sstring + ":" + dstring);
-                draw();
-            }
-        });
+        timeProperty.set("+" + mstring + ":" + sstring + ":" + dstring);
+        draw();
     }
 
     public void draw() {

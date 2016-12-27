@@ -45,6 +45,14 @@ public class Backend {
 
                     tick();
 
+                    // allows all GUI elements to be updated on the JavaFX thread
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronizedTick();
+                        }
+                    });
+
                     // give the CPU some time to do other tasks
                     try {
                         Thread.sleep(1);
@@ -83,6 +91,11 @@ public class Backend {
         RNI.tick(dt);
         manualControl.tick(dt);
         mission.tick(dt);
+    }
+
+    private void synchronizedTick() {
+        RNI.synchronizedTick();
+        mission.synchronizedTick();
     }
 
     private void cleanup() {

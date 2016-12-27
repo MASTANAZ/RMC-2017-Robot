@@ -17,6 +17,11 @@ public class Client extends Application {
 
     @Override
     public void start(Stage stage) {
+
+        System.out.println("--------------------------------------------------------------------------------");
+        System.out.println("OM17-CLIENT");
+        System.out.println("--------------------------------------------------------------------------------");
+
         this.stage = stage;
 
         try {
