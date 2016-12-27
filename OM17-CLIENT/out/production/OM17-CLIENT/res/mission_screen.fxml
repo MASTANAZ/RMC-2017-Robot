@@ -40,7 +40,23 @@
                </children>
             </HBox>
          </children>
+         <GridPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </GridPane.margin>
       </Pane>
+      <Pane GridPane.columnIndex="1">
+         <children>
+            <VBox alignment="CENTER_LEFT">
+               <children>
+                  <Label fx:id="sentLabel" text="SENT" />
+                  <Label fx:id="receivedLabel" text="RECEIVED" />
+                  <Label fx:id="totalLabel" text="TOTAL" />
+               </children>
+            </VBox>
+         </children>
+         <GridPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </GridPane.margin></Pane>
       <Pane GridPane.rowIndex="1">
          <children>
             <Canvas fx:id="canvas" height="200.0" width="200.0" />
@@ -53,6 +69,5 @@
          </GridPane.margin>
       </Pane>
       <Pane GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <Pane GridPane.columnIndex="1" />
    </children>
 </GridPane>

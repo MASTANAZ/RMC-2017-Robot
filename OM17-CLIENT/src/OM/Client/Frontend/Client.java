@@ -61,4 +61,8 @@ public class Client extends Application {
     public Backend getBackend() {
         return backend;
     }
+
+    public Stage getStage() {
+        return stage;
+    }
 }

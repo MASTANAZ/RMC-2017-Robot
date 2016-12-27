@@ -64,7 +64,7 @@ public class Mission {
     public void synchronizedTick() {
         int minutes = (int)Math.floor(activeTime / 60);
         int seconds = (int)Math.floor(activeTime) - (minutes * 60);
-        int deciseconds = (int)Math.floor(activeTime * 100) - (seconds * 100);
+        int deciseconds = (int)Math.floor(activeTime * 100) - (seconds * 100) - (minutes * 60 * 100);
 
         String mstring, sstring, dstring;
 

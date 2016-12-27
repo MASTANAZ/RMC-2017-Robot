@@ -1,6 +1,7 @@
 package OM.Client.Frontend;
 
 import OM.Client.Backend.Mission;
+import OM.Client.Backend.RNI;
 import OM.Client.Global;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,12 +25,24 @@ public class MissionController implements Initializable {
     private Label missionTimeLabel;
 
     @FXML
+    private Label sentLabel;
+
+    @FXML
+    private Label receivedLabel;
+
+    @FXML
+    private Label totalLabel;
+
+    @FXML
     private Button missionStartButton;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         Global.getClientInstance().getBackend().getMission().setFieldCanvas(canvas);
         missionTimeLabel.textProperty().bind(Global.getBackendInstance().getMission().timeProperty());
+        sentLabel.textProperty().bind(RNI.sentProperty());
+        receivedLabel.textProperty().bind(RNI.receivedProperty());
+        totalLabel.textProperty().bind(RNI.totalProperty());
     }
 
     @FXML
