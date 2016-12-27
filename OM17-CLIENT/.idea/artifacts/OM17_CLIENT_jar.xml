@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="OM17-CLIENT:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/OM17_CLIENT_jar</output-path>
-    <root id="archive" name="OM17-CLIENT.jar">
-      <element id="module-output" name="OM17-CLIENT" />
-    </root>
-  </artifact>
-</component>
