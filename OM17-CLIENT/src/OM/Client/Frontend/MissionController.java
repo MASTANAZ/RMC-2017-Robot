@@ -18,23 +18,12 @@ import java.util.ResourceBundle;
  * Created by Harris on 12/25/16.
  */
 public class MissionController implements Initializable {
-    @FXML
-    private Canvas canvas;
-
-    @FXML
-    private Label missionTimeLabel;
-
-    @FXML
-    private Label sentLabel;
-
-    @FXML
-    private Label receivedLabel;
-
-    @FXML
-    private Label totalLabel;
-
-    @FXML
-    private Button missionStartButton;
+    @FXML private Canvas canvas;
+    @FXML private Label missionTimeLabel;
+    @FXML private Label sentLabel;
+    @FXML private Label receivedLabel;
+    @FXML private Label totalLabel;
+    @FXML private Button missionStartButton;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -56,5 +45,10 @@ public class MissionController implements Initializable {
             mission.stop();
             missionStartButton.setText("START MISSION");
         }
+    }
+
+    @FXML
+    private void handleManualControlAction(ActionEvent event) {
+        Global.getBackendInstance().getManualControl().findControllers();
     }
 }

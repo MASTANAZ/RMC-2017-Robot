@@ -20,11 +20,8 @@ import java.util.ResourceBundle;
  * Created by Harris on 12/25/16.
  */
 public class ConnectionController implements Initializable {
-    @FXML
-    ProgressIndicator robotAConnectionProgressIndicator;
-
-    @FXML
-    ProgressIndicator robotBConnectionProgressIndicator;
+    @FXML ProgressIndicator robotAConnectionProgressIndicator;
+    @FXML ProgressIndicator robotBConnectionProgressIndicator;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {

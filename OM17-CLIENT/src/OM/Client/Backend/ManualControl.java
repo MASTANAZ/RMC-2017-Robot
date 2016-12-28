@@ -3,6 +3,7 @@ package OM.Client.Backend;
 import OM.Client.Global;
 import net.java.games.input.*;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,13 +12,13 @@ import java.util.Map;
  * Created by Harris on 12/25/16.
  */
 public class ManualControl {
+    private final float DEADZONE_THRESHOLD = 0.2f;
+
     private ArrayList<Controller> controllers = null;
     private EventQueue eventQueue = null;
     private Event event = null;
     private Map controllerValues[] = null;
     private boolean controllerAvailable = false;
-
-    private final float DEADZONE_THRESHOLD = 0.2f;
 
     public ManualControl() {
         controllers = new ArrayList<Controller>();
@@ -29,8 +30,15 @@ public class ManualControl {
         controllerAvailable = false;
         controllers.clear();
 
+        Controller available[];
+
         // get available controllers from the system
-        Controller available[] = ControllerEnvironment.getDefaultEnvironment().getControllers();
+        try {
+            available = createDefaultEnvironment().getControllers();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
 
         // look for controllers of type GAMEPAD and add all to our controllers array list
         for (Controller c : available) {
@@ -114,5 +122,14 @@ public class ManualControl {
         b.setOrientation(
                 b.getOrientation() + ((float)controllerValues[1].get("rx") * dt * (float)Math.PI * 0.5f)
         );
+    }
+
+    private static ControllerEnvironment createDefaultEnvironment() throws ReflectiveOperationException {
+        Constructor<ControllerEnvironment> constructor = (Constructor<ControllerEnvironment>)
+                Class.forName("net.java.games.input.DefaultControllerEnvironment").getDeclaredConstructors()[0];
+
+        constructor.setAccessible(true);
+
+        return constructor.newInstance();
     }
 }

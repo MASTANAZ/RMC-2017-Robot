@@ -4,6 +4,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 
+import java.util.Map;
+
 /**
  * Created by Harris on 12/25/16.
  */
@@ -11,9 +13,28 @@ public class Robot {
     private float x, y;
     private float orientation;
     private int lcv, rcv;
+    private int propertyIndex;
+
+    public Robot() {
+        propertyIndex = -1;
+    }
 
     public void tick(float dt) {
+        if (propertyIndex == -1) return;
 
+        Map m = RNI.getPropertyMap(propertyIndex);
+
+        if (m == null) return;
+
+        byte data[] = (byte[])m.get(RNI.CB_PSX);
+        if (data == null) return;
+        float newX = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
+        setPosition(newX, getY());
+
+        data = (byte[])m.get(RNI.CB_PSY);
+        if (data == null) return;
+        float newY = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
+        setPosition(getX(), newY);
     }
 
     public void draw(GraphicsContext gc) {
@@ -60,5 +81,9 @@ public class Robot {
 
     public void setOrientation(float orientation) {
         this.orientation = orientation;
+    }
+
+    public void setPropertyIndex(int index) {
+        propertyIndex = index;
     }
 }

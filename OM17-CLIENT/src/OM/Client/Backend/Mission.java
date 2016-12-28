@@ -15,11 +15,6 @@ import java.util.ArrayList;
  * Created by Harris on 12/25/16.
  */
 public class Mission {
-    private boolean active = false;
-    private float activeTime = 0.0f;
-    private GraphicsContext gc = null;
-    private Canvas fieldCanvas = null;
-
     private final int TARGET_WIDTH = 1280;
     private final int TARGET_HEIGHT = 720;
 
@@ -28,6 +23,11 @@ public class Mission {
 
     private final Color COLOR_REGOLITH = Color.rgb(221, 176, 128);
     private final Color COLOR_OBSTACLE_ARE = Color.rgb(221, 158, 128);
+
+    private boolean active = false;
+    private float activeTime = 0.0f;
+    private GraphicsContext gc = null;
+    private Canvas fieldCanvas = null;
 
     private ArrayList<Obstacle> obstacles = null;
     private Robot robotA = null, robotB = null;

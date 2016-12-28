@@ -1,5 +1,6 @@
 package OM.Client.Backend;
 
+import OM.Client.Global;
 import javafx.beans.property.*;
 
 import java.io.InputStream;
@@ -19,19 +20,22 @@ public class RNI {
     // constants
     private static final int PORT = 12000;
     private static final int SERVER_TIMEOUT_MS = 10;
-
     private static final String CONNECTION_KEY = "MINERS_WIN";
+    private static final int MAX_CLIENTS = 2;
 
     // network control bytes
-    private static final byte CB_END = 0x00;
-    private static final byte CB_LCV = 0x01;
-    private static final byte CB_RCV = 0x02;
-    private static final byte CB_PSX = 0x03;
-    private static final byte CB_PSY = 0x04;
+    public static final byte CB_END = 0x00;
+    public static final byte CB_LCV = 0x01;
+    public static final byte CB_RCV = 0x02;
+    public static final byte CB_PSX = 0x03;
+    public static final byte CB_PSY = 0x04;
+
+    private static final int PROPERTY_MAX_SIZE = 4;
 
     // network variables
     private static long received = 0, sent = 0, total = 0;
     private static ServerSocket server = null;
+    private static int nClients = 0;
 
     private static ArrayList<Socket> clients;
     private static ArrayList<InputStreamReader> inputs;
@@ -82,8 +86,8 @@ public class RNI {
         // process network commands for each connected client
         for (int i = 0; i < clients.size(); ++i) {
             try {
-                while (inputs.get(i).ready()) {
-                    byte cb = fetchByte(inputs.get(i));
+                if (inputs.get(i).ready()) {
+                    processProperty(inputs.get(i), properties.get(i));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -112,6 +116,7 @@ public class RNI {
         }
         System.out.println("> SUCCESS!");
 
+        // destroy server and free up port on this computer
         System.out.println("> DESTROYING SERVER AT \"localhost:12000\"");
         try {
             server.close();
@@ -119,6 +124,10 @@ public class RNI {
             e.printStackTrace();
         }
         System.out.println("> SUCCESS!");
+    }
+
+    public static Map getPropertyMap(int index) {
+        return properties.get(index);
     }
 
     public static DoubleProperty connectionAProperty() {
@@ -142,6 +151,12 @@ public class RNI {
     }
 
     private static void processClient(Socket client) throws Exception {
+        if (nClients == MAX_CLIENTS) {
+            System.err.println("! ERROR: ALREADY REACHED MAXIMUM NUMBER OF CLIENTS, TERMINATING CONNECTION");
+            client.close();
+            return;
+        }
+
         System.out.println("> PROCESSING NEW CLIENT CONNECTION");
         InputStreamReader in = new InputStreamReader(client.getInputStream());
 
@@ -153,12 +168,14 @@ public class RNI {
 
         if (key.equals(CONNECTION_KEY)) {
             System.out.println("> CLIENT KEY ACCEPTED");
-            System.out.println("> SUCCESSFULLY ADDED NEW CLIENT");
-
+            System.out.println("> SUCCESSFULLY ADDED NEW CLIENT!");
+            if (clients.size() == 0) Global.getBackendInstance().getMission().getRobotA().setPropertyIndex(0);
+            else Global.getBackendInstance().getMission().getRobotB().setPropertyIndex(1);
             clients.add(client);
             inputs.add(in);
             outputs.add(client.getOutputStream());
             properties.add(new HashMap());
+            ++nClients;
         } else {
             System.err.println("! ERROR: UNRECOGNIZED CLIENT, TERMINATING CONNECTION");
             client.close();
@@ -168,5 +185,22 @@ public class RNI {
     private static byte fetchByte(InputStreamReader inputStreamReader) throws Exception {
         ++received;
         return (byte)inputStreamReader.read();
+    }
+
+    private static void processProperty(InputStreamReader inputStreamReader, Map properties) throws Exception {
+        byte controlByte = fetchByte(inputStreamReader);
+
+        byte dataBytes[] = {0, 0, 0, 0};
+
+        int j = 3;
+
+        while (true) {
+            byte dataByte = fetchByte(inputStreamReader);
+            if (dataByte == CB_END) break;
+            dataBytes[j] = dataByte;
+            --j;
+        }
+
+        properties.put(controlByte, dataBytes);
     }
 }

@@ -30,8 +30,6 @@ public class Backend {
     public void start() {
         running = true;
 
-        manualControl.findControllers();
-
         // the backend thread
         Task task = new Task<Void>() {
             @Override
@@ -85,6 +83,10 @@ public class Backend {
 
     public Mission getMission() {
         return mission;
+    }
+
+    public ManualControl getManualControl() {
+        return manualControl;
     }
 
     private void tick() {

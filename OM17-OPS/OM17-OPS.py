@@ -4,6 +4,9 @@ import socket
 import select
 import random
 
+# functions
+
+
 # constants
 
 CB_END = 0x00
@@ -37,14 +40,15 @@ print "> CONNECTED TO OM17-CLIENT PROGRAM"
 time.sleep(1)
 
 while True:
-        time.sleep(2)
-        tosend = bytearray()
-        tosend.append(CB_LCV)
-        server.send(tosend)
+	time.sleep(0.5)
 	ready = select.select([server], [], [], 0.5)
 	if ready[0]:
 		data = server.recv(SERVER_BUFFER_SIZE)
 		if not data: break
+	tosend = bytearray([CB_PSX, random.randint(0, 38), random.randint(0, 7), CB_END])
+	server.send(tosend)
+	tosend = bytearray([CB_PSY, random.randint(0, 88), random.randint(0, 3), CB_END])
+	server.send(tosend)
 
 # cleanup
 
