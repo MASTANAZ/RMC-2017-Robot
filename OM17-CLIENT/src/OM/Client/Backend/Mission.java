@@ -118,7 +118,7 @@ public class Mission {
         gc.fillRect(1.5, 0, 2.94, 3.78);
 
         robotA.draw(gc);
-        robotB.draw(gc);
+        //robotB.draw(gc);
 
         for (Obstacle obstacle : obstacles) {
             obstacle.draw(gc);

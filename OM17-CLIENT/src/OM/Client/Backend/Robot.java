@@ -26,7 +26,13 @@ public class Robot {
 
         if (m == null) return;
 
-        byte data[] = (byte[])m.get(RNI.CB_PSX);
+        byte data[];// = (byte[])m.get(RNI.CB_ORN);
+        //if (data == null) return;
+        //System.out.println(orientation);
+        //float orientation = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
+        //setOrientation(0);
+
+        data = (byte[])m.get(RNI.CB_PSX);
         if (data == null) return;
         float newX = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(newX, getY());
@@ -35,6 +41,11 @@ public class Robot {
         if (data == null) return;
         float newY = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(getX(), newY);
+
+        data = (byte[])m.get(RNI.CB_ORN);
+        if (data == null) return;
+        float orientation = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
+        setOrientation(orientation);
     }
 
     public void draw(GraphicsContext gc) {
@@ -44,7 +55,7 @@ public class Robot {
         // draw the virtual robot with our current properties
         gc.setFill(Color.CORNFLOWERBLUE);
         gc.translate(x, y);
-        gc.rotate(orientation * 180.0f / Math.PI);
+        gc.rotate((orientation * 180.0f) / Math.PI);
         gc.fillOval(-0.375f, -0.375f, 0.75f, 0.75f);
         gc.setFill(Color.BLACK);
         gc.fillRect(-0.25f, -0.025f, 0.5f, 0.05f);

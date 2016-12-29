@@ -24,11 +24,12 @@ public class RNI {
     private static final int MAX_CLIENTS = 2;
 
     // network control bytes
-    public static final byte CB_END = 0x00;
+    public static final byte CB_END = 127;
     public static final byte CB_LCV = 0x01;
     public static final byte CB_RCV = 0x02;
     public static final byte CB_PSX = 0x03;
     public static final byte CB_PSY = 0x04;
+    public static final byte CB_ORN = 0x05;
 
     private static final int PROPERTY_MAX_SIZE = 4;
 
@@ -196,7 +197,9 @@ public class RNI {
 
         while (true) {
             byte dataByte = fetchByte(inputStreamReader);
-            if (dataByte == CB_END) break;
+            if (dataByte == CB_END) {
+                break;
+            }
             dataBytes[j] = dataByte;
             --j;
         }
