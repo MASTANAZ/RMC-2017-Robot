@@ -3,9 +3,8 @@ package OM.Client.Backend;
 import OM.Client.Global;
 import javafx.beans.property.*;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import javax.xml.crypto.Data;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -39,7 +38,7 @@ public class RNI {
     private static int nClients = 0;
 
     private static ArrayList<Socket> clients;
-    private static ArrayList<InputStreamReader> inputs;
+    private static ArrayList<DataInputStream> inputs;
     private static ArrayList<OutputStream> outputs;
     private static ArrayList<Map> properties;
 
@@ -56,7 +55,7 @@ public class RNI {
 
     public static void initialize() {
         clients = new ArrayList<Socket>();
-        inputs = new ArrayList<InputStreamReader>();
+        inputs = new ArrayList<DataInputStream>();
         outputs = new ArrayList<OutputStream>();
         properties = new ArrayList<Map>();
 
@@ -75,6 +74,7 @@ public class RNI {
             e.printStackTrace();
         }
         System.out.println("> SUCCESS!");
+        //System.out.println(server.getInetAddress());
     }
 
     public static void tick(float dt) {
@@ -87,7 +87,7 @@ public class RNI {
         // process network commands for each connected client
         for (int i = 0; i < clients.size(); ++i) {
             try {
-                if (inputs.get(i).ready()) {
+                if (inputs.get(i).available() > 0) {
                     processProperty(inputs.get(i), properties.get(i));
                 }
             } catch (Exception e) {
@@ -159,23 +159,26 @@ public class RNI {
         }
 
         System.out.println("> PROCESSING NEW CLIENT CONNECTION");
-        InputStreamReader in = new InputStreamReader(client.getInputStream());
+        DataInputStream in = new DataInputStream(client.getInputStream());
 
         String key = "";
 
-        while (in.ready()) {
+        while (in.available() > 0) {
             key += (char)fetchByte(in);
         }
 
         if (key.equals(CONNECTION_KEY)) {
             System.out.println("> CLIENT KEY ACCEPTED");
             System.out.println("> SUCCESSFULLY ADDED NEW CLIENT!");
+
             if (clients.size() == 0) Global.getBackendInstance().getMission().getRobotA().setPropertyIndex(0);
             else Global.getBackendInstance().getMission().getRobotB().setPropertyIndex(1);
+
             clients.add(client);
             inputs.add(in);
             outputs.add(client.getOutputStream());
             properties.add(new HashMap());
+
             ++nClients;
         } else {
             System.err.println("! ERROR: UNRECOGNIZED CLIENT, TERMINATING CONNECTION");
@@ -183,20 +186,22 @@ public class RNI {
         }
     }
 
-    private static byte fetchByte(InputStreamReader inputStreamReader) throws Exception {
+    private static int fetchByte(DataInputStream inputStream) throws Exception {
         ++received;
-        return (byte)inputStreamReader.read();
+        int test = inputStream.readUnsignedByte();
+        System.out.println(test);
+        return test;
     }
 
-    private static void processProperty(InputStreamReader inputStreamReader, Map properties) throws Exception {
-        byte controlByte = fetchByte(inputStreamReader);
+    private static void processProperty(DataInputStream inputStream, Map properties) throws Exception {
+        int controlByte = fetchByte(inputStream);
 
-        byte dataBytes[] = {0, 0, 0, 0};
+        int dataBytes[] = {0, 0, 0, 0};
 
         int j = 3;
 
         while (true) {
-            byte dataByte = fetchByte(inputStreamReader);
+            int dataByte = fetchByte(inputStream);
             if (dataByte == CB_END) {
                 break;
             }
