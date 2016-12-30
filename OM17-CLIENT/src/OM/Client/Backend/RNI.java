@@ -22,13 +22,13 @@ public class RNI {
     private static final String CONNECTION_KEY = "MINERS_WIN";
     private static final int MAX_CLIENTS = 2;
 
-    // network control bytes
-    public static final byte CB_END = 127;
-    public static final byte CB_LCV = 0x01;
-    public static final byte CB_RCV = 0x02;
-    public static final byte CB_PSX = 0x03;
-    public static final byte CB_PSY = 0x04;
-    public static final byte CB_ORN = 0x05;
+    // network statement identifiers
+    public static final int STATEMENT_END         = 0xFF;
+    public static final int STATEMENT_LCV         = 0x01;
+    public static final int STATEMENT_RCV         = 0x02;
+    public static final int STATEMENT_BOT_X       = 0x03;
+    public static final int STATEMENT_BOT_Y       = 0x04;
+    public static final int STATEMENT_ORIENTATION = 0x05;
 
     private static final int PROPERTY_MAX_SIZE = 4;
 
@@ -74,7 +74,6 @@ public class RNI {
             e.printStackTrace();
         }
         System.out.println("> SUCCESS!");
-        //System.out.println(server.getInetAddress());
     }
 
     public static void tick(float dt) {
@@ -194,21 +193,20 @@ public class RNI {
     }
 
     private static void processProperty(DataInputStream inputStream, Map properties) throws Exception {
-        int controlByte = fetchByte(inputStream);
-
+        int id = fetchByte(inputStream);
         int dataBytes[] = {0, 0, 0, 0};
-
         int j = 3;
 
         while (true) {
             int dataByte = fetchByte(inputStream);
-            if (dataByte == CB_END) {
+            if (dataByte == STATEMENT_END) {
                 break;
+            } else {
+                dataBytes[j] = dataByte;
+                --j;
             }
-            dataBytes[j] = dataByte;
-            --j;
         }
 
-        properties.put(controlByte, dataBytes);
+        properties.put(id, dataBytes);
     }
 }

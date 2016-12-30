@@ -32,17 +32,17 @@ public class Robot {
         //float orientation = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         //setOrientation(0);
 
-        data = (byte[])m.get(RNI.CB_PSX);
+        data = (byte[])m.get(RNI.STATEMENT_BOT_X);
         if (data == null) return;
         float newX = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(newX, getY());
 
-        data = (byte[])m.get(RNI.CB_PSY);
+        data = (byte[])m.get(RNI.STATEMENT_BOT_Y);
         if (data == null) return;
         float newY = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(getX(), newY);
 
-        data = (byte[])m.get(RNI.CB_ORN);
+        data = (byte[])m.get(RNI.STATEMENT_ORIENTATION);
         if (data == null) return;
         float orientation = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setOrientation(orientation);
