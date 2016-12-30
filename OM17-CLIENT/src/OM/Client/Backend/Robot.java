@@ -28,17 +28,17 @@ public class Robot {
 
         if (m == null) return;
 
-        int data[] = (int[])m.get(RNI.STATEMENT_BOT_X);
+        int data[] = (int[])m.get(RNI.S_P_X);
         if (data == null) return;
         float newX = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(newX, getY());
 
-        data = (int[])m.get(RNI.STATEMENT_BOT_Y);
+        data = (int[])m.get(RNI.S_P_Y);
         if (data == null) return;
         float newY = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(getX(), newY);
 
-        data = (int[])m.get(RNI.STATEMENT_ORIENTATION);
+        data = (int[])m.get(RNI.S_P_ORIENTATION);
         if (data == null) return;
         float orientation = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setOrientation(orientation);

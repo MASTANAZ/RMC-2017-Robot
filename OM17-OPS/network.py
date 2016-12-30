@@ -1,3 +1,7 @@
+################################################################################
+# imports
+################################################################################
+
 import socket
 import sys
 import math
@@ -7,13 +11,12 @@ import select
 # constants
 ################################################################################
 
-_STATEMENT_END         = 0xFF
-
-_STATEMENT_LCV         = 0x01
-_STATEMENT_RCV         = 0x02
-_STATEMENT_BOT_X       = 0x03
-_STATEMENT_BOT_Y       = 0x04
-_STATEMENT_ORIENTATION = 0x05
+_S_END           = 0xFF
+_S_P_LCV         = 0x01
+_S_P_RCV         = 0x02
+_S_P_X           = 0x03
+_S_P_Y           = 0x04
+_S_P_ORIENTATION = 0x05
 
 _SERVER_IP             = "localhost"
 _SERVER_PORT           = 12000
@@ -32,7 +35,7 @@ _connected = False
 _pending = ""
 
 ################################################################################
-# management functions
+# public management functions
 ################################################################################
 
 def initialize():
@@ -77,8 +80,9 @@ def connect():
 	except:
 		print "> FAILED TO CONNECT TO SERVER"
 		_connected = False
-
 		
+	return _connected
+
 def tick():
 	global _connected
 
@@ -103,6 +107,10 @@ def tick():
 def cleanup():
 	_server.close()
 	
+################################################################################
+# private functions
+################################################################################
+	
 def _parse_statements(statementString):
 	statementString = ""
 
@@ -111,17 +119,27 @@ def _clear_pending():
 	_pending = ""
 	
 ################################################################################
-# statement functions
+# public access functions
 ################################################################################
 
-def state_bot_x(x):
+def state_x(x):
 	global _pending
 	
 	major = int(x)
 	minor = int((x - major) * 100)
 	
-	_pending += chr(_STATEMENT_BOT_X)
+	_pending += chr(_S_P_X)
 	_pending += chr(minor)
 	_pending += chr(major)
-	_pending += chr(_STATEMENT_END)
+	_pending += chr(_S_END)
+
+def state_y(y):
+	global _pending
 	
+	major = int(y)
+	minor = int((y - major) * 100)
+	
+	_pending += chr(_S_P_Y)
+	_pending += chr(minor)
+	_pending += chr(major)
+	_pending += chr(_S_END)

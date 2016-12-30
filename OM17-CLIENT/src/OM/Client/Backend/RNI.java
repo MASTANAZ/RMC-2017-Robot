@@ -23,12 +23,12 @@ public class RNI {
     private static final int MAX_CLIENTS = 2;
 
     // network statement identifiers
-    public static final int STATEMENT_END         = 0xFF;
-    public static final int STATEMENT_LCV         = 0x01;
-    public static final int STATEMENT_RCV         = 0x02;
-    public static final int STATEMENT_BOT_X       = 0x03;
-    public static final int STATEMENT_BOT_Y       = 0x04;
-    public static final int STATEMENT_ORIENTATION = 0x05;
+    public static final int S_END           = 0xFF;
+    public static final int S_P_LCV         = 0x01;
+    public static final int S_P_RCV         = 0x02;
+    public static final int S_P_X           = 0x03;
+    public static final int S_P_Y           = 0x04;
+    public static final int S_P_ORIENTATION = 0x05;
 
     private static final int PROPERTY_MAX_SIZE = 4;
 
@@ -197,7 +197,7 @@ public class RNI {
 
         while (true) {
             int dataByte = fetchByte(inputStream);
-            if (dataByte == STATEMENT_END) {
+            if (dataByte == S_END) {
                 break;
             } else {
                 dataBytes[j] = dataByte;
