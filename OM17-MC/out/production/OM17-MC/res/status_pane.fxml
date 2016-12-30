@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="card" stylesheets="@material-fx-v0_3.css" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label alignment="CENTER" prefHeight="40.0" prefWidth="154.0" styleClass="card-title" text="ROBOT A" />
+      <Separator />
+      <HBox spacing="10.0">
+         <children>
+            <VBox>
+               <children>
+                  <Label alignment="CENTER" prefHeight="20.0" prefWidth="37.0" text="LCV" />
+                  <Slider min="-100.0" orientation="VERTICAL" />
+               </children>
+            </VBox>
+            <VBox>
+               <children>
+                  <Label alignment="CENTER" prefHeight="20.0" prefWidth="37.0" text="RCV" />
+                  <Slider min="-100.0" orientation="VERTICAL" />
+               </children>
+            </VBox>
+            <VBox alignment="CENTER_LEFT">
+               <children>
+                  <Label styleClass="card-subtitle" text="X: 2.44m" />
+                  <Label styleClass="card-subtitle" text="Y: 1.39m" />
+                  <Label styleClass="card-subtitle" text="0: 3°" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</VBox>

@@ -90,7 +90,7 @@ def tick():
 	# make sure we have an active connection with our server
 	if not _connected: return
 	
-	# receive data from our server with a 
+	# receive data from our server with a timeout
 	ready = select.select([_server], [], [], _SERVER_RECV_TIMEOUT)
 	
 	# read any available statements from the server and parse
@@ -141,6 +141,18 @@ def state_y(y):
 	minor = int((y - major) * 100)
 	
 	_pending += chr(_S_P_Y)
+	_pending += chr(minor)
+	_pending += chr(major)
+	_pending += chr(_S_END)
+
+    
+def state_orientation(orientation):
+    global _pending
+    
+    major = int(y)
+	minor = int((y - major) * 100)
+	
+	_pending += chr(_S_P_ORIENTATION)
 	_pending += chr(minor)
 	_pending += chr(major)
 	_pending += chr(_S_END)
