@@ -8,16 +8,9 @@ print "OM17-OPS"
 print "--------------------------------------------------------------------------------"
 
 network.initialize()
+
+print dm.get_property(dm.PROP_X)
+
 if network.connect() == False: sys.exit()
-
-time.sleep(5)
-
-network.state_x(2.55)
-network.tick()
-
-time.sleep(5)
-
-network.state_x(6.55)
-network.tick()
 
 network.cleanup()
