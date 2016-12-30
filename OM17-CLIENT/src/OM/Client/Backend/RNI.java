@@ -187,9 +187,7 @@ public class RNI {
 
     private static int fetchByte(DataInputStream inputStream) throws Exception {
         ++received;
-        int test = inputStream.readUnsignedByte();
-        System.out.println(test);
-        return test;
+        return inputStream.readUnsignedByte();
     }
 
     private static void processProperty(DataInputStream inputStream, Map properties) throws Exception {

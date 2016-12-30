@@ -22,27 +22,23 @@ public class Robot {
     public void tick(float dt) {
         if (propertyIndex == -1) return;
 
+        // TODO: Fix this shit
+
         Map m = RNI.getPropertyMap(propertyIndex);
 
         if (m == null) return;
 
-        byte data[];// = (byte[])m.get(RNI.CB_ORN);
-        //if (data == null) return;
-        //System.out.println(orientation);
-        //float orientation = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
-        //setOrientation(0);
-
-        data = (byte[])m.get(RNI.STATEMENT_BOT_X);
+        int data[] = (int[])m.get(RNI.STATEMENT_BOT_X);
         if (data == null) return;
         float newX = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(newX, getY());
 
-        data = (byte[])m.get(RNI.STATEMENT_BOT_Y);
+        data = (int[])m.get(RNI.STATEMENT_BOT_Y);
         if (data == null) return;
         float newY = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setPosition(getX(), newY);
 
-        data = (byte[])m.get(RNI.STATEMENT_ORIENTATION);
+        data = (int[])m.get(RNI.STATEMENT_ORIENTATION);
         if (data == null) return;
         float orientation = ((float)((int)data[3]) / 100.0f) + ((float)((int)data[2]));
         setOrientation(orientation);
