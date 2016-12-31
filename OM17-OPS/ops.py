@@ -9,8 +9,7 @@ print "-------------------------------------------------------------------------
 
 network.initialize()
 
-print dm.get_property(dm.PROP_X)
-
-if network.connect() == False: sys.exit()
+while True:
+    network.tick()
 
 network.cleanup()
