@@ -50,6 +50,9 @@ _rbHosting = False
 # whether or not we have an active client connection or are actively connected
 # to a robot server
 _rbConnected = False
+# the client robot connected to our robot server, only used when
+# _rbHosting = True
+_rbClient = None
 
 # the unsigned byte arrays that will be sent over TCP during the next tick()
 # NOTE: these arrays will be cleared after they are sent over the network
@@ -64,34 +67,6 @@ def initialize():
     print "> INITIALIZING NETWORK COMMUNICATIONS"
     _initialize_rb()
     _initialize_mc()
-    
-'''
-def probe():
-	global _SERVER_IP
-	
-	serverFound = False
-	
-	print "> SCANNING FOR SERVER ON LAN"
-	for i in range(0, 256):
-		ip = "192.168.1." + str(i)
-		sys.stdout.write("\r> PROBING IP %s" % ip)
-		sys.stdout.flush()
-		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server.settimeout(0.1)
-		try:
-			server.connect((ip, _SERVER_PORT))
-			print "\n> SERVER FOUND"
-			_SERVER_IP = ip
-			serverFound = True
-			break
-		except:
-			server.close()
-			continue
-		
-	if not serverFound: print "\n> NO SERVER FOUND ON LAN"
-	
-	return serverFound
-'''
 
 def tick():
     _tick_rb()
@@ -133,7 +108,7 @@ def _initialize_rb():
             print "> SUCCESS"
             _rbHosting = True
         except:
-            print "> FAILED"
+            print "! ERROR: FAILED"
     else:
         print "> ATTEMPTING TO CONNECT TO ROBOT SERVER AT " + _RB_IP
         try:
@@ -143,7 +118,7 @@ def _initialize_rb():
             print "> SUCCESS"
             _rbConnected = True
         except:
-            print "> FAILED"
+            print "! ERROR: FAILED"
 
 def _initialize_mc():
     global _mcConnected
@@ -156,7 +131,7 @@ def _initialize_mc():
         print "> SUCCESS"
         _mcConnected = True
     except:
-        print "> FAILED TO CONNECT TO MISSION CONTROL"
+        print "! ERROR: FAILED"
         
     return _mcConnected
 
@@ -172,6 +147,10 @@ def _tick_rb():
             except:
                 _rbConnected = False
             return
+        
+        # receive data from our server with a timeout
+        ready = select.select([_rb], [], [], _RB_RECV_TIMEOUT)
+        
     # acting as a client to the other robot
     else:
         # make sure we have an active connection with our server
@@ -194,11 +173,14 @@ def _tick_mc():
     global _mcConnected
     
 def _process_client(conn):
+    global _rbClient
+
     print "> PROCESSING NEW CLIENT CONNECTION"
     key = conn.recv(16)
     if key == _RB_CONNECTION_KEY:
         print "> CLIENT KEY ACCEPTED"
         print "> SUCCESSFULLY ADDED NEW CLIENT"
+        _rbClient = conn
         return True
     else:
         print "! ERROR: UNRECOGNIZED CLIENT, TERMINATING CONNECTION"
@@ -208,39 +190,3 @@ def _process_client(conn):
 ################################################################################
 # public access functions
 ################################################################################
-
-'''
-def state_x(x):
-	global _pending
-	
-	major = int(x)
-	minor = int((x - major) * 100)
-	
-	_pending += chr(_S_P_X)
-	_pending += chr(minor)
-	_pending += chr(major)
-	_pending += chr(_S_END)
-
-def state_y(y):
-	global _pending
-	
-	major = int(y)
-	minor = int((y - major) * 100)
-	
-	_pending += chr(_S_P_Y)
-	_pending += chr(minor)
-	_pending += chr(major)
-	_pending += chr(_S_END)
-
-    
-def state_orientation(orientation):
-    global _pending
-    
-    major = int(orientation)
-    minor = int((orientation - major) * 100)
-    
-    _pending += chr(_S_P_ORIENTATION)
-    _pending += chr(minor)
-    _pending += chr(major)
-    _pending += chr(_S_END)
-'''

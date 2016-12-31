@@ -39,6 +39,6 @@ def get_property(key):
     ret = _propertyMap.get(key)
     
     if ret == None:
-        print "> PROPERTY LOOKUP FAILED"
+        print "! ERROR: PROPERTY LOOKUP FAILED"
     
     return ret
