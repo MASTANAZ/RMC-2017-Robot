@@ -28,7 +28,7 @@
                <children>
                   <Label styleClass="card-subtitle" text="X: 2.44m" />
                   <Label styleClass="card-subtitle" text="Y: 1.39m" />
-                  <Label styleClass="card-subtitle" text="0: 3°" />
+                  <Label styleClass="card-subtitle" text="θ: 3°" />
                </children>
             </VBox>
          </children>

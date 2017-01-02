@@ -18,7 +18,8 @@ public class RNI {
     // constants
     private static final int PORT = 12000;
     private static final int SERVER_TIMEOUT_MS = 10;
-    private static final String CONNECTION_KEY = "MINERS_WIN";
+    private static final String CONNECTION_KEY = "@";
+    private static final String CONFIRMATION_KEY = "!";
     private static final int MAX_CLIENTS = 2;
 
     // network statement identifiers
@@ -38,10 +39,10 @@ public class RNI {
 
     private static ArrayList<Socket> clients;
     private static ArrayList<DataInputStream> inputs;
-    private static ArrayList<OutputStream> outputs;
+    private static ArrayList<DataOutputStream> outputs;
     private static ArrayList<Map> properties;
 
-    // front end variables
+    // javafx variables
     private static SimpleDoubleProperty connectionAProperty = null;
     private static SimpleDoubleProperty connectionBProperty = null;
     private static SimpleStringProperty receivedProperty = null;
@@ -52,10 +53,14 @@ public class RNI {
 
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public static void initialize() {
         clients = new ArrayList<Socket>();
         inputs = new ArrayList<DataInputStream>();
-        outputs = new ArrayList<OutputStream>();
+        outputs = new ArrayList<DataOutputStream>();
         properties = new ArrayList<Map>();
 
         connectionAProperty = new SimpleDoubleProperty(-1.0f);
@@ -125,6 +130,10 @@ public class RNI {
         System.out.println("> SUCCESS!");
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SETTERS / GETTERS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public static Map getPropertyMap(int index) {
         return properties.get(index);
     }
@@ -149,6 +158,10 @@ public class RNI {
         return totalProperty;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PRIVATE FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     private static void processClient(Socket client) throws Exception {
         if (nClients == MAX_CLIENTS) {
             System.err.println("! ERROR: ALREADY REACHED MAXIMUM NUMBER OF CLIENTS, TERMINATING CONNECTION");
@@ -156,8 +169,17 @@ public class RNI {
             return;
         }
 
-        System.out.println("> PROCESSING NEW CLIENT CONNECTION");
+        System.out.println("> ATTEMPTING TO PROCESS NEW CLIENT");
+
         DataInputStream in = new DataInputStream(client.getInputStream());
+        DataOutputStream out = new DataOutputStream(client.getOutputStream());
+
+        // wait for client to send connection key
+        try {
+            Thread.sleep(250);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         String key = "";
 
@@ -166,18 +188,22 @@ public class RNI {
         }
 
         if (key.equals(CONNECTION_KEY)) {
-            System.out.println("> CLIENT KEY ACCEPTED");
-            System.out.println("> SUCCESSFULLY ADDED NEW CLIENT!");
+            System.out.println("> CONNECTION KEY ACCEPTED");
+            System.out.println("> SENDING CONFIRMATION KEY TO CLIENT");
+
+            writeString(out, CONFIRMATION_KEY);
 
             if (clients.size() == 0) Global.getBackendInstance().getMission().getRobotA().setPropertyIndex(0);
             else Global.getBackendInstance().getMission().getRobotB().setPropertyIndex(1);
 
             clients.add(client);
             inputs.add(in);
-            outputs.add(client.getOutputStream());
+            outputs.add(out);
             properties.add(new HashMap());
 
             ++nClients;
+
+            System.out.println("> SUCCESSFULLY ADDED NEW CLIENT");
         } else {
             System.err.println("! ERROR: UNRECOGNIZED CLIENT, TERMINATING CONNECTION");
             client.close();
@@ -187,8 +213,17 @@ public class RNI {
     private static int fetchByte(DataInputStream inputStream) throws Exception {
         ++received;
         int t = inputStream.readUnsignedByte();
-        System.out.println(t);
         return t;
+    }
+
+    private static void writeString(DataOutputStream out, String toWrite) {
+        sent += toWrite.length();
+
+        try {
+            out.writeBytes(toWrite);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void processProperty(DataInputStream inputStream, Map properties) throws Exception {

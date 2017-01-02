@@ -38,6 +38,8 @@ _CONFIRMATION_KEY = "!"
 _mc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _mc.settimeout(1)
 
+_mcConnected = False
+
 _rb = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _rb.settimeout(1)
 
@@ -69,9 +71,38 @@ def cleanup():
 
 def _mc_init():
     print "> INITIALIZING MISSION CONTROL CONNECTION"
+    _mc_connect()
 
 def _mc_tick():
-    pass
+    if not _mcConnected: return
+    
+def _mc_connect():
+    global _mc, _mcConnected
+
+    # TODO: CHANGE
+    print "> ATTEMPTING TO CONNECT TO MISSION CONTROL AT localhost"
+
+    try:
+        _mc.connect(("localhost", _MC_PORT))
+        _mc.setblocking(0)
+        
+        print "> SENDING CONNECTION KEY"
+        _mc.send(_CONNECTION_KEY)
+        
+        # wait for mc to process connection key and send back a confirmation
+        time.sleep(0.5)
+        
+        confirmation = _mc.recv(1024)
+        
+        if confirmation == _CONFIRMATION_KEY:
+            print "> CONFIRMATION KEY RECEIVED FROM MISSION CONTROL"
+            print "> SUCCESS"
+            
+            _mcConnected = True
+        else:
+            print "! ERROR: FAILED"
+    except:
+        print "! ERROR: FAILED"
     
 def _rb_init():
     print "> INITIALIZING ROBOT COMMUNICATIONS"
@@ -173,7 +204,6 @@ def _rb_process_client(client):
         return
 
     if key == _CONNECTION_KEY:
-    
         print "> CONNECTION KEY ACCEPTED!"
         print "> SENDING CONFIRMATION KEY TO CLIENT"
         
