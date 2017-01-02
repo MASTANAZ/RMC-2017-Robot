@@ -188,6 +188,8 @@ def _rb_connect():
             print "! ERROR: FAILED"
     except:
         print "! ERROR: FAILED"
+    
+    # TODO: keep retrying connection
 
 def _rb_host():
     global _rb, _rbHosting

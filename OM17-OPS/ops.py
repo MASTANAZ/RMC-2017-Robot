@@ -1,6 +1,7 @@
 import network
 import dm
 import rbinfo
+import driver
 
 import sys
 import time
@@ -13,15 +14,14 @@ print "OM17-OPS"
 print "--------------------------------------------------------------------------------"
 
 dm.init()
-
-dm.self_set(dm.PROP_X, 7.77)
-
-print dm.self_get(dm.PROP_X)
-
 rbinfo.init()
+driver.init()
+
 #network.init()
 
-#while True:
-#    network.tick()
+while True:
+    driver.tick()
+    #network.tick()
 
 #network.cleanup()
+driver.cleanup()
