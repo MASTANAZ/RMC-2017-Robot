@@ -3,7 +3,7 @@ import dm
 import sys
 import time
 import os
-import info
+import rbinfo
 
 os.system("cls")
 
@@ -11,10 +11,10 @@ print "-------------------------------------------------------------------------
 print "OM17-OPS"
 print "--------------------------------------------------------------------------------"
 
-info.initialize()
-network.initialize()
+rbinfo.init()
+network.init()
 
-#while True:
-#    network.tick()
+while True:
+    network.tick()
 
-#network.cleanup()
+network.cleanup()

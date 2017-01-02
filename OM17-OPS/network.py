@@ -1,14 +1,14 @@
 ################################################################################
-# imports
+# IMPORTS
 ################################################################################
 
-import socket
 import sys
-import math
-import select
+import rbinfo
+import socket
+import time
 
 ################################################################################
-# constants
+# CONSTANTS
 ################################################################################
 
 _S_END             = 0xFF
@@ -18,175 +18,173 @@ _S_P_X             = 0x03
 _S_P_Y             = 0x04
 _S_P_ORIENTATION   = 0x05
 
-# connection settings for communications with mission control
-_MC_IP             = "localhost"
-_MC_PORT           = 12000
-_MC_BUFFER_SIZE    = 1024
-_MC_RECV_TIMEOUT   = 0.05
-_MC_CONNECTION_KEY = "@MC"
+# mission control communication parameters
+_MC_PORT         = 12000
+_MC_BUFFER_SIZE  = 1024
+_MC_RECV_TIMEOUT = 0.05
 
-# connection settings for communications with the other robot
-_RB_IP             = "localhost"
-_RB_PORT           = 12001
-_RB_BUFFER_SIZE    = 512
-_RB_RECV_TIMEOUT   = 0.05
-_RB_CONNECTION_KEY = "@RB"
+# robot communication parameters
+_RB_PORT         = 12001
+_RB_BUFFER_SIZE  = 512
+_RB_RECV_TIMEOUT = 0.05
+
+_CONNECTION_KEY = "@"
+_CONFIRMATION_KEY = "!"
 
 ################################################################################
-# module variables
+# MODULE VARIABLES
 ################################################################################
 
 _mc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+_mc.settimeout(1)
+
 _rb = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+_rb.settimeout(1)
 
-_mc.settimeout(3)
-_rb.settimeout(3)
-
-# whether or not we have an active connection
-_mcConnected = False
-
-# whether or not we are hosting a robot server
 _rbHosting = False
-# whether or not we have an active client connection or are actively connected
-# to a robot server
 _rbConnected = False
-# the client robot connected to our robot server, only used when
-# _rbHosting = True
+
 _rbClient = None
 
-# the unsigned byte arrays that will be sent over TCP during the next tick()
-# NOTE: these arrays will be cleared after they are sent over the network
-_mcPending = ""
-_rbPending = ""
-
 ################################################################################
-# public management functions
+# PUBLIC FUNCTIONS
 ################################################################################
 
-def initialize():
+def init():
     print "> INITIALIZING NETWORK COMMUNICATIONS"
-    _initialize_rb()
-    _initialize_mc()
+    _mc_init()
+    _rb_init()
 
 def tick():
-    _tick_rb()
-    _tick_mc()
+    _mc_tick()
+    _rb_tick()
 
 def cleanup():
-    _rb.close()
     _mc.close()
+    _rb.close()
 
 ################################################################################
-# private functions
+# PRIVATE FUNCTIONS
 ################################################################################
 
-def _initialize_rb():
-    global _rbHosting
+def _mc_init():
+    print "> INITIALIZING MISSION CONTROL CONNECTION"
 
-    print "> DETERMINING IF ROBOT SERVER ALREADY EXISTS"
+def _mc_tick():
+    pass
     
-    exists = False
-    
+def _rb_init():
+    print "> INITIALIZING ROBOT COMMUNICATIONS"
+    print "> SEARCHING FOR HOST ON LAN"
+
     tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tmp.settimeout(1)
-    
+
+    hostFound = False
+
     try:
-        tmp.connect((_RB_IP, _RB_PORT))
-        print "> ROBOT SERVER FOUND AT " + _RB_IP
-        exists = True
-    except:
-        print "> NO ROBOT SERVER FOUND"
-        exists = False
+        tmp.connect((rbinfo.OTHER_IP, _RB_PORT))
+        print "> ROBOT HOST FOUND!"
+        hostFound = True
         
+        # sleep so the host can fail the tmp client for the connection handshake
+        time.sleep(1)
+    except:
+        print "> NO HOST FOUND FOR ROBOT COMMUNICATION"
+
     tmp.close()
-        
-    if not exists:
-        print "> ATTEMPTING TO CREATE ROBOT SERVER AT localhost"
-        try:
-            _rb.bind(("localhost", _RB_PORT))
-            _rb.listen(1)
-            print "> SUCCESS"
-            _rbHosting = True
-        except:
-            print "! ERROR: FAILED"
+
+    if hostFound:
+        _rb_connect()
     else:
-        print "> ATTEMPTING TO CONNECT TO ROBOT SERVER AT " + _RB_IP
-        try:
-            _rb.connect((_RB_IP, _RB_PORT))
-            _rb.send(_RB_CONNECTION_KEY)
-            _rb.setblocking(0)
-            print "> SUCCESS"
-            _rbConnected = True
-        except:
-            print "! ERROR: FAILED"
+        _rb_host()
 
-def _initialize_mc():
-    global _mcConnected
-    
-    print "> ATTEMPTING TO CONNECT TO MISSION CONTROL AT " + _MC_IP
-    try:
-        _mc.connect((_MC_IP, _MC_PORT))
-        _mc.send(_MC_CONNECTION_KEY)
-        _mc.setblocking(0)
-        print "> SUCCESS"
-        _mcConnected = True
-    except:
-        print "! ERROR: FAILED"
-        
-    return _mcConnected
-
-def _tick_rb():
-    global _rbConnected, _rbHosting
-    
-    # acting as a server for the other robot
+def _rb_tick():
     if _rbHosting:
+        # no client has connected yet
         if not _rbConnected:
             try:
                 conn, addr = _rb.accept()
-                _rbConnected = _process_client(conn)
+                _rb_process_client(conn)
             except:
-                _rbConnected = False
-            return
-        
-        # receive data from our server with a timeout
-        ready = select.select([_rb], [], [], _RB_RECV_TIMEOUT)
-        
-    # acting as a client to the other robot
+                pass
+        else:
+            pass
     else:
-        # make sure we have an active connection with our server
         if not _rbConnected: return
-        
-        # receive data from our server with a timeout
-        ready = select.select([_rb], [], [], _RB_RECV_TIMEOUT)
-        
-        # read any available statements from the server and parse
-        if ready[0]:
-            data = _server.recv(_SERVER_BUFFER_SIZE)
-            if not data:
-                _connected = False
-            else:
-                _parse_statements(data)
-                
-        # send pending statements to the server
 
-def _tick_mc():
-    global _mcConnected
+def _rb_connect():
+    global _rb, _rbConnected
+
+    print "> ATTEMPTING TO CONNECT TO ROBOT HOST AT " + rbinfo.OTHER_IP
+
+    try:
+        _rb.connect((rbinfo.OTHER_IP, _RB_PORT))
+        
+        print "> SENDING CONNECTION KEY"
+        _rb.send(_CONNECTION_KEY)
+        
+        # wait for host to process connection key and send back a confirmation
+        time.sleep(0.5)
+        
+        confirmation = _rb.recv(16)
+        
+        if confirmation == _CONFIRMATION_KEY:
+            print "> CONFIRMATION KEY RECEIVED FROM HOST"
+            print "> SUCCESS"
+            
+            _rbConnected = True
+        else:
+            print "! ERROR: FAILED"
+    except:
+        print "! ERROR: FAILED"
+
+def _rb_host():
+    global _rb, _rbHosting
+
+    print "> ATTEMPTING TO CREATE ROBOT SERVER AT " + rbinfo.SELF_IP
+
+    try:
+        _rb.bind((rbinfo.SELF_IP, _RB_PORT))
+        _rb.listen(1)
+        
+        print "> SUCCESS"
+        
+        _rbHosting = True
+    except:
+        print "! ERROR: FAILED"
+
+def _rb_process_client(client):
+    global _rbClient, _rbConnected
+
+    print "> ATTEMPTING TO PROCESS NEW CLIENT"
+
+    # wait for the connecting client to send the connection key
+    time.sleep(0.25)
+
+    try:
+        key = client.recv(16)
+    except:
+        print "! ERROR: NO CONNECTION KEY RECEIVED"
+        print "> TERMINATING CONNECTION"
+        
+        client.close()
+        
+        return
+
+    if key == _CONNECTION_KEY:
     
-def _process_client(conn):
-    global _rbClient
-
-    print "> PROCESSING NEW CLIENT CONNECTION"
-    key = conn.recv(16)
-    if key == _RB_CONNECTION_KEY:
-        print "> CLIENT KEY ACCEPTED"
-        print "> SUCCESSFULLY ADDED NEW CLIENT"
-        _rbClient = conn
-        return True
+        print "> CONNECTION KEY ACCEPTED!"
+        print "> SENDING CONFIRMATION KEY TO CLIENT"
+        
+        client.send(_CONFIRMATION_KEY)
+        
+        _rbClient = client
+        _rbConnected = True
+        
+        print "> CLIENT SUCCESSFULLY ADDED"
     else:
-        print "! ERROR: UNRECOGNIZED CLIENT, TERMINATING CONNECTION"
-        conn.close()
-        return False
-    
-################################################################################
-# public access functions
-################################################################################
+        print "! ERROR: UNKNOWN CLIENT"
+        print "> TERMINATING CONNECTION"
+        
+        client.close()
