@@ -1,28 +1,48 @@
+################################################################################
+# IMPORTS
+################################################################################
+
 import sys
+import json
+
+################################################################################
+# CONSTANTS
+################################################################################
 
 SELF_ID = ""
 SELF_IP = ""
+
 OTHER_IP = ""
 
-def init():
-    global SELF_ID, SELF_IP, OTHER_IP
+MC_IP = ""
 
-    print "> ATTEMPTING TO READ ROBOT INFORMATION FROM \"robot.info\""
-    
-    infoFile = None
+################################################################################
+# PUBLIC FUNCTIONS
+################################################################################
+
+def init():
+    print "> INITIALIZING ROBOT INFORMATION"
+
+    global SELF_ID, SELF_IP, OTHER_IP, MC_IP
+
+    print "> ATTEMPTING TO READ ROBOT INFORMATION FROM \"rbinfo.json\""
     
     try:
-        infoFile = open("robot.info")
+        with open("rbinfo.json") as jsonFile:
+            jsonData = json.load(jsonFile)
         
-        SELF_ID = infoFile.readline().rstrip()
-        SELF_IP = infoFile.readline().rstrip()
-        OTHER_IP = infoFile.readline().rstrip()
+        SELF_ID = jsonData["SELF_ID"]
+        SELF_IP = jsonData["SELF_IP"]
+        OTHER_IP = jsonData["OTHER_IP"]
+        MC_IP = jsonData["MC_IP"]
         
         print "> SELF ID = " + SELF_ID
         print "> SELF IP = " + SELF_IP
         print "> OTHER IP = " + OTHER_IP
+        print "> MISSION CONTROL IP = " + MC_IP
+        print "> SUCCESS"
     except:
         print "! ERROR: FAILED"
         sys.exit()
     
-    infoFile.close()
+    jsonFile.close()

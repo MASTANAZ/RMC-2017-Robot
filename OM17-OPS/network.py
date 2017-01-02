@@ -6,17 +6,17 @@ import sys
 import rbinfo
 import socket
 import time
+import random
 
 ################################################################################
 # CONSTANTS
 ################################################################################
 
 _S_END             = 0xFF
-_S_P_LCV           = 0x01
-_S_P_RCV           = 0x02
-_S_P_X             = 0x03
-_S_P_Y             = 0x04
-_S_P_ORIENTATION   = 0x05
+
+_S_P_X             = 0x01
+_S_P_Y             = 0x02
+_S_P_ORIENTATION   = 0x03
 
 # mission control communication parameters
 _MC_PORT         = 12000
@@ -38,10 +38,14 @@ _CONFIRMATION_KEY = "!"
 _mc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _mc.settimeout(1)
 
+_mcPending = ""
+
 _mcConnected = False
 
 _rb = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _rb.settimeout(1)
+
+_rbPending = ""
 
 _rbHosting = False
 _rbConnected = False
@@ -76,14 +80,22 @@ def _mc_init():
 def _mc_tick():
     if not _mcConnected: return
     
+    global _mcPending
+    
+    if len(_mcPending) > 0:
+        _mc.send(_mcPending)
+        _mcPending = ""
+    
+    # receive info from the mission control server on a timeout
+    pass
+    
 def _mc_connect():
     global _mc, _mcConnected
 
-    # TODO: CHANGE
-    print "> ATTEMPTING TO CONNECT TO MISSION CONTROL AT localhost"
+    print "> ATTEMPTING TO CONNECT TO MISSION CONTROL AT " + rbinfo.MC_IP
 
     try:
-        _mc.connect(("localhost", _MC_PORT))
+        _mc.connect((rbinfo.MC_IP, _MC_PORT))
         _mc.setblocking(0)
         
         print "> SENDING CONNECTION KEY"
@@ -115,7 +127,7 @@ def _rb_init():
 
     try:
         tmp.connect((rbinfo.OTHER_IP, _RB_PORT))
-        print "> ROBOT HOST FOUND!"
+        print "> ROBOT HOST FOUND"
         hostFound = True
         
         # sleep so the host can fail the tmp client for the connection handshake
@@ -131,6 +143,8 @@ def _rb_init():
         _rb_host()
 
 def _rb_tick():
+    global _rbPending
+
     if _rbHosting:
         # no client has connected yet
         if not _rbConnected:
@@ -141,8 +155,13 @@ def _rb_tick():
                 pass
         else:
             pass
+    # this robot is the client to the other robot's server
     else:
         if not _rbConnected: return
+        
+        if len(_rbPending) > 0:
+            _rb.send(_rbPending)
+            _rbPending = ""
 
 def _rb_connect():
     global _rb, _rbConnected
@@ -204,7 +223,7 @@ def _rb_process_client(client):
         return
 
     if key == _CONNECTION_KEY:
-        print "> CONNECTION KEY ACCEPTED!"
+        print "> CONNECTION KEY ACCEPTED"
         print "> SENDING CONFIRMATION KEY TO CLIENT"
         
         client.send(_CONFIRMATION_KEY)

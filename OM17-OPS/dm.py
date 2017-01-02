@@ -1,44 +1,51 @@
 ################################################################################
-# imports
+# IMPORTS
 ################################################################################
 
 import network
 
 ################################################################################
-# constants
+# CONSTANTS
 ################################################################################
 
-PROP_LCV         = network._S_P_LCV
-PROP_RCV         = network._S_P_RCV
 PROP_X           = network._S_P_X
 PROP_Y           = network._S_P_Y
 PROP_ORIENTATION = network._S_P_ORIENTATION
 
 ################################################################################
-# module variables
+# MODULE VARIABLES
 ################################################################################
 
-_propertyMap = {
-    PROP_LCV : 1,
-    PROP_RCV : 2,
-    PROP_X : 3,
-    PROP_Y : 4,
-    PROP_ORIENTATION : 5,
+_selfDM = {
+    PROP_X : 0,
+    PROP_Y : 0,
+    PROP_ORIENTATION : 0,
+}
+
+_otherDM = {
+    PROP_X : 0,
+    PROP_Y : 0,
+    PROP_ORIENTATION : 0,
 }
 
 ################################################################################
-# functions
+# PUBLIC FUNCTIONS
 ################################################################################
 
-def initialize():
+def init():
     print "> INITIALIZING DATA MODEL"
+
+def self_set(key, value):
+    global _selfDM
+    _selfDM[key] = value 
+
+def self_get(key):
+    global _selfDM
+    return _selfDM.get(key)
+    pass
+
+def other_set():
+    pass
     
-def get_property(key):
-    global _propertyMap
-    
-    ret = _propertyMap.get(key)
-    
-    if ret == None:
-        print "! ERROR: PROPERTY LOOKUP FAILED"
-    
-    return ret
+def other_get():
+    pass
