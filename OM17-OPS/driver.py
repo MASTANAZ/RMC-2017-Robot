@@ -2,50 +2,40 @@
 # IMPORTS
 ################################################################################
 
-import network
+import serial
+import sys
 
 ################################################################################
 # CONSTANTS
 ################################################################################
 
-PROP_X           = network._S_P_X
-PROP_Y           = network._S_P_Y
-PROP_ORIENTATION = network._S_P_ORIENTATION
+_ARDUINO_BAUDRATE = 9600
+_ARDUINO_PORT = "COM3"
 
 ################################################################################
 # MODULE VARIABLES
 ################################################################################
 
-_selfDM = {
-    PROP_X : 0,
-    PROP_Y : 0,
-    PROP_ORIENTATION : 0,
-}
-
-_otherDM = {
-    PROP_X : 0,
-    PROP_Y : 0,
-    PROP_ORIENTATION : 0,
-}
+_arduino = serial.Serial()
+_arduino.baudrate = _ARDUINO_BAUDRATE
+_arduino.port = _ARDUINO_PORT
 
 ################################################################################
 # PUBLIC FUNCTIONS
 ################################################################################
 
 def init():
-    print "> INITIALIZING DATA MODEL"
-
-def self_set(key, value):
-    global _selfDM
-    _selfDM[key] = value 
-
-def self_get(key):
-    global _selfDM
-    return _selfDM.get(key)
-    pass
-
-def other_set():
-    pass
+    print "> INITIALIZING DRIVERS"
+    print "> ATTEMPTING TO OPEN SERIAL COMMUNICATION WITH ARDUINO"
+    _arduino.open()
+    if not _arduino.is_open:
+        print "! ERROR: FAILED"
+        sys.exit()
+    print "> SUCCESS"
     
-def other_get():
-    pass
+def tick():
+    if _arduino.in_waiting > 0:
+        print _arduino.readline().rstrip()
+    
+def cleanup():
+    _arduino.close()

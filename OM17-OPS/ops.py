@@ -1,9 +1,11 @@
 import network
 import dm
+import rbinfo
+import driver
+
 import sys
 import time
 import os
-import rbinfo
 
 os.system("cls")
 
@@ -11,10 +13,15 @@ print "-------------------------------------------------------------------------
 print "OM17-OPS"
 print "--------------------------------------------------------------------------------"
 
+dm.init()
 rbinfo.init()
-network.init()
+driver.init()
+
+#network.init()
 
 while True:
-    network.tick()
+    driver.tick()
+    #network.tick()
 
-network.cleanup()
+#network.cleanup()
+driver.cleanup()
