@@ -1,4 +1,4 @@
-%  map = zeros(24,12)
+  map = zeros(24,12)
 addpath('D-Star')    % Adding path directory for all d-star file
 
 load map1;

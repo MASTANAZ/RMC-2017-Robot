@@ -33,7 +33,7 @@ region3 = 3*ones(gridDims(1),gridDims(4));
 % Global for now to apply weights when calculating steps to traverse obstacle
 global trueCells;
 trueCells = [region1 region2 region3];  
-
+trueMap = [region1 region2 region3]
 
 
 % Initialize true state of rover
@@ -82,14 +82,14 @@ disp('\n\n')
 progCmd = input('Would you like to run in manual controls(1) or in AI simulation(2)? ');
 disp('\n\n')
 
-if progCmd == 2
-  disp('Simulation mode not available, switching to manual controls mode.\n')
-  disp('*****************************************************************')
-  disp('************************ MANUAL CONTROLS ************************')
-  disp('*****************************************************************\n')
-  
-  progCmd = 1;
-end
+% if progCmd == 2
+%   disp('Simulation mode not available, switching to manual controls mode.\n')
+%   disp('*****************************************************************')
+%   disp('************************ MANUAL CONTROLS ************************')
+%   disp('*****************************************************************\n')
+%   
+%   progCmd = 1;
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -312,13 +312,34 @@ if progCmd == 1
     
     
   end
-
-else 
   
+else
+    
   disp('*****************************************************************')
   disp('************************* AI SIMULATION *************************')
   disp('*****************************************************************\n')
   
   
   % put AI function calls here. 
+  
+  distVtime = [];
+  
+  inter_dvt = zeros(2,1)
+  k = 0;
+  visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
+
+
+  addpath('D-Star')    % Adding path directory for all d-star file
+
+  load trueMap;
+  goal = [23,7];
+  start=[ceil(trueRover.pos(2)*24),ceil(trueRover.pos(1)*12)];
+  ds = Dstar(trueMap);    % create navigation object
+  ds.plan(goal)       % create plan for specified goal
+  thePath = ds.path(start)
+  hold on;
+%   ds.path(start);
+  plot(thePath(:,1)/24,thePath(:,2)/12,'c.', 'LineWidth',2);
+  hold off;
+
 end
