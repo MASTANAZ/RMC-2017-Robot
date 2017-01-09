@@ -119,6 +119,23 @@ if progCmd == 1
   while(1) % Enter control loop
     visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
     
+    
+    addpath('D-Star')    % Adding path directory for all d-star file
+
+  % Draw the optimal path 
+  load trueMap;
+  goal = [23,11];
+  start=[round(trueRover.pos(2)*24),round(trueRover.pos(1)*24)];
+  ds = Dstar(trueMap);    % create navigation object
+  ds.plan(goal)       % create plan for specified goal
+  thePath = ds.path(start)
+  subplot(3,1,1);
+  
+  hold on;
+  plot(thePath(:,1)/24,thePath(:,2)/24,'r-', 'LineWidth',2);
+  hold off;
+  %%%%%%%%%%%%%%%%%%%%%%%
+    
     %distVtime = [];
     
     % If current theta > 360, subtract 360 iteratively to prevent
@@ -174,7 +191,6 @@ if progCmd == 1
         for iStep = k+1:1:ceil(deltaStep_Theta + k)
           
           %Plot lateral distance vs time steps
-          % THIS IS BUGGED
           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           subplot(3,1,2)
           %hold on;
@@ -332,14 +348,15 @@ else
   addpath('D-Star')    % Adding path directory for all d-star file
 
   load trueMap;
-  goal = [23,7];
-  start=[ceil(trueRover.pos(2)*24),ceil(trueRover.pos(1)*12)];
+  goal = [23,11];
+  start=[round(trueRover.pos(2)*24),round(trueRover.pos(1)*24)];
   ds = Dstar(trueMap);    % create navigation object
   ds.plan(goal)       % create plan for specified goal
   thePath = ds.path(start)
+  subplot(3,1,1);
   hold on;
 %   ds.path(start);
-  plot(thePath(:,1)/24,thePath(:,2)/12,'c.', 'LineWidth',2);
+  plot(thePath(:,1)/24,thePath(:,2)/24,'r-', 'LineWidth',2);
   hold off;
 
 end

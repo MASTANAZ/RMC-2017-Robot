@@ -38,6 +38,10 @@ function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
   %subplot(3,1,2)
   %hold on;
   %title('Net Translation vs Time-Steps');
+      % Ensure name stays on second graph
+    subplot(3,1,2)
+          %hold on;
+    title('Net Translation vs Time-Steps');
   
     
   % Plot current path of rover
