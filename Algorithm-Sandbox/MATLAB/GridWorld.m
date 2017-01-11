@@ -3,6 +3,12 @@ clear all;
 clc;
 clf;
 
+% Adding path directory for all d-star files
+addpath('D-Star');
+
+% Adding path for simulated sensor data
+addpath('Simulated-Data');
+
 
 % Create the set of actions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -122,13 +128,15 @@ if progCmd == 1
     
     addpath('D-Star')    % Adding path directory for all d-star file
 
-  % Draw the optimal path 
+  % Draw the optimal path
+  %**********************
   load trueMap;
   goal = [23,11];
   start=[round(trueRover.pos(2)*24),round(trueRover.pos(1)*24)];
   ds = Dstar(trueMap);    % create navigation object
   ds.plan(goal)       % create plan for specified goal
   thePath = ds.path(start)
+  
   subplot(3,1,1);
   
   hold on;
@@ -345,7 +353,6 @@ else
   visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
 
 
-  addpath('D-Star')    % Adding path directory for all d-star file
 
   load trueMap;
   goal = [23,11];
@@ -353,10 +360,13 @@ else
   ds = Dstar(trueMap);    % create navigation object
   ds.plan(goal)       % create plan for specified goal
   thePath = ds.path(start)
-  subplot(3,1,1);
+  subplot(3,1,3);
   hold on;
 %   ds.path(start);
   plot(thePath(:,1)/24,thePath(:,2)/24,'r-', 'LineWidth',2);
   hold off;
+  
+  sim = SimData(trueMap, trueRover);
+  sim.checkForObstacles(trueMap, trueRover);
 
 end

@@ -46,6 +46,7 @@ function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
     
   % Plot current path of rover
   
+  subplot(3,1,1)
   %if (size(true_coords(1)) ~= 1)
     hold on; 
   
@@ -55,6 +56,8 @@ function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
     plot(true_coords(1,:),true_coords(2,:),'c--','LineWidth',2);
     hold off;
   %end
+  
+  
   
   % Estimated State
   [dims,xPatches,yPatches,rgbColors] = cells2patches(estiCells);
