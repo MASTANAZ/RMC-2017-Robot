@@ -367,6 +367,6 @@ else
   hold off;
   
   sim = SimData(trueMap, trueRover);
-  sim.checkForObstacles(trueMap, trueRover);
+  sim.checkTerrain(trueMap, trueRover);
 
 end

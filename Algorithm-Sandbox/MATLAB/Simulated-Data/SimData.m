@@ -102,7 +102,7 @@ classdef SimData
         
         
         % Scan area around robot given 
-        function checkForObstacles (simData, trueMap, rover)
+        function checkTerrain (simData, trueMap, rover)
             % Scan for obstacles in immediate path of Rover
             % Get rover's current orientation
             
