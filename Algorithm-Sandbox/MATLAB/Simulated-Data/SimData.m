@@ -98,6 +98,8 @@ classdef SimData
             simData.trueMap = trueMap
             
             simData.observedMap = zeros(24,12);
+
+            simData.aggregatedData = createSimulatedSensorData(simData.currentPosition, trueMap);
         end
         
         

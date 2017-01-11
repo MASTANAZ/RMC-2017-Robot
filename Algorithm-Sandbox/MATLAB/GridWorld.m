@@ -68,8 +68,16 @@ true_coordinate_matrix(2,1) = trueRover.pos(1);
 
 
 % Initialze estimated state of 3-region grid
+global estiCells;
 estiCells = [region1 2.5*ones(size(region2)) region3];
 
+estiRegion1 = ones(gridDims(1),gridDims(2));
+estiRegion1(floor(gridDims(1)/2 - gridDims(5)/2)+(1:gridDims(5)),1:gridDims(6)) = 0;
+region2 = rand(gridDims(1),gridDims(3)); region2(region2<pObstacle) = nan;
+region2 = 2 + (region2 - pObstacle/2);
+region3 = 3*ones(gridDims(1),gridDims(4));
+
+estiMap = 
 % Initialize estimated state of rover
 estiRover = [];  
 
