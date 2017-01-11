@@ -1,4 +1,49 @@
-% Sim Data
+% 
+% SimData.m
+% Algorithnm-Sandbox
+%
+% Created by Blake Nazario-Casey on 01/10/2017
+% Last updated by Blake Nazario-Casey on 01/10/2017
+%
+%
+% DESCRIPTION:
+%     SimData is a class that manages all simulation data and 
+%     detection
+% 
+% PROPERTIES         :             DESCRIPTION              : TYPE
+% ------------------------------------------------------------------
+%    aggregatedData  :  matrix equivalent of data tensor    : MxN matrix
+%  left_motor_speed  :  rotational velocity of left motor   : float
+% right_motor_speed  :  rotational velocity of right motor  : float
+%   currentPosition  :  current (x,y) position of rover     : 1x2 list
+%     deltaPosition  :  change in position of rover         : 1x2 list
+%       observedMap  :  map of observed terrain by robot    : 24x12 matrix
+%           trueMap  :  true-state map of universe          : 24x12 matrix
+% detected_obstacles :  matrix of detected obstalces        : 24x22 matrix
+%
+%
+%
+%
+% INPUTS           :             DESCRIPTION              : TYPE
+% ------------------------------------------------------------------
+%         trueMap  :  actual map of true state universe   : 24x12 matrix
+%           rover  :  rover position information          : 1x3 list
+%
+%
+%
+% RETURNS        :             DESCRIPTION              : TYPE
+% ------------------------------------------------------------------
+%       simData  :  class of simulation data objects    : SimData 
+% 
+%
+% The checkForObstacles function checks all at 8 points around the rover
+% for each step, returns terrain data that is used to update the 
+% observed map.
+%
+% All other function information can be found above and within each
+% function
+%
+
 
 classdef SimData
     % All matrix properties are matrices representing data at any
@@ -16,23 +61,18 @@ classdef SimData
             aggregatedData
             
             
-            %** The observed grid
-            observedMap
-            
-            
             %*** Individual Data ***
             % Locomotion Motor Data
             left_motor_speed
-            left_delta_rotation
-            
             right_motor_speed
-            right_delta_rotation
             %***
             
             % Positioning Data
             current_position
             delta_position
             trueMap
+            observedMap
+            %***
             
             % Object Detection
             detected_obstacles % 2D matrix where each element is a coord
