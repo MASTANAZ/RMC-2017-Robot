@@ -99,11 +99,15 @@ classdef SimData
             
             simData.observedMap = zeros(24,12);
 
-            simData.aggregatedData = createSimulatedSensorData(simData.currentPosition, trueMap);
+            %simData.aggregatedData = createSimulatedSensorData(simData.current_position, trueMap);
         end
         
         
         % Scan area around robot given 
+        % This function needs to be modified to take in the current
+        % estimated map so it can return the updated cells
+        %
+        % The returned updated cells will be run into another function
         function checkTerrain (simData, trueMap, rover)
             % Scan for obstacles in immediate path of Rover
             % Get rover's current orientation

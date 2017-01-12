@@ -77,6 +77,7 @@ end
 
 
 
+
 function [dims,xPatches,yPatches,rgbColors] = cells2patches(theCells)
   
   [M,N] = size(theCells);

@@ -376,14 +376,13 @@ else
   
   sim = SimData(trueMap, trueRover);
   
-  % CheckTerrain will be modified to return a matrix of cells that
+  %CheckTerrain will be modified to return a matrix of cells that
   % need to be updated. From here, those updated cells will be put
-  % into a new function similar to userUpdatePostion.m called 
-  % updatedEstimatedStateMap that will then perform essentially what 
-  % userUpdatePosition does, but is tailored to updating the map based on 
-  % the robot's estimation rather than true-state data. The function can 
-  % also be used in the real rover to update the shared map as each rover 
-  % discovers new terrain.
+  % into a new function in visualizeGrid.m called updatedEstimatedStateMap
+  % that will then perform essentially what visualizeGrid does, but is
+  % tailored to updating the map based on the robot's estimation rather 
+  % than true-state data. The function can also be used in the real rover
+  % to update 
   sim.checkTerrain(trueMap, trueRover);
 
 end

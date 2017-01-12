@@ -9,7 +9,7 @@
 % Initial Position takes a 1x3 matrix of [x, y, r]
 function aggregatedData = createSimulatedSensorData(initialPosition, trueMap)
     detectorData = generateDetectorData(initialPosition, trueMap);
-    positionData = generatePositionData(initialPosition, trueMap);
+    positionData = generatePositionData(initialPosition);
     
     aggregatedData = [positionData detectorData];
    
@@ -23,8 +23,8 @@ function detectorData = generateDetectorData(initialPosition, trueMap)
     disp('WARNING ***createSimulatedSensorData - generateDetectorData***');
     disp('Not currently able to detect patch values, functionality being developed');
 
-    devFR; % Detector deviation on the front, right of robot
-    devFL; % Detector deviation on the front, left of robot
+    devFR = 0; % Detector deviation on the front, right of robot
+    devFL = 0; % Detector deviation on the front, left of robot
 
     % Assuming that the real detector data is a float [0:1]
     %
@@ -33,8 +33,8 @@ function detectorData = generateDetectorData(initialPosition, trueMap)
     % One unit outward from the robot.
     
     % get patch values here
-    leftDetectorValue;
-    rightDetectorValue;
+    leftDetectorValue = 0;
+    rightDetectorValue = 0;
 
 
     % Apply random deviation within standard deviation of .100
@@ -58,8 +58,8 @@ end
 % Generated position data assumes a specified standard error in 
 % measurement that may not reflect actual positioning accuracy.
 function positionData = generatePositionData(initialPosition)
-    devX; % Noisy x-coordinate
-    devY; % Noisy y-coordinate
+    devX = 0; % Noisy x-coordinate
+    devY = 0; % Noisy y-coordinate
     
     % Apply random deviation within standard deviation of 1.000
     deviations = round(((-1.000 - 1.000).*rand(1000,1) + 1.000), 4);
@@ -74,6 +74,6 @@ function positionData = generatePositionData(initialPosition)
     yValue = initialPositino(2) + devFR;  
 
     % Insert noisy detector values in the detector data variable
-    detectorData = [xValue yValue];
+    positionData = [xValue yValue];
 
 end
