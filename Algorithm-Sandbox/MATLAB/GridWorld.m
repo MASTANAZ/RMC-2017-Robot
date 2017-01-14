@@ -363,7 +363,7 @@ else
 
 
   load trueMap;
-  goal = [23,11];
+  goal = [20,9];
   start=[round(trueRover.pos(2)*24),round(trueRover.pos(1)*24)];
   ds = Dstar(trueMap);    % create navigation object
   ds.plan(goal)       % create plan for specified goal
@@ -375,6 +375,7 @@ else
   hold off;
   
   sim = SimData(trueMap, trueRover);
+ 
   
   % CheckTerrain will be modified to return a matrix of cells that
   % need to be updated. From here, those updated cells will be put
@@ -385,5 +386,7 @@ else
   % also be used in the real rover to update the shared map as each rover 
   % discovers new terrain.
   sim.checkTerrain(trueMap, trueRover);
+  
+  clear goal;
 
 end
