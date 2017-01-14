@@ -1,5 +1,5 @@
 {
-  "SELF_ID": "A",
+  "SELF_ID": 0,
   "SELF_IP": "localhost",
   "OTHER_IP": "localhost",
   "MC_IP": "localhost"
