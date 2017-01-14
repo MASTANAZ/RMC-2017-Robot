@@ -25,6 +25,8 @@ _arduino.port = _ARDUINO_PORT
 ################################################################################
 
 def init():
+    global _arduino
+    
     print "> INITIALIZING DRIVERS"
     print "> ATTEMPTING TO OPEN SERIAL COMMUNICATION WITH ARDUINO"
     _arduino.open()

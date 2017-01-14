@@ -2,12 +2,19 @@ import network
 import dm
 import rbinfo
 import driver
+import common
 
 import sys
 import time
 import os
 
-os.system("cls")
+# determine which platform we're on and clear the terminal
+if sys.platform == "linux" or sys.platform == "linux2":
+    os.system("clear")
+elif sys.platform == "darwin":
+    os.system("clear")
+elif sys.platform == "win32":
+    os.system("cls")
 
 print "--------------------------------------------------------------------------------"
 print "OM17-OPS"
@@ -15,13 +22,15 @@ print "-------------------------------------------------------------------------
 
 dm.init()
 rbinfo.init()
-driver.init()
+#driver.init()
 
 #network.init()
 
-while True:
-    driver.tick()
-    #network.tick()
+try:
+    while True:
+        pass
+except KeyboardInterrupt:
+    pass
 
 #network.cleanup()
-driver.cleanup()
+#driver.cleanup()

@@ -39,7 +39,7 @@ def init():
         print "> SELF ID = " + SELF_ID
         print "> SELF IP = " + SELF_IP
         print "> OTHER IP = " + OTHER_IP
-        print "> MISSION CONTROL IP = " + MC_IP
+        print "> MC IP = " + MC_IP
         print "> SUCCESS"
     except:
         print "! ERROR: FAILED"
