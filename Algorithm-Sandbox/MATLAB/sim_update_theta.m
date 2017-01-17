@@ -9,5 +9,5 @@ function newSimTheta = sim_update_theta(x1,y1,x2,y2)
     
     deg_theta = rad_theta * 180 / pi;
     
-    newSimTheta;
+    newSimTheta = deg_theta;
 end

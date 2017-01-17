@@ -60,7 +60,7 @@ end
 function positionData = generatePositionData(initialPosition)
     devX = 0; % Noisy x-coordinate
     devY = 0; % Noisy y-coordinate
-    devR = 0;
+    devR = 0; % Noisy r-value
     
     % Apply random deviation within standard deviation of 1.000
     deviations = round(((-1.000 - 1.000).*rand(1000,1) + 1.000), 4);
@@ -72,9 +72,9 @@ function positionData = generatePositionData(initialPosition)
     clear deviations;
     
     % Add detector deviation to patch values
-    xValue = initialPosition(1) + devX;
-    yValue = initialPosition(2) + devY;  
-    rValue = intitialPostion(3) + devR;
+    xValue = initialPosition(1) + devX/24;
+    yValue = initialPosition(2) + devY/24;  
+    rValue = initialPosition(3) + devR;
     
     % Insert noisy detector values in the detector data variable
     positionData = [xValue yValue rValue];

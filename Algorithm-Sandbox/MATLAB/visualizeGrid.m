@@ -5,6 +5,10 @@ function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
   persistent true_coords;
   true_coords(1,k+1) = trueRover.pos(2);
   true_coords(2,k+1) = trueRover.pos(1);
+  
+  persistent esti_coords;
+  esti_coords(1,k+1) = estiRover.pos(2);
+  esti_coords(2,k+1) = estiRover.pos(1);
     
   % True State
   [dims,xPatches,yPatches,rgbColors] = cells2patches(trueCells);
@@ -72,6 +76,28 @@ function visualizeGrid(trueCells,trueRover,k,estiCells,estiRover)
   title(['Estimated State (Stage ' num2str(k) ')']);
   
   set(gca,'XTick',unique(dims(1,:)),'YTick',unique(dims(2,:)));
+  
+  vel = [cos(pi/180*estiRover.pos(3)) sin(pi/180*estiRover.pos(3)); 
+        -sin(pi/180*estiRover.pos(3)) cos(pi/180*estiRover.pos(3))] * [0; 0.025];
+        
+  % Plot "bounding box" of rover
+  hold on; plot(estiRover.pos(2),estiRover.pos(1),'rs','markersize',30, 'linewidth',2); hold off;
+
+  
+  hold on; plot(estiRover.pos(2),estiRover.pos(1),'bo','LineWidth',2); hold off; % circle
+  hold on; plot(estiRover.pos(2)+[0 vel(2)],estiRover.pos(1)+[0 vel(1)],'b-','LineWidth',2); hold off; %line
+  
+  % Plot the estimated path of the rover
+  subplot(3,1,3)
+  %if (size(true_coords(1)) ~= 1)
+    hold on; 
+  
+    %x = true_coords(1)
+    %y = true_coords(2)
+ 
+    plot(esti_coords(1,:),esti_coords(2,:),'c--','LineWidth',2);
+    hold off;
+  %end
   
 end
 
