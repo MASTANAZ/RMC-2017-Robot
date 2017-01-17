@@ -100,8 +100,6 @@ classdef SimData
             simData.observedMap = zeros(12,24);
 
             simData.aggregatedData = createSimulatedSensorData(simData.current_position, trueMap);
-            
-            checkTerrain(simData, trueMap, rover);
         end
         
         
@@ -110,7 +108,7 @@ classdef SimData
         % estimated map so it can return the updated cells
         %
         % The returned updated cells will be run into another function
-        function checkTerrain (simData, trueMap, rover)
+        function gridValues = checkTerrain (simData, trueMap, rover)
             % Scan for obstacles in immediate path of Rover
             % Get rover's current orientation
             
@@ -120,9 +118,9 @@ classdef SimData
             %  [ ]  R  [ ]
             %  [ ] [ ] [ ]
             
-            %gridValues = [];
+            gridValues = [];
             %right
-            %gridValues(1) = trueMap(round(rover.pos(2) * 24));
+            gridValues(1) = trueMap(round(rover.pos(2) * 24));
             
             % This is only temporary, as this defeats the purpose of the
             % AI. 
@@ -130,8 +128,7 @@ classdef SimData
             % in which the robot can directly compare with the known
             % universe to itss estimated universe at its given position. 
             observedMap(round(rover.pos(2) * 24)) = trueMap(round(rover.pos(2) * 24)) 
-            observedMap(round(rover.pos(1) * 24)) = trueMap(round(rover.pos(1) * 24))
-            
+            observedMap(round(rover.pos(2) * 24)) = trueMap(round(rover.pos(2) * 24))
             % Here a function will be called to update the observed graph
             % OR
             % A matrix will be returned that is the updated map and will be

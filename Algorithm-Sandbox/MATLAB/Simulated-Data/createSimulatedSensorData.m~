@@ -33,8 +33,8 @@ function detectorData = generateDetectorData(initialPosition, trueMap)
     % One unit outward from the robot.
     
     % get patch values here
-    leftDetectorValue = trueMap(round(initialPosition(1) * 24), trueMap(round(initialPosition(2) * 24)));
-    rightDetectorValue = trueMap(round(initialPosition(1) * 24), trueMap(round(initialPosition(2) * 24)));
+    leftDetectorValue = trueMap(round(initialPosition(1) * 24));
+    rightDetectorValue = 0;
 
 
     % Apply random deviation within standard deviation of .100

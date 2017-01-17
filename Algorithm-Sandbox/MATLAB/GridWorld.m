@@ -368,13 +368,17 @@ else
   load trueMap;
   goal = [20,9];
   
+  sensorMap = zeros(12,24);
+  
   %if (k+2 ~= length(thePath))
         %theta = sim_update_theta(estiRover.pos(2), estiRover.pos(1), thePath(1,1), thePath(1,2));
   %end
   while(2)
-
-    
-
+      % UPDATE ESTIMATED CELLS HERE
+%     simSensorData = createSimulatedSensorData([estiRover.pos(2), estiRover.pos(1), estiRover.pos(3)], trueMap)
+%     
+%     estiCells(round(estiRover.pos(2) * 24), round(estiRover.pos(1) * 24)) = (simSensorData(4) + simSensorData(5)) / 2;
+%     
     visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
 
     % Plan the path every go around
@@ -389,7 +393,7 @@ else
     plot(thePath(:,1)/24,thePath(:,2)/24,'r-', 'LineWidth',2);
     hold off;
   
-   % sim = SimData(trueMap, trueRover);
+    %sim = SimData(trueMap, trueRover);
  
   
     % CheckTerrain will be modified to return a matrix of cells that
@@ -499,6 +503,8 @@ else
             %estiRover.pos(2) = thePath(1,1) / 24
             %estiRover.pos(1) = thePath(1,2) / 24
           k = ceil(jStep);
+          
+          sensorMap(round(estiRover.pos(2) * 24.0)) = trueMap(round(estiRover.pos(2) * 24.0));
           
           
           % Load updated values
