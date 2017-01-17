@@ -148,7 +148,7 @@ if progCmd == 1
   subplot(3,1,1);
   
   hold on;
-  plot(thePath(:,1)/24,thePath(:,2)/24,'r-', 'LineWidth',2);
+  plot(thePath(:,1)/24 - 1/48,thePath(:,2)/24 - 1/48,'r-', 'LineWidth',2);
   hold off;
   %%%%%%%%%%%%%%%%%%%%%%%
     
