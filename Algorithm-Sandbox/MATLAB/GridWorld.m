@@ -53,11 +53,18 @@ else
   vPos = rand*(floor(gridDims(1)/2 - gridDims(5)/2))/gridDims(1);
 end
 
-
 trueRover.pos = [vPos*gridDims(1)/sum(gridDims(2:4)); ... % vertical position in units of world height
                  rand*gridDims(6)/sum(gridDims(2:4)); ... % horizontal position in units of world width
                  rand*360]; % angular position in degrees (with 0 = facing due east, 90 = facing due north)
-                 
+
+while (trueRover.pos(1) > 0.5 || ...
+       trueRover.pos(1) < 0)
+       trueRover.pos(1) = vPos*gridDims*(1)/sum(gridDims(2:4));
+end
+
+while (trueRover.pos(1)< 0)
+       trueRover.pos(2) = rand*gridDims(6)/sum(gridDims(2:4));
+end
 % Insert current position of rover at step k = 0
 true_coordinate_matrix(1,1) = trueRover.pos(2);
 true_coordinate_matrix(2,1) = trueRover.pos(1);
@@ -79,7 +86,7 @@ estiCells = [region1 2.5*ones(size(region2)) region3];
 % 
 % estiMap = 
 % Initialize estimated state of rover
-estiRover = [];  
+estiRover.pos = [0 0 0];  
 
 % Clear cached data that is unnecessary at this state in the program.
 clear region1 region2 region3 vPos;
