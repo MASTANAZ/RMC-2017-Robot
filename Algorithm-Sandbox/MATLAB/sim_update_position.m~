@@ -4,13 +4,7 @@
 % Created by Blake Nazario-Casey on 01/17/2017
 % Last updated by Blake Nazario-Casey on 01/17/2017
 %
-% NOTE: This class can be seen as what will define the pseudo-control-space 
-%       on the real rover. The AI will determine the angle it must move to 
-%       in order to follow the path it must follow. 
-%
-%       Higher level decision making will be carried out by the python
-%       scripts and decision model that weighs objectives. 
-%
+% NOTE: This class can be 
 %
 % DESCRIPTION:
 %     Updates the rover's true position based on user input.
