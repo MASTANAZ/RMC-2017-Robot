@@ -53,11 +53,18 @@ else
   vPos = rand*(floor(gridDims(1)/2 - gridDims(5)/2))/gridDims(1);
 end
 
-
 trueRover.pos = [vPos*gridDims(1)/sum(gridDims(2:4)); ... % vertical position in units of world height
                  rand*gridDims(6)/sum(gridDims(2:4)); ... % horizontal position in units of world width
                  rand*360]; % angular position in degrees (with 0 = facing due east, 90 = facing due north)
-                 
+
+while (trueRover.pos(1) > 0.5 - 1/48 || ...
+       trueRover.pos(1) < 0)
+       trueRover.pos(1) = vPos*gridDims*(1)/sum(gridDims(2:4));
+end
+
+while (trueRover.pos(1) < 1/24
+       trueRover.pos(2) = rand*gridDims(6)/sum(gridDims(2:4));
+end
 % Insert current position of rover at step k = 0
 true_coordinate_matrix(1,1) = trueRover.pos(2);
 true_coordinate_matrix(2,1) = trueRover.pos(1);
@@ -79,7 +86,7 @@ estiCells = [region1 2.5*ones(size(region2)) region3];
 % 
 % estiMap = 
 % Initialize estimated state of rover
-estiRover = [];  
+estiRover.pos = [0 0 0];  
 
 % Clear cached data that is unnecessary at this state in the program.
 clear region1 region2 region3 vPos;
@@ -367,15 +374,23 @@ else
   
   load trueMap;
   goal = [20,9];
+  
+  sensorMap = zeros(12,24);
+  
+  %if (k+2 ~= length(thePath))
+        %theta = sim_update_theta(estiRover.pos(2), estiRover.pos(1), thePath(1,1), thePath(1,2));
+  %end
   while(2)
-
-    
-
+      % UPDATE ESTIMATED CELLS HERE
+%     simSensorData = createSimulatedSensorData([estiRover.pos(2), estiRover.pos(1), estiRover.pos(3)], trueMap)
+%     
+%     estiCells(round(estiRover.pos(2) * 24), round(estiRover.pos(1) * 24)) = (simSensorData(4) + simSensorData(5)) / 2;
+%     
     visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
 
     % Plan the path every go around
     
-    start=[round(estiRover.pos(2)*24),round(estiRover.pos(1)*24)];
+    start=[round(estiRover.pos(2)*24),round(estiRover.pos(1)*24)]
     ds = Dstar(trueMap);    % create navigation object
     ds.plan(goal)       % create plan for specified goal
     thePath = ds.path(start)
@@ -385,7 +400,7 @@ else
     plot(thePath(:,1)/24,thePath(:,2)/24,'r-', 'LineWidth',2);
     hold off;
   
-   % sim = SimData(trueMap, trueRover);
+    %sim = SimData(trueMap, trueRover);
  
   
     % CheckTerrain will be modified to return a matrix of cells that
@@ -399,10 +414,10 @@ else
     %vals = sim.checkTerrain(trueMap, trueRover);
     
     if (k+2 ~= length(thePath))
-        theta = sim_update_theta(estiRover.pos(2), estiRover.pos(1), thePath(path_index,1), thePath(path_index,2));
+        theta = sim_update_theta(thePath(1,1), thePath(1,2), thePath(2,1), thePath(2,2));
     end
     [nextX, nextY, nextTheta, deltaTheta, deltaStep_Theta, deltaStep_Move] = sim_update_position(theta, 1, estiRover, actions, pTransSpd, pAngleSpd);
-   
+    
     
     for iStep = k+1:1:ceil(deltaStep_Theta + k)
 
@@ -420,7 +435,7 @@ else
           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           
           % Correctly represent rotation to new theta
-          if (sqrt(((trueRover.pos(3) - nextTheta))^2)) <= 180
+          if (sqrt(((estiRover.pos(3) - nextTheta))^2)) <= 180
             subplot(3,1,3);
             % No change in theta
             if deltaTheta == 0
@@ -480,7 +495,6 @@ else
         for jStep = k:1:ceil(deltaStep_Move + k)
           
           %Plot lateral distance vs time steps
-          % THIS IS BUGGED
           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           subplot(3,1,2)
           %hold on;
@@ -491,11 +505,13 @@ else
           %hold off;
           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           
-%           estiRover.pos(2) = estiRover.pos(2) + (((nextX-estiRover.pos(2))/pTransSpd) / deltaStep_Move) * pTransSpd;
-%           estiRover.pos(1) = estiRover.pos(1) + (((nextY-estiRover.pos(1))/pTransSpd) / deltaStep_Move) * pTransSpd;
-            estiRover.pos(2) = thePath(1,1);
-            estiRover.pos(1) = thePath(1,2);
+           estiRover.pos(2) = estiRover.pos(2) + (((nextX-estiRover.pos(2))/pTransSpd) / deltaStep_Move) * pTransSpd;
+           estiRover.pos(1) = estiRover.pos(1) + (((nextY-estiRover.pos(1))/pTransSpd) / deltaStep_Move) * pTransSpd;
+            %estiRover.pos(2) = thePath(1,1) / 24
+            %estiRover.pos(1) = thePath(1,2) / 24
           k = ceil(jStep);
+          
+          sensorMap(round(estiRover.pos(2) * 24.0)) = trueMap(round(estiRover.pos(2) * 24.0));
           
           
           % Load updated values
@@ -511,10 +527,8 @@ else
           % SPRITE ANIMATION FUNCTION HERE
           % Animate current step in iteration
           subplot(3,1,3);
-          hold on;
 %           ds.path(start);
-            plot(thePath(:,1)/24 + 1/48,thePath(:,2)/24 + 1/48,'r-', 'LineWidth',2);
-            hold off;
+          plot(thePath(:,1)/24 - 1/48,thePath(:,2)/24 - 1/48,'r-', 'LineWidth',2);
           visualizeGrid(trueCells,trueRover,k,estiCells,estiRover);
           
         end

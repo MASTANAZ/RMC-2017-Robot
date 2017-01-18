@@ -62,7 +62,8 @@ while (trueRover.pos(1) > 0.5 || ...
        trueRover.pos(1) = vPos*gridDims*(1)/sum(gridDims(2:4));
 end
 
-while (trueRover.pos(1)< 0)
+while (trueRover.pos(1) > 0.5 || ...
+       trueRover.pos(1) < 0)
        trueRover.pos(2) = rand*gridDims(6)/sum(gridDims(2:4));
 end
 % Insert current position of rover at step k = 0
@@ -337,6 +338,7 @@ if progCmd == 1
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
+    
     if (k~= 0) 
       inter_dvt(1,1) = distVtime(1,k)
       inter_dvt(2,1) = distVtime(2,k)
@@ -420,7 +422,8 @@ else
     
     
     for iStep = k+1:1:ceil(deltaStep_Theta + k)
-
+        
+        k
        graphX = 0;
           if (k == 0) 
               graphX = iStep;
@@ -534,7 +537,19 @@ else
         end
         
         % steps are integers >= 0, round k towards positive infinity.
-        k = ceil(k);    
+        k = ceil(k); 
+        
+    if (k~= 0) 
+      inter_dvt(1,1) = distVtime(1,k)
+      inter_dvt(2,1) = distVtime(2,k)
+    end
+    
+    inter_dvt(inter_dvt == 0) = [];
+    pause(.5);
+    
+    disp('--> This is where the outcome of that goal/command/control is simulated (including uncertainty due to system disturbance, sensor noise, etc.), the true state is updated and the single-stage cost is recorded');
+    k = k + 1;
+    disp(' ');
     
      path_index = path_index+1
     

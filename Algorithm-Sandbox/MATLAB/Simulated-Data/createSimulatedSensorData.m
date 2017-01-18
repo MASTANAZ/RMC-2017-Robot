@@ -8,6 +8,8 @@
 %
 % Initial Position takes a 1x3 matrix of [x, y, r]
 function aggregatedData = createSimulatedSensorData(initialPosition, trueMap)
+
+    round(initialPosition(1) * 24)
     detectorData = generateDetectorData(initialPosition, trueMap);
     positionData = generatePositionData(initialPosition);
     
