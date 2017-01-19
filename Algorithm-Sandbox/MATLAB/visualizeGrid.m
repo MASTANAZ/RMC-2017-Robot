@@ -137,7 +137,7 @@ function [dims,xPatches,yPatches,rgbColors] = cells2patches(theCells)
            
            % Changing sign so that lighter colors correspond to easier
            % values
-           rgbColors(pNdx,:) = 0.5*[1 1 1] + (theCells(x,y)-2.5)*[1 1 1];
+           rgbColors(pNdx,:) = 0.5*[1 1 1] - (theCells(x,y)-2.5)*[1 1 1];
 
         % Harder obstacle
         else
@@ -145,7 +145,7 @@ function [dims,xPatches,yPatches,rgbColors] = cells2patches(theCells)
            
            % Changing sign so that lighter colors correspond to easier
            % values
-           rgbColors(pNdx,:) = 0.5*[1 1 1] - (2.5-theCells(x,y))*[1 1 1]; 
+           rgbColors(pNdx,:) = 0.5*[1 1 1] + (2.5-theCells(x,y))*[1 1 1]; 
 
         end
       

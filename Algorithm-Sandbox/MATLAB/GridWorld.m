@@ -150,6 +150,8 @@ if progCmd == 1
 
   % Create initial cost map (initializer)
   graph = zeros(12,24);
+  
+  
   goal = [23,11]; % Goal will eventually be dynamically determined
   start=[round(trueRover.pos(2)*24),round(trueRover.pos(1)*24)];
   
@@ -396,9 +398,11 @@ else
                     aggData(1); ... % horizontal position in units of world width
                     aggData(3)];
   
-  load trueMap;
+%   load trueMap;
   goal = [20,9];
   
+  % Create initial cost map (initializer)
+  graph = zeros(12,24)
   sensorMap = zeros(12,24);
   
   %if (k+2 ~= length(thePath))
@@ -415,7 +419,20 @@ else
     % Plan the path every go around
     
     start=[round(estiRover.pos(2)*24),round(estiRover.pos(1)*24)]
-    ds = Dstar(trueMap);    % create navigation object
+    ds = Dstar(graph);    % create navigation object
+    
+    % Modify the cost map to reflect the costs of the actual map
+  for r=1:12
+    for c=6:15
+        % If there is a NaN, make the cost Infinity
+        if (isnan(sensorMap(r,c)))
+            ds.modify_cost([c,r], Inf)
+        else
+            ds.modify_cost([c,r], sensorMap(r,c)); 
+        end
+    end
+  end
+    
     ds.plan(goal)       % create plan for specified goal
     thePath = ds.path(start)
     subplot(3,1,3);
