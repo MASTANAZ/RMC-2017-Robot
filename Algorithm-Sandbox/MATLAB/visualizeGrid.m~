@@ -133,20 +133,12 @@ function [dims,xPatches,yPatches,rgbColors] = cells2patches(theCells)
         
         % Easier obstacle
         if theCells(x,y) >= 2.5
-%           rgbColors(pNdx,:) = 0.5*[1 1 1] + (theCells(x,y)-2.5)*[1 1 1];
-           
-           % Changing sign so that lighter colors correspond to easier
-           % values
-           rgbColors(pNdx,:) = 0.5*[1 1 1] + (theCells(x,y)-2.5)*[1 1 1];
+          rgbColors(pNdx,:) = 0.5*[1 1 1] + (theCells(x,y)-2.5)*[1 1 1];
 
         % Harder obstacle
         else
-%           rgbColors(pNdx,:) = 0.5*[1 1 1] - (2.5-theCells(x,y))*[1 1 1]; 
-           
-           % Changing sign so that lighter colors correspond to easier
-           % values
-           rgbColors(pNdx,:) = 0.5*[1 1 1] - (2.5-theCells(x,y))*[1 1 1]; 
-
+          rgbColors(pNdx,:) = 0.5*[1 1 1] - (2.5-theCells(x,y))*[1 1 1]; 
+          
         end
       
       % Impossible obstacle
@@ -156,7 +148,7 @@ function [dims,xPatches,yPatches,rgbColors] = cells2patches(theCells)
         
       % cell is within region 3 and diggable
       elseif theCells(x,y) == 3 
-        % Included .5 multiplier for D-Star algorithm
+        % In
         rgbColors(pNdx,:) = 0.5 * [1 1 1];
         
       end
