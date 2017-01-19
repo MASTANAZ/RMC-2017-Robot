@@ -146,15 +146,37 @@ if progCmd == 1
 
   % Draw the optimal path
   %**********************
-  load trueMap;
-  goal = [23,11];
+%   load trueMap;
+
+  % Create initial cost map (initializer)
+  graph = zeros(12,24);
+  goal = [23,11]; % Goal will eventually be dynamically determined
   start=[round(trueRover.pos(2)*24),round(trueRover.pos(1)*24)];
-  ds = Dstar(trueMap);    % create navigation object
+  
+  
+  
+  % Initialize Algorithm with empty cost map
+  ds = Dstar(graph);    % create navigation object
+  
+  
+  % Modify the cost map to reflect the costs of the actual map
+  for r=1:12
+    for c=6:15
+        % If there is a NaN, make the cost Infinity
+        if (isnan(trueMap(r,c)))
+            ds.modify_cost([c,r], Inf)
+        else
+            ds.modify_cost([c,r], trueMap(r,c)); 
+        end
+    end
+  end
+  
   ds.plan(goal)       % create plan for specified goal
+
   thePath = ds.path(start)
   
   subplot(3,1,1);
-  
+  %ds.plot  % use this to visualize cost map
   hold on;
   plot(thePath(:,1)/24 - 1/48,thePath(:,2)/24 - 1/48,'r-', 'LineWidth',2);
   hold off;
@@ -545,7 +567,7 @@ else
     end
     
     inter_dvt(inter_dvt == 0) = [];
-    pause(.5);
+    %pause(.5);
     
     disp('--> This is where the outcome of that goal/command/control is simulated (including uncertainty due to system disturbance, sensor noise, etc.), the true state is updated and the single-stage cost is recorded');
     k = k + 1;

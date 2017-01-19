@@ -365,11 +365,19 @@ classdef Dstar < Navigation
 
     methods (Access=protected)
 
+        %%% Cost Map Initialization
+        % Set the cost of every point to infinite
+        % Make the look-ahead at the goal position 0
+        % Make the cost of the goal position 0
         function occgrid2costmap(ds, og, cost)
             if nargin < 3
                 cost = 1;
             end
+            display(og);
             ds.costmap = og;
+        
+            % There has to be a way to set the cost between 1 and Inf
+            % for occupied cells. The occupied cells are not all obstacles
             ds.costmap(ds.costmap==1) = Inf;      % occupied cells have Inf driving cost
             ds.costmap(ds.costmap==0) = cost;     % unoccupied cells have driving cost
         end
@@ -493,13 +501,27 @@ classdef Dstar < Navigation
             kmin = min(ds.openlist(2,:));
         end
 
+        %%% THIS FUNCTION NEEDS TO TAKE INTO ACCOUNT THE SENSOR VALUE
         % return the cost of moving from state X to state Y
         function cost = c(ds, X, Y)
             [r,c] = ind2sub(size(ds.costmap), [X; Y]);
             dist = sqrt(sum(diff([r c]).^2));
             dcost = (ds.costmap(X) + ds.costmap(Y))/2;
+            
+%             disp('******')
+%             display(ds.costmap(X))
+%             display(ds.costmap(Y))
+%             disp('******');
+            %display(dist * dcost)
+            % FIX NaN ISSUE FOR DCOST:
+%             if (isnan(dcost))
+%                 dcost = 0;
+%             end
+            
 
             cost = dist * dcost;
+            %cost = dcost;
+            
         end
 
         % return index of neighbour states as a row vector
