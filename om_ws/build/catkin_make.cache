@@ -1,2 +1,0 @@
-om17
--DCATKIN_DEVEL_PREFIX=/home/ros/unf_rmc_2017/om_ws/devel -DCMAKE_INSTALL_PREFIX=/home/ros/unf_rmc_2017/om_ws/install -G Unix Makefiles

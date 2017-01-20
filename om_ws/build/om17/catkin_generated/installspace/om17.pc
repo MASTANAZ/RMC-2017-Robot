@@ -1,8 +1,0 @@
-prefix=/home/ros/unf_rmc_2017/om_ws/install
-
-Name: om17
-Description: Description of om17
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/ros/unf_rmc_2017/om_ws/install/lib 
-Requires: 
