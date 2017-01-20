@@ -7,9 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/deimos/om_ws/devel:$CMAKE_PREFIX_PATH"
-export LD_LIBRARY_PATH="/home/deimos/om_ws/devel/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="/home/deimos/om_ws/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PWD="/home/deimos/om_ws/build"
-export ROSLISP_PACKAGE_DIRECTORIES="/home/deimos/om_ws/devel/share/common-lisp"
-export ROS_PACKAGE_PATH="/home/deimos/om_ws/src:$ROS_PACKAGE_PATH"
+export CMAKE_PREFIX_PATH="/home/ros/unf_rmc_2017/om_ws/devel:$CMAKE_PREFIX_PATH"
+export PWD="/home/ros/unf_rmc_2017/om_ws/build"
+export ROSLISP_PACKAGE_DIRECTORIES="/home/ros/unf_rmc_2017/om_ws/devel/share/common-lisp"
+export ROS_PACKAGE_PATH="/home/ros/unf_rmc_2017/om_ws/src:$ROS_PACKAGE_PATH"

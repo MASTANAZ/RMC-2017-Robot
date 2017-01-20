@@ -1,2 +1,2 @@
-om17:test
--DCATKIN_DEVEL_PREFIX=/home/deimos/om_ws/devel -DCMAKE_INSTALL_PREFIX=/home/deimos/om_ws/install -G Unix Makefiles
+
+-DCATKIN_DEVEL_PREFIX=/home/ros/unf_rmc_2017/om_ws/devel -DCMAKE_INSTALL_PREFIX=/home/ros/unf_rmc_2017/om_ws/install -G Unix Makefiles
