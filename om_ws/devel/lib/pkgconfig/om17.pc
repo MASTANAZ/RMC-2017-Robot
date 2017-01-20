@@ -1,0 +1,8 @@
+prefix=/home/deimos/om_ws/devel
+
+Name: om17
+Description: Description of om17
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/deimos/om_ws/devel/lib 
+Requires: 
