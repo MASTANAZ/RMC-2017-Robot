@@ -9,6 +9,7 @@ import socket
 import time
 import math
 import random
+import json
 
 import rospy
 from geometry_msgs.msg import Pose2D
@@ -27,14 +28,14 @@ _S_P_ORIENTATION   = 0x03
 _MC_PORT         = 12000
 _MC_BUFFER_SIZE  = 1024
 _MC_RECV_TIMEOUT = 0.05
-_MC_IP           = rospy.get_param("/om/network/mc_ip")
+_MC_IP           = None
 
 # robot communication parameters
 _RB_PORT         = 12001
 _RB_BUFFER_SIZE  = 512
 _RB_RECV_TIMEOUT = 0.05
-_RB_OTHER_IP     = rospy.get_param("/om/network/other_ip")
-_RB_SELF_IP      = rospy.get_param("/om/network/self_ip")
+_RB_OTHER_IP     = None
+_RB_SELF_IP      = None
 
 _CONNECTION_KEY = "@"
 _CONFIRMATION_KEY = "!"
@@ -79,12 +80,20 @@ def callback(data):
     _mcPending += chr(int(minor))
     _mcPending += chr(int(major))
     _mcPending += chr(_S_END)
+    data.theta += 6.2832
+    major = math.floor(data.theta)
+    minor = math.floor((data.theta - major) * 100)
+    _mcPending += chr(_S_P_ORIENTATION)
+    _mcPending += chr(int(minor))
+    _mcPending += chr(int(major))
+    _mcPending += chr(_S_END)
 
 def network():
     rospy.init_node("network")
-    _mc_init()
     rate = rospy.Rate(3)
     rospy.Subscriber("poser", Pose2D, callback)
+    _init()
+    _mc_init()
     while not rospy.is_shutdown():
         _tick()
         rate.sleep()
@@ -93,12 +102,25 @@ def network():
 # PRIVATE FUNCTIONS
 ################################################################################
 
+def _init():
+    global _MC_IP, _RB_SELF_IP, _RB_OTHER_IP
+    try:
+        with open(rospy.get_param("/robot/info_file")) as data_file:
+            data = json.load(data_file)
+            
+            _MC_IP       = data["MC_IP"]
+            _RB_OTHER_IP = data["OTHER_IP"]
+            _RB_SELF_IP  = data["SELF_IP"]
+    except:
+        rospy.logfatal("FAILED TO READ " + rospy.get_param("/robot/info_file"))
+            
+
 def _tick():
     _mc_tick()
     _rb_tick()
 
 def _mc_init():
-    print "> INITIALIZING MISSION CONTROL CONNECTION"
+    rospy.loginfo("INITIALIZING MISSION CONTROL CONNECTION")
     _mc_connect()
 
 def _mc_tick():
@@ -116,13 +138,13 @@ def _mc_tick():
 def _mc_connect():
     global _mc, _mcConnected
 
-    print "> ATTEMPTING TO CONNECT TO MISSION CONTROL AT " + _MC_IP
+    rospy.loginfo("ATTEMPTING TO CONNECT TO MISSION CONTROL AT " + _MC_IP)
 
     try:
         _mc.connect((_MC_IP, _MC_PORT))
         _mc.setblocking(0)
         
-        print "> SENDING CONNECTION KEY"
+        rospy.loginfo("SENDING CONNECTION KEY")
         _mc.send(_CONNECTION_KEY)
         
         # wait for mc to process connection key and send back a confirmation
@@ -131,8 +153,8 @@ def _mc_connect():
         confirmation = _mc.recv(1024)
         
         if confirmation == _CONFIRMATION_KEY:
-            print "> CONFIRMATION KEY RECEIVED FROM MISSION CONTROL"
-            print "> SUCCESS"
+            rospy.loginfo("CONFIRMATION KEY RECEIVED FROM MISSION CONTROL")
+            rospy.loginfo("SUCCESS")
             
             _mcConnected = True
         else:
@@ -141,8 +163,8 @@ def _mc_connect():
         print "! ERROR: FAILED"
     
 def _rb_init():
-    print "> INITIALIZING ROBOT COMMUNICATIONS"
-    print "> SEARCHING FOR HOST ON LAN"
+    rospy.loginfo("INITIALIZING ROBOT COMMUNICATIONS")
+    rospy.loginfo("SEARCHING FOR HOST ON LAN")
 
     tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tmp.settimeout(1)
@@ -151,13 +173,13 @@ def _rb_init():
 
     try:
         tmp.connect((_RB_OTHER_IP, _RB_PORT))
-        print "> ROBOT HOST FOUND"
+        rospy.loginfo("ROBOT HOST FOUND")
         hostFound = True
         
         # sleep so the host can fail the tmp client for the connection handshake
         time.sleep(1)
     except:
-        print "> NO HOST FOUND FOR ROBOT COMMUNICATION"
+        rospy.loginfo("NO HOST FOUND FOR ROBOT COMMUNICATION")
 
     tmp.close()
 

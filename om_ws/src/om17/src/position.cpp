@@ -120,12 +120,23 @@ int main(int argc, char **argv)
             cv::Mat rvec, tvec;
             cv::solvePnP(obj_points, intersections, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec);
             
-            std::cout << "x: " << tvec.at<double>(2, 0) << std::endl;
-            std::cout << "y: " << tvec.at<double>(0, 0) << std::endl;
-            
             pose.x = tvec.at<double>(2, 0);
             pose.y = tvec.at<double>(0, 0);
             
+            
+            // Attempting to get camera (x,y,z) and pose
+            cv::Mat R;
+            cv::Rodrigues(rvec, R);
+            cv::Mat cameraRotationVector;
+            cv::Rodrigues(R.t(), cameraRotationVector);     // Camera pose
+            cv::Mat cameraTranslationVector = R.t()*tvec;   // Camera coordinates
+            /////////////////////////////////////////////////////////////////////
+            std::cout << cameraRotationVector.at<double>(1, 0) << std::endl;
+
+            pose.x = cameraTranslationVector.at<double>(2,0);
+            pose.y = cameraTranslationVector.at<double>(0,0);
+            pose.theta = cameraRotationVector.at<double>(1, 0);
+
             pose_publisher.publish(pose);
         }
         

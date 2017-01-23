@@ -17,11 +17,11 @@ from std_msgs.msg import String
 def robot_info():
     rospy.init_node("robot_info")
     
-    print "> INITIALIZING ROBOT INFORMATION"
+    rospy.loginfo("INITIALIZING ROBOT INFORMATION")
 
     jsonFilePath = rospy.myargv(argv=sys.argv)[1]
 
-    print "> ATTEMPTING TO READ ROBOT INFORMATION FROM \"" + jsonFilePath + "\""
+    rospy.loginfo("ATTEMPTING TO READ ROBOT INFORMATION FROM \"" + jsonFilePath + "\"")
     
     try:
         with open(jsonFilePath) as jsonFile:
@@ -37,14 +37,14 @@ def robot_info():
             rospy.set_param("om/network/other_ip", other_ip)
             rospy.set_param("om/network/mc_ip", mc_ip)
         
-            print "> SELF ID  = " + str(self_id)
-            print "> SELF IP  = " + jsonData["SELF_IP"]
-            print "> OTHER IP = " + jsonData["OTHER_IP"]
-            print "> MC IP    = " + jsonData["MC_IP"]
-            print "> SUCCESS"
+            rospy.loginfo("SELF ID  = " + str(self_id))
+            rospy.loginfo("SELF IP  = " + jsonData["SELF_IP"])
+            rospy.loginfo("OTHER IP = " + jsonData["OTHER_IP"])
+            rospy.loginfo("MC IP    = " + jsonData["MC_IP"])
+            rospy.loginfo("SUCCESS")
             jsonFile.close()
     except:
-        print "! ERROR: FAILED"
+        rospy.logfatal("ERROR: FAILED")
         sys.exit()
 
 if __name__ == "__main__":
