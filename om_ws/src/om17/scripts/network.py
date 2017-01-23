@@ -47,53 +47,52 @@ _CONFIRMATION_KEY = "!"
 _mc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _mc.settimeout(1)
 
-_mcPending = ""
+_mc_pending = ""
 
-_mcConnected = False
+_mc_connected = False
 
 _rb = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _rb.settimeout(1)
 
-_rbPending = ""
+_rb_pending = ""
 
-_rbHosting = False
-_rbConnected = False
+_rb_hosting = False
+_rb_connected = False
 
-_rbClient = None
+_rb_client = None
 
 ################################################################################
 # PUBLIC FUNCTIONS
 ################################################################################
 
 def callback(data):
-    global _mcPending
+    global _mc_pending
     major = math.floor(data.x)
     minor = math.floor((data.x - major) * 100)
-    _mcPending += chr(_S_P_X)
-    _mcPending += chr(int(minor))
-    _mcPending += chr(int(major))
-    _mcPending += chr(_S_END)
+    _mc_pending += chr(_S_P_X)
+    _mc_pending += chr(int(minor))
+    _mc_pending += chr(int(major))
+    _mc_pending += chr(_S_END)
     data.y = data.y + 1.89
     major = math.floor(data.y)
     minor = math.floor((data.y - major) * 100)
-    _mcPending += chr(_S_P_Y)
-    _mcPending += chr(int(minor))
-    _mcPending += chr(int(major))
-    _mcPending += chr(_S_END)
+    _mc_pending += chr(_S_P_Y)
+    _mc_pending += chr(int(minor))
+    _mc_pending += chr(int(major))
+    _mc_pending += chr(_S_END)
     data.theta += 6.2832
     major = math.floor(data.theta)
     minor = math.floor((data.theta - major) * 100)
-    _mcPending += chr(_S_P_ORIENTATION)
-    _mcPending += chr(int(minor))
-    _mcPending += chr(int(major))
-    _mcPending += chr(_S_END)
+    _mc_pending += chr(_S_P_ORIENTATION)
+    _mc_pending += chr(int(minor))
+    _mc_pending += chr(int(major))
+    _mc_pending += chr(_S_END)
 
 def network():
     rospy.init_node("network")
     rate = rospy.Rate(3)
     rospy.Subscriber("poser", Pose2D, callback)
     _init()
-    _mc_init()
     while not rospy.is_shutdown():
         _tick()
         rate.sleep()
@@ -113,6 +112,9 @@ def _init():
             _RB_SELF_IP  = data["SELF_IP"]
     except:
         rospy.logfatal("FAILED TO READ " + rospy.get_param("/robot/info_file"))
+        
+    _mc_init()
+    _rb_init()
             
 
 def _tick():
@@ -124,19 +126,19 @@ def _mc_init():
     _mc_connect()
 
 def _mc_tick():
-    if not _mcConnected: return
+    if not _mc_connected: return
 
-    global _mcPending
+    global _mc_pending
     
-    if len(_mcPending) > 0:
-        _mc.send(_mcPending)
-        _mcPending = ""
+    if len(_mc_pending) > 0:
+        _mc.send(_mc_pending)
+        _mc_pending = ""
     
     # receive info from the mission control server on a timeout
     pass
     
 def _mc_connect():
-    global _mc, _mcConnected
+    global _mc, _mc_connected
 
     rospy.loginfo("ATTEMPTING TO CONNECT TO MISSION CONTROL AT " + _MC_IP)
 
@@ -144,7 +146,7 @@ def _mc_connect():
         _mc.connect((_MC_IP, _MC_PORT))
         _mc.setblocking(0)
         
-        rospy.loginfo("SENDING CONNECTION KEY")
+        rospy.loginfo("SENDING CONNECTION KEY TO MISSION CONTROL")
         _mc.send(_CONNECTION_KEY)
         
         # wait for mc to process connection key and send back a confirmation
@@ -154,13 +156,13 @@ def _mc_connect():
         
         if confirmation == _CONFIRMATION_KEY:
             rospy.loginfo("CONFIRMATION KEY RECEIVED FROM MISSION CONTROL")
-            rospy.loginfo("SUCCESS")
+            rospy.loginfo("SUCCESSFULLY CONNECTED")
             
-            _mcConnected = True
+            _mc_connected = True
         else:
-            print "! ERROR: FAILED"
+            rospy.logfatal("FAILED TO RECEIVE CONFIRMATION KEY FROM MISSION CONTROL")
     except:
-        print "! ERROR: FAILED"
+        rospy.logfatal("FAILED TO CONNECT TO MISSION CONTROL")
     
 def _rb_init():
     rospy.loginfo("INITIALIZING ROBOT COMMUNICATIONS")
@@ -169,12 +171,12 @@ def _rb_init():
     tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tmp.settimeout(1)
 
-    hostFound = False
+    host_found = False
 
     try:
         tmp.connect((_RB_OTHER_IP, _RB_PORT))
         rospy.loginfo("ROBOT HOST FOUND")
-        hostFound = True
+        host_found = True
         
         # sleep so the host can fail the tmp client for the connection handshake
         time.sleep(1)
@@ -183,17 +185,17 @@ def _rb_init():
 
     tmp.close()
 
-    if hostFound:
+    if host_found:
         _rb_connect()
     else:
         _rb_host()
 
 def _rb_tick():
-    global _rbPending
+    global _rb_pending
 
-    if _rbHosting:
+    if _rb_hosting:
         # no client has connected yet
-        if not _rbConnected:
+        if not _rb_connected:
             try:
                 conn, addr = _rb.accept()
                 _rb_process_client(conn)
@@ -203,21 +205,21 @@ def _rb_tick():
             pass
     # this robot is the client to the other robot's server
     else:
-        if not _rbConnected: return
+        if not _rb_connected: return
         
-        if len(_rbPending) > 0:
-            _rb.send(_rbPending)
-            _rbPending = ""
+        if len(_rb_pending) > 0:
+            _rb.send(_rb_pending)
+            _rb_pending = ""
 
 def _rb_connect():
-    global _rb, _rbConnected
+    global _rb, _rb_connected
 
-    print "> ATTEMPTING TO CONNECT TO ROBOT HOST AT " + _RB_OTHER_IP
+    rospy.loginfo("ATTEMPTING TO CONNECT TO ROBOT HOST AT " + _RB_OTHER_IP)
 
     try:
         _rb.connect((_RB_OTHER_IP, _RB_PORT))
         
-        print "> SENDING CONNECTION KEY"
+        rospy.loginfo("SENDING CONNECTION KEY")
         _rb.send(_CONNECTION_KEY)
         
         # wait for host to process connection key and send back a confirmation
@@ -226,36 +228,36 @@ def _rb_connect():
         confirmation = _rb.recv(16)
         
         if confirmation == _CONFIRMATION_KEY:
-            print "> CONFIRMATION KEY RECEIVED FROM HOST"
-            print "> SUCCESS"
+            rospy.loginfo("CONFIRMATION KEY RECEIVED FROM HOST")
+            rospy.loginfo("SUCCESSFULLY CONNECTED TO ROBOT HOST")
             
-            _rbConnected = True
+            _rb_connected = True
         else:
-            print "! ERROR: FAILED"
+            rospy.logfatal("FAILED TO RECEIVE CONFIRMATION KEY FROM ROBOT HOST")
     except:
-        print "! ERROR: FAILED"
+        rospy.logfatal("FAILED TO CONNECT TO ROBOT HOST")
     
     # TODO: keep retrying connection
 
 def _rb_host():
-    global _rb, _rbHosting
+    global _rb, _rb_hosting
 
-    print "> ATTEMPTING TO CREATE ROBOT SERVER AT " + _RB_SELF_IP
+    rospy.loginfo("ATTEMPTING TO CREATE ROBOT SERVER AT " + _RB_SELF_IP)
 
     try:
         _rb.bind((_RB_SELF_IP, _RB_PORT))
         _rb.listen(1)
         
-        print "> SUCCESS"
+        rospy.loginfo("SUCCESFULLY CREATED ROBOT SERVER AT " + _RB_SELF_IP)
         
-        _rbHosting = True
+        _rb_hosting = True
     except:
-        print "! ERROR: FAILED"
+        rospy.logfatal("FAILED TO CREATE ROBOT SERVER")
 
 def _rb_process_client(client):
-    global _rbClient, _rbConnected
+    global _rb_client, _rb_connected
 
-    print "> ATTEMPTING TO PROCESS NEW CLIENT"
+    rospy.loginfo("ATTEMPTING TO PROCESS NEW CLIENT")
 
     # wait for the connecting client to send the connection key
     time.sleep(0.25)
@@ -263,26 +265,26 @@ def _rb_process_client(client):
     try:
         key = client.recv(16)
     except:
-        print "! ERROR: NO CONNECTION KEY RECEIVED"
-        print "> TERMINATING CONNECTION"
+        rospy.logwarning("NO CONNECTION KEY RECEIVED")
+        rospy.logwarning("TERMINATING CONNECTION")
         
         client.close()
         
         return
 
     if key == _CONNECTION_KEY:
-        print "> CONNECTION KEY ACCEPTED"
-        print "> SENDING CONFIRMATION KEY TO CLIENT"
+        rospy.loginfo("CONNECTION KEY ACCEPTED")
+        rospy.loginfo("SENDING CONFIRMATION KEY TO CLIENT")
         
         client.send(_CONFIRMATION_KEY)
         
-        _rbClient = client
-        _rbConnected = True
+        _rb_client = client
+        _rb_connected = True
         
-        print "> CLIENT SUCCESSFULLY ADDED"
+        rospy.loginfo("CLIENT SUCCESSFULLY ADDED")
     else:
-        print "! ERROR: UNKNOWN CLIENT"
-        print "> TERMINATING CONNECTION"
+        rospy.logwarning("UNKNOWN CLIENT")
+        rospy.logwarning("TERMINATING CONNECTION")
         
         client.close()
         
@@ -294,4 +296,5 @@ if __name__ == "__main__":
     try:
         network()
     except rospy.ROSInterruptException:
-        pass
+        _mc.close()
+        _rb.close()
