@@ -1,0 +1,4 @@
+<launch>
+  <param name="/robot/info_file" value="$(env HOME)/robot_info.json" />
+  <node pkg="om17" type="network.py" name="network" output="screen" />
+</launch>
