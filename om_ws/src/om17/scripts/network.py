@@ -72,6 +72,7 @@ def callback(data):
     _mcPending += chr(int(minor))
     _mcPending += chr(int(major))
     _mcPending += chr(_S_END)
+    data.y = data.y + 1.89
     major = math.floor(data.y)
     minor = math.floor((data.y - major) * 100)
     _mcPending += chr(_S_P_Y)

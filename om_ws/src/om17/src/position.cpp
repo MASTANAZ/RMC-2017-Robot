@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "ros/ros.h"
+#include "geometry_msgs/Pose2D.h"
 
 #include <raspicam/raspicam_cv.h>
 
@@ -20,7 +21,7 @@ const int      POS_INTERSECTION_COUNT = POS_BOARD_WIDTH * POS_BOARD_HEIGHT;
 const cv::Size POS_BOARD_SIZE(POS_BOARD_WIDTH, POS_BOARD_HEIGHT);
 
 // the size of a square on our positioning board in millimeters
-const double   POS_BOARD_SQUARE_SIZE  = 0.025f;
+const double   POS_BOARD_SQUARE_SIZE  = 0.1016f;
 
 void sleep_millis(int milliseconds)
 {
@@ -33,6 +34,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
     ros::Rate loop_rate(3);
+    ros::Publisher pose_publisher = node_handle.advertise<geometry_msgs::Pose2D>("poser", 10);
     
     // raspberry pi camera initialization
     raspicam::RaspiCam_Cv camera;
@@ -95,6 +97,7 @@ int main(int argc, char **argv)
     std::vector<cv::Point2f> intersections;
     
     cv::Mat img;
+    geometry_msgs::Pose2D pose;
     
     while (ros::ok())
     {
@@ -119,10 +122,15 @@ int main(int argc, char **argv)
             
             std::cout << "x: " << tvec.at<double>(2, 0) << std::endl;
             std::cout << "y: " << tvec.at<double>(0, 0) << std::endl;
+            
+            pose.x = tvec.at<double>(2, 0);
+            pose.y = tvec.at<double>(0, 0);
+            
+            pose_publisher.publish(pose);
         }
         
         cv::imshow("POSITION", img);
-		cv::waitKey(10);
+        cv::waitKey(10);
         
         ros::spinOnce();
         
