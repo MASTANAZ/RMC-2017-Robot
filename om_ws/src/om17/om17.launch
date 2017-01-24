@@ -1,4 +1,4 @@
 <launch>
-  <param name="/robot/info_file" value="$(env HOME)/robot_info.json" />
+  <rosparam command="load" file="$(env HOME)/robot_info.yaml" />
   <node pkg="om17" type="network.py" name="network" output="screen" />
 </launch>
