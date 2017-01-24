@@ -1,0 +1,2 @@
+om17
+-DCATKIN_DEVEL_PREFIX=/home/phobos/unf_rmc_2017/om_ws/devel -DCMAKE_INSTALL_PREFIX=/home/phobos/unf_rmc_2017/om_ws/install -G Unix Makefiles
