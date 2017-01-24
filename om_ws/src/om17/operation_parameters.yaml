@@ -1,0 +1,2 @@
+om:
+  robot: {deimos_id: 1, phobos_ip: 192.168.1.162, phobos_id: 0, deimos_ip: 192.168.1.168, mc_ip: 192.168.1.185}

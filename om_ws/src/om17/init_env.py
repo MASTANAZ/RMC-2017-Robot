@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+# CREATED BY HARRIS NEWSTEDER
+#
+# DESCRIPTION:
+# This script is run before ROS is initialized and sets environment variables
+# so that the ROS launch server connects to the proper ROS master (phobos)
+
 ################################################################################
 # IMPORTS
 ################################################################################
