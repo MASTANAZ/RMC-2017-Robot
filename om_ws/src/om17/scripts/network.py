@@ -15,6 +15,7 @@ import time
 import math
 import random
 import json
+import os
 
 import rospy
 from geometry_msgs.msg import Pose2D
@@ -33,7 +34,7 @@ _S_P_ORIENTATION   = 0x03
 _MC_PORT         = 12000
 _MC_BUFFER_SIZE  = 1024
 _MC_RECV_TIMEOUT = 0.05
-_MC_IP           = rospy.get_param("/mc_ip")
+_MC_IP           = rospy.get_param(os.environ["ROS_NAMESPACE"] + "/mc_ip")
 
 _CONNECTION_KEY = "@"
 _CONFIRMATION_KEY = "!"
