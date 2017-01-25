@@ -80,7 +80,7 @@ def callback(data):
 def network():
     rospy.init_node("network")
     rate = rospy.Rate(3)
-    rospy.Subscriber("poser", Pose2D, callback)
+    rospy.Subscriber("pose", Pose2D, callback)
     _init()
     while not rospy.is_shutdown():
         _tick()
