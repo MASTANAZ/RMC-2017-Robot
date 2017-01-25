@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# CREATED BY HARRIS NEWSTEDER
+#
+# DESCRIPTION:
+# 
+
 ################################################################################
 # IMPORTS
 ################################################################################
@@ -28,7 +33,7 @@ _S_P_ORIENTATION   = 0x03
 _MC_PORT         = 12000
 _MC_BUFFER_SIZE  = 1024
 _MC_RECV_TIMEOUT = 0.05
-_MC_IP           = rospy.get_param("/om/robot/mc_ip")
+_MC_IP           = rospy.get_param("/mc_ip")
 
 _CONNECTION_KEY = "@"
 _CONFIRMATION_KEY = "!"
@@ -43,16 +48,6 @@ _mc.settimeout(1)
 _mc_pending = ""
 
 _mc_connected = False
-
-_rb = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-_rb.settimeout(1)
-
-_rb_pending = ""
-
-_rb_hosting = False
-_rb_connected = False
-
-_rb_client = None
 
 ################################################################################
 # PUBLIC FUNCTIONS
@@ -152,4 +147,3 @@ if __name__ == "__main__":
         network()
     except rospy.ROSInterruptException:
         _mc.close()
-        _rb.close()
