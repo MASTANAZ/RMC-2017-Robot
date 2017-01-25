@@ -1,4 +1,5 @@
 <launch>
   <rosparam command="load" file="$(env HOME)/ops_parameters.yaml" />
+  <node pkg="om17" type="position" name="position" output="screen" />
   <node pkg="om17" type="network.py" name="network" output="screen" />
 </launch>
