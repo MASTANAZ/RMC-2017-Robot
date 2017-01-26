@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# NETWORK
+#
 # CREATED BY HARRIS NEWSTEDER
 #
 # DESCRIPTION:
@@ -89,16 +91,10 @@ def network():
 ################################################################################
 
 def _init():
-    _mc_init()  
+    rospy.loginfo("INITIALIZING MISSION CONTROL CONNECTION")
+    _connect() 
 
 def _tick():
-    _mc_tick()
-
-def _mc_init():
-    rospy.loginfo("INITIALIZING MISSION CONTROL CONNECTION")
-    _mc_connect()
-
-def _mc_tick():
     if not _mc_connected: return
 
     global _mc_pending
@@ -109,8 +105,8 @@ def _mc_tick():
     
     # receive info from the mission control server on a timeout
     pass
-    
-def _mc_connect():
+
+def _connect():
     global _mc, _mc_connected
 
     rospy.loginfo("ATTEMPTING TO CONNECT TO MISSION CONTROL AT " + _MC_IP)
@@ -136,7 +132,12 @@ def _mc_connect():
             rospy.logfatal("FAILED TO RECEIVE CONFIRMATION KEY FROM MISSION CONTROL")
     except:
         rospy.logfatal("FAILED TO CONNECT TO MISSION CONTROL")
-        
+
+def _cleanup():
+    rospy.loginfo("DISCONNECTING FROM MISSION CONTROL")
+    _mc.close()
+
+
 ################################################################################
 # ENTRY POINT
 ################################################################################
@@ -145,4 +146,6 @@ if __name__ == "__main__":
     try:
         network()
     except rospy.ROSInterruptException:
-        _mc.close()
+        pass
+        
+    _cleanup()
