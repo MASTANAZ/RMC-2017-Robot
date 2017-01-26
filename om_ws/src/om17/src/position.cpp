@@ -9,6 +9,7 @@
 #include <chrono>
 #include <vector>
 #include <thread>
+#include <algorithm>
 
 #include "ros/ros.h"
 #include "geometry_msgs/Pose2D.h"
@@ -140,6 +141,19 @@ int main(int argc, char **argv)
             pose.x = cameraTranslationVector.at<double>(2,0);
             pose.y = cameraTranslationVector.at<double>(0,0);
             pose.theta = cameraRotationVector.at<double>(1, 0);
+
+            // in object space, y = 0 means the robot is centered on the field
+            // (y = 1.89f)
+            pose.y += 1.89f;
+
+            // rotate the robot's angle by 360 degrees so we don't have to
+            // transmit negative data over the network
+            pose.theta += 2.0f * 3.14159f;
+
+            // make sure none of our field coordinates are negative
+            // (this shouldn't be possible but it's still good to check)
+            pose.x = std::max((float)pose.x, 0.0f);
+            pose.y = std::max((float)pose.y, 0.0f);
 
             pose_publisher.publish(pose);
         }

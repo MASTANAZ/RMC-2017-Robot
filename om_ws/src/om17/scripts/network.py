@@ -62,14 +62,12 @@ def callback(data):
     _mc_pending += chr(int(minor))
     _mc_pending += chr(int(major))
     _mc_pending += chr(_S_END)
-    data.y = data.y + 1.89
     major = math.floor(data.y)
     minor = math.floor((data.y - major) * 100)
     _mc_pending += chr(_S_P_Y)
     _mc_pending += chr(int(minor))
     _mc_pending += chr(int(major))
     _mc_pending += chr(_S_END)
-    data.theta += 6.2832
     major = math.floor(data.theta)
     minor = math.floor((data.theta - major) * 100)
     _mc_pending += chr(_S_P_ORIENTATION)
