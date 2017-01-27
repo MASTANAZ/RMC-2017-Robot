@@ -173,7 +173,7 @@ if progCmd == 1
     end
   end
   
-  ds.plan(goal)       % create plan for specified goal
+  ds.plan(goal)        % create plan for specified goal
 
   thePath = ds.path(start)
   
@@ -403,14 +403,18 @@ else
   
   % Create initial cost map (initializer)
   graph = zeros(12,24)
+  
+  % Create sensor map; it should start with the general cost
+  % because the rover does not know anything about the environment yet
   sensorMap = zeros(12,24);
+  sensorMap(:) = 1;
   
   %if (k+2 ~= length(thePath))
         %theta = sim_update_theta(estiRover.pos(2), estiRover.pos(1), thePath(1,1), thePath(1,2));
   %end
   while(2)
       % UPDATE ESTIMATED CELLS HERE
-%     simSensorData = createSimulatedSensorData([estiRover.pos(2), estiRover.pos(1), estiRover.pos(3)], trueMap)
+     %simSensorData = createSimulatedSensorData([estiRover.pos(2), estiRover.pos(1), estiRover.pos(3)], trueMap)
 %     
 %     estiCells(round(estiRover.pos(2) * 24), round(estiRover.pos(1) * 24)) = (simSensorData(4) + simSensorData(5)) / 2;
 %     
@@ -420,6 +424,26 @@ else
     
     start=[round(estiRover.pos(2)*24),round(estiRover.pos(1)*24)]
     ds = Dstar(graph);    % create navigation object
+    
+    look_ahead_cost = 0;
+    if (estiRover.pos(3) > 90 && estiRover.pos(3)< 270)
+        look_ahead_cost = trueCells(round((estiRover.pos(2)-2*cos(estiRover.pos(3)*pi/180)+1)),round((estiRover.pos(1)-sin(estiRover.pos(3)*pi/180)+2)));
+        ds.modify_cost([round((estiRover.pos(2)-2*cos(estiRover.pos(3)*pi/180)+1)),round((estiRover.pos(1)-2*sin(estiRover.pos(3)*pi/180)+2))], look_ahead_cost);
+        estiCells(round((estiRover.pos(2)-2*cos(estiRover.pos(3)*pi/180)+1)),round((estiRover.pos(1)-2*sin(estiRover.pos(3)*pi/180)+2))) = look_ahead_cost;
+
+    else
+        look_ahead_cost = trueCells(round((estiRover.pos(2)+2*cos(estiRover.pos(3)*pi/180)+1)),round((estiRover.pos(1)+sin(estiRover.pos(3)*pi/180)+2)));
+        ds.modify_cost([round((estiRover.pos(2)+2*cos(estiRover.pos(3)*pi/180)+1)),round((estiRover.pos(1)+2*sin(estiRover.pos(3)*pi/180)+2))], look_ahead_cost);
+        estiCells(round((estiRover.pos(2)+2*cos(estiRover.pos(3)*pi/180)+1)),round((estiRover.pos(1)+2*sin(estiRover.pos(3)*pi/180)+2))) = look_ahead_cost;
+    end
+    
+    
+    % Modify cost at current position
+    %ds.modify_cost([round((estiRover.pos(2)+cos(estiRover.pos(3)*pi/180))),round((estiRover.pos(1)+cos(estiRover.pos(3)*pi/180)+2))], look_ahead_cost);
+    
+    % Update estimated state grid
+    % Adding 2 to look ahead of rover
+    %estiCells(round(estiRover.pos(1)*24),round(estiRover.pos(2)*24+2)) = look_ahead_cost;
     
     % Modify the cost map to reflect the costs of the actual map
   for r=1:12

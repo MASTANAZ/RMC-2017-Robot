@@ -8,7 +8,7 @@
 
 Servo sensorServo;
 
-int angle = 40;      // Starting angle (degrees)
+int angle = 80;      // Starting angle (degrees)
 int sensorpin = 0;   // IR detector pin
 int val = 0;         // IR Detector value
 
@@ -75,15 +75,15 @@ void loop() {
       lock = false;
     }
 
-    if (lock) return;
-    
-    if (forward) {
-      angle++;
-      if (angle == 110) forward = false;
-    } else {
-      angle--;
-      if (angle == 40) forward = true;
-    }
+//    if (lock) return;
+//    
+//    if (forward) {
+//      angle++;
+//      if (angle == 140) forward = false;
+//    } else {
+//      angle--;
+//      if (angle == 80) forward = true;
+//    }
 
     sensorServo.write(angle);
     rotationTimer = 0;
