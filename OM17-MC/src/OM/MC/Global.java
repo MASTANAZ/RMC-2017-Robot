@@ -9,6 +9,7 @@ import OM.MC.Frontend.Client;
 public class Global {
     public static final int TARGET_WIDTH = 1280;
     public static final int TARGET_HEIGHT = 720;
+
     private static Client clientInstance;
     private static Backend backendInstance;
 

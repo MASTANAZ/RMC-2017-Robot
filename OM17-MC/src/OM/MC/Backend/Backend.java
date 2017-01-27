@@ -22,6 +22,11 @@ public class Backend {
         Global.setBackendInstance(this);
     }
 
+    public void initialize() {
+        RNI.initialize();
+        DataModel.initialize();
+    }
+
     public void start() {
         running = true;
 

@@ -21,11 +21,9 @@ import java.util.ResourceBundle;
 public class ConnectionController implements Initializable {
     @FXML ProgressIndicator aMCProgressIndicator;
     @FXML ProgressIndicator bMCProgressIndicator;
-    @FXML ProgressIndicator rbProgressIndicator;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        RNI.initialize();
         aMCProgressIndicator.progressProperty().bind(RNI.connectionAProperty());
         bMCProgressIndicator.progressProperty().bind(RNI.connectionBProperty());
     }

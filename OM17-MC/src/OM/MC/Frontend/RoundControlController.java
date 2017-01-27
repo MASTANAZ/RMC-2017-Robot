@@ -38,6 +38,6 @@ public class RoundControlController implements Initializable {
 
     @FXML
     private void handleManualControlAction(ActionEvent event) {
-
+        Global.getBackendInstance().getManualControl().findControllers();
     }
 }

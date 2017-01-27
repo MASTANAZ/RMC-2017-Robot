@@ -15,25 +15,30 @@ import java.util.Map;
  * Created by Harris on 12/25/16.
  */
 public class RNI {
-    // constants
-    private static final int PORT = 12000;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTANTS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private static final int PORT              = 12000;
     private static final int SERVER_TIMEOUT_MS = 10;
-    private static final String CONNECTION_KEY = "@";
+
+    private static final String CONNECTION_KEY   = "@";
     private static final String CONFIRMATION_KEY = "!";
+
     private static final int MAX_CLIENTS = 2;
 
-    // network statement identifiers
     public static final int S_END           = 0xFF;
-    public static final int S_P_LCV         = 0x01;
-    public static final int S_P_RCV         = 0x02;
-    public static final int S_P_X           = 0x03;
-    public static final int S_P_Y           = 0x04;
-    public static final int S_P_ORIENTATION = 0x05;
+
+    public static final int S_P_X           = 0x01;
+    public static final int S_P_Y           = 0x02;
+    public static final int S_P_ORIENTATION = 0x03;
+    public static final int S_P_ID          = 0x04;
 
     private static final int PROPERTY_MAX_SIZE = 4;
 
-    // network variables
-    private static long received = 0, sent = 0, total = 0;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private static long received = 0, sent = 0;
     private static ServerSocket server = null;
     private static int nClients = 0;
 
@@ -42,13 +47,18 @@ public class RNI {
     private static ArrayList<DataOutputStream> outputs;
     private static ArrayList<Map> properties;
 
-    // javafx variables
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // JAVAFX VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private static SimpleDoubleProperty connectionAProperty = null;
     private static SimpleDoubleProperty connectionBProperty = null;
     private static SimpleStringProperty receivedProperty = null;
     private static SimpleStringProperty sentProperty = null;
     private static SimpleStringProperty totalProperty = null;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTOR
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public RNI() {
 
     }
@@ -82,8 +92,10 @@ public class RNI {
 
     public static void tick(float dt) {
         try {
-            Socket tmp = server.accept();
-            processClient(tmp);
+            if (nClients < 2) {
+                Socket client = server.accept();
+                processClient(client);
+            }
         } catch (SocketTimeoutException e) {
         } catch (Exception e) { e.printStackTrace(); }
 
@@ -91,7 +103,7 @@ public class RNI {
         for (int i = 0; i < clients.size(); ++i) {
             try {
                 if (inputs.get(i).available() > 0) {
-                    processProperty(inputs.get(i), properties.get(i));
+                    processStatement(inputs.get(i), properties.get(i), i);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -128,15 +140,17 @@ public class RNI {
             e.printStackTrace();
         }
         System.out.println("> SUCCESS!");
+
+        clients.clear();
+        outputs.clear();
+        inputs.clear();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // SETTERS / GETTERS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static Map getPropertyMap(int index) {
-        return properties.get(index);
-    }
+    public static Map getPropertyMap(int index) {return properties.get(index);}
 
     public static DoubleProperty connectionAProperty() {
         return connectionAProperty;
@@ -163,8 +177,10 @@ public class RNI {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private static void processClient(Socket client) throws Exception {
+        // make sure we aren't already maxed out on clients
         if (nClients == MAX_CLIENTS) {
-            System.err.println("! ERROR: ALREADY REACHED MAXIMUM NUMBER OF CLIENTS, TERMINATING CONNECTION");
+            System.err.println("! ERROR: ALREADY REACHED THE MAXIMUM NUMBER OF CLIENTS");
+            System.out.println("> TERMINATING CONNECTION");
             client.close();
             return;
         }
@@ -175,11 +191,7 @@ public class RNI {
         DataOutputStream out = new DataOutputStream(client.getOutputStream());
 
         // wait for client to send connection key
-        try {
-            Thread.sleep(250);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(250);
 
         String key = "";
 
@@ -193,9 +205,6 @@ public class RNI {
 
             writeString(out, CONFIRMATION_KEY);
 
-            if (clients.size() == 0) Global.getBackendInstance().getMission().getRobotA().setPropertyIndex(0);
-            else Global.getBackendInstance().getMission().getRobotB().setPropertyIndex(1);
-
             clients.add(client);
             inputs.add(in);
             outputs.add(out);
@@ -205,29 +214,25 @@ public class RNI {
 
             System.out.println("> SUCCESSFULLY ADDED NEW CLIENT");
         } else {
-            System.err.println("! ERROR: UNRECOGNIZED CLIENT, TERMINATING CONNECTION");
+            System.err.println("! ERROR: UNRECOGNIZED CLIENT");
+            System.out.println("> TERMINATING CONNECTION");
             client.close();
         }
     }
 
     private static int fetchByte(DataInputStream inputStream) throws Exception {
         ++received;
-        int t = inputStream.readUnsignedByte();
-        return t;
+        return inputStream.readUnsignedByte();
     }
 
-    private static void writeString(DataOutputStream out, String toWrite) {
+    private static void writeString(DataOutputStream out, String toWrite) throws Exception {
         sent += toWrite.length();
-
-        try {
-            out.writeBytes(toWrite);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        out.writeBytes(toWrite);
     }
 
-    private static void processProperty(DataInputStream inputStream, Map properties) throws Exception {
+    private static void processStatement(DataInputStream inputStream, Map properties, int sender) throws Exception {
         int id = fetchByte(inputStream);
+
         int dataBytes[] = {0, 0, 0, 0};
         int j = 3;
 
@@ -241,6 +246,7 @@ public class RNI {
             }
         }
 
-        properties.put(id, dataBytes);
+        // phobos always connects first so we know it will be in the zero position
+        DataModel.putData(sender, id, dataBytes);
     }
 }

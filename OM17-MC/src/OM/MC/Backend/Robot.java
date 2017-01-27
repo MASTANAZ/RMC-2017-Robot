@@ -1,5 +1,7 @@
 package OM.MC.Backend;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
@@ -10,58 +12,113 @@ import java.util.Map;
  * Created by Harris on 12/25/16.
  */
 public class Robot {
-    private float x, y;
-    private float orientation;
-    private int lcv, rcv;
-    private int propertyIndex;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTANTS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private final double X_POINTS[] =  {-0.375f, -0.375f, 0.375f, 0.375f};
+    private final double Y_POINTS[] =  {-0.375f, 0.375f, 0.225f, -0.225f};
+    private final int N_POINTS = 4;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private float x = 0.75f, y = 1.5f;
+    private float orientation = 0.0f;
+    private String identifier = "";
+    private String name = "";
+    private int dataModelIndex = -1;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // JAVAFX VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private SimpleStringProperty xProperty;
+    private SimpleStringProperty yProperty;
+    private SimpleStringProperty orientationProperty;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTOR
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public Robot() {
-        propertyIndex = -1;
+        xProperty = new SimpleStringProperty("X: 0.00m");
+        yProperty = new SimpleStringProperty("Y: 0.00m");
+        orientationProperty = new SimpleStringProperty("θ: 0°");
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public void tick(float dt) {
-        if (propertyIndex == -1) return;
+        if (dataModelIndex == -1) return;
 
-        // TODO: Fix this shit
-
-        Map m = RNI.getPropertyMap(propertyIndex);
-
-        if (m == null) return;
-
-        int data[] = (int[])m.get(RNI.S_P_X);
-        if (data != null) {
-            float newX = ((float) ((int) data[3]) / 100.0f) + ((float) ((int) data[2]));
-            setPosition(newX, getY());
-        }
-
-        data = (int[])m.get(RNI.S_P_Y);
-        if (data != null) {
-            float newY = ((float) ((int) data[3]) / 100.0f) + ((float) ((int) data[2]));
-            setPosition(getX(), newY);
-        }
-
-        data = (int[])m.get(RNI.S_P_ORIENTATION);
-        if (data != null) {
-            float orientation = ((float) ((int) data[3]) / 100.0f) + ((float) ((int) data[2]));
-            setOrientation(orientation);
-        }
+        setX(DataModel.getData(dataModelIndex, DataModel.PROP_X));
+        setY(DataModel.getData(dataModelIndex, DataModel.PROP_Y));
+        setOrientation(DataModel.getData(dataModelIndex, DataModel.PROP_ORIENTATION));
     }
 
     public void draw(GraphicsContext gc) {
+        xProperty.set("X: " + String.format("%.2f", x) + "m");
+        yProperty.set("Y: " + String.format("%.2f", y) + "m");
+        orientationProperty.set("θ: " + (int)((-(orientation - (Math.PI * 2.0f))) * 180.0f / Math.PI) + "°");
+
         // grab our graphics transformation matrix before we draw so we can reset it when we're done
         Affine stack = gc.getTransform();
 
-        // draw the virtual robot with our current properties
-        gc.setFill(Color.CORNFLOWERBLUE);
         gc.translate(x, y);
         gc.rotate((orientation * 180.0f) / Math.PI);
-        gc.fillOval(-0.375f, -0.375f, 0.75f, 0.75f);
+
+        // robot body
+        gc.setFill(Color.CORNFLOWERBLUE);
+        gc.fillPolygon(X_POINTS, Y_POINTS, N_POINTS);
+        gc.scale(0.85f, 0.85f);
+        gc.setFill(Color.LIGHTSKYBLUE);
+        gc.fillPolygon(X_POINTS, Y_POINTS, N_POINTS);
+        gc.scale(100.0f / 85.0f, 100.0f / 85.0f);
+
+        gc.setLineWidth(0.02f);
+
+        // forward vector
+        gc.setStroke(Color.INDIANRED);
+        gc.strokeLine(-0.375f, 0.0f, -0.6f, 0.0f);
+
+        // backwards vector (camera face)
+        gc.setStroke(Color.CORNFLOWERBLUE);
+        gc.strokeLine(0.375f, 0.0f, 0.6f, 0.0f);
+
+        // robot name
+        gc.translate(-0.08f, 0.093f);
+        gc.scale(1.0f / 65.0f, 1.0f / 65.0f);
         gc.setFill(Color.BLACK);
-        gc.fillRect(-0.25f, -0.025f, 0.5f, 0.05f);
-        gc.fillOval(0.2f, -0.05f, 0.1f, 0.1f);
+        gc.fillText(this.identifier, 0, 0);
+        gc.scale(65.0f, 65.0f);
 
         // reset our graphics transformation matrix
         gc.setTransform(stack);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SETTERS / GETTERS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public String getName() {
+        return name;
+    }
+
+    public StringProperty getXProperty() {
+        return xProperty;
+    }
+
+    public StringProperty getYProperty() {
+        return yProperty;
+    }
+
+    public StringProperty getOrientationProperty() {
+        return orientationProperty;
     }
 
     public float getX() {
@@ -74,6 +131,14 @@ public class Robot {
 
     public float getOrientation() {
         return orientation;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDataModelIndex(int index) {
+        this.dataModelIndex = index;
     }
 
     public void setPosition(float x, float y) {
@@ -89,11 +154,11 @@ public class Robot {
         this.y = y;
     }
 
-    public void setOrientation(float orientation) {
-        this.orientation = orientation;
+    public void setIdentifier(String name) {
+        this.identifier = name;
     }
 
-    public void setPropertyIndex(int index) {
-        propertyIndex = index;
+    public void setOrientation(float orientation) {
+        this.orientation = orientation;
     }
 }

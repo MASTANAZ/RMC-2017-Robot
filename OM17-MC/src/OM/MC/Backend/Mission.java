@@ -6,6 +6,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.transform.Affine;
 
 import java.util.ArrayList;
@@ -14,6 +15,11 @@ import java.util.ArrayList;
  * Created by Harris on 12/25/16.
  */
 public class Mission {
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTANTS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     private final int TARGET_WIDTH = 1280;
     private final int TARGET_HEIGHT = 720;
 
@@ -23,43 +29,63 @@ public class Mission {
     private final Color COLOR_REGOLITH = Color.web("#FFCC80");
     private final Color COLOR_OBSTACLE_AREA = Color.web("#FFB74D");
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     private boolean active = false;
     private float activeTime = 0.0f;
     private GraphicsContext gc = null;
     private Canvas fieldCanvas = null;
+    private int currentRobot = 0;
 
     private ArrayList<Obstacle> obstacles = null;
-    private Robot robotA = null, robotB = null;
+    private ArrayList<Robot> robots = null;
 
     private SimpleStringProperty currentTimeProperty = null;
     private SimpleStringProperty remainingTimeProperty = null;
 
-    public Mission() {
-        robotA = new Robot();
-        robotA.setPosition(0.75f, 1.5f);
-        robotA.setOrientation((float)Math.PI / 2.0f);
-        robotB = new Robot();
-        robotB.setPosition(0.75f, 2.25f);
-        robotB.setOrientation((float)Math.PI / 2.0f);
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTOR
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        obstacles = new ArrayList<Obstacle>();
-        Obstacle o1 = new Obstacle();
-        o1.setPosition(3.6f, 1.2f);
-        o1.setDiameter(0.2f);
-        obstacles.add(o1);
+    public Mission() {
+        currentRobot = 0;
 
         currentTimeProperty = new SimpleStringProperty("C+00:00:00");
         remainingTimeProperty = new SimpleStringProperty("R-10:00:00");
+
+        obstacles = new ArrayList<Obstacle>();
+        robots = new ArrayList<Robot>();
+
+        Robot phobos = new Robot();
+        phobos.setIdentifier("P");
+        phobos.setName("PHOBOS");
+        phobos.setDataModelIndex(0);
+
+        Robot deimos = new Robot();
+        deimos.setIdentifier("D");
+        deimos.setName("DEIMOS");
+        deimos.setDataModelIndex(1);
+
+        robots.add(phobos);
+        robots.add(deimos);
+
         active = false;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void tick(float dt) {
         if (active) {
             activeTime += dt;
         }
 
-        robotA.tick(dt);
-        robotB.tick(dt);
+        for (Robot robot : robots) {
+            robot.tick(dt);
+        }
     }
 
     public void synchronizedTick() {
@@ -95,9 +121,12 @@ public class Mission {
         gc.setFill(COLOR_OBSTACLE_AREA);
         gc.fillRect(1.5, 0, 2.94, 3.78);
 
-        robotA.draw(gc);
-        //robotB.draw(gc);
+        // draw phobos and deimos
+        for (Robot robot : robots) {
+            robot.draw(gc);
+        }
 
+        // draw all known obstacles
         for (Obstacle obstacle : obstacles) {
             obstacle.draw(gc);
         }
@@ -115,8 +144,22 @@ public class Mission {
         active = false;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SETTERS / GETTERS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public boolean isActive() {
         return active;
+    }
+
+    public Robot getRobot(int id) {
+        return robots.get(id);
+    }
+
+    public Robot getNextRobot() {
+        Robot tmp = robots.get(currentRobot);
+        currentRobot++;
+        return tmp;
     }
 
     public void setFieldCanvas(Canvas fieldCanvas) {
@@ -126,14 +169,8 @@ public class Mission {
         // make sure the canvas always completely fills the cell it's in
         fieldCanvas.widthProperty().bind(((Pane)(fieldCanvas.getParent())).widthProperty());
         fieldCanvas.heightProperty().bind(((Pane)(fieldCanvas.getParent())).heightProperty());
-    }
 
-    public Robot getRobotA() {
-        return robotA;
-    }
-
-    public Robot getRobotB() {
-        return robotB;
+        gc.setFont(new Font("Roboto Medium", 18));
     }
 
     public StringProperty timeProperty() {
@@ -143,6 +180,10 @@ public class Mission {
     public StringProperty remainingTimeProperty() {
         return remainingTimeProperty;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PRIVATE FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private String getTimeString(float seconds) {
         int m = (int)Math.floor(seconds / 60);

@@ -23,6 +23,11 @@ public class Client extends Application {
 
         this.stage = stage;
 
+        // backend MUST start before the frontend
+        backend = new Backend();
+        backend.initialize();
+        backend.start();
+
         try {
             Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("res/connection_screen.fxml"));
             Scene scene = new Scene(root, Global.TARGET_WIDTH, Global.TARGET_HEIGHT);
@@ -41,9 +46,6 @@ public class Client extends Application {
 
         stage.setFullScreenExitHint("");
         stage.setFullScreen(false);
-
-        backend = new Backend();
-        backend.start();
 
         // give global a reference to this current instance of this class for the rest of the program to use
         Global.setClientInstance(this);

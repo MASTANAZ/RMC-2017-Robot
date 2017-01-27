@@ -86,42 +86,6 @@ public class ManualControl {
                 controllerValues[i].put(event.getComponent().getIdentifier().getName(), val);
             }
         }
-
-        // TODO: Fix this shit
-
-        if (controllers.size() < 1) return;
-
-        Robot a = Global.getBackendInstance().getMission().getRobotA();
-
-        float orientation = a.getOrientation();
-        float dx = (float)Math.cos(orientation);
-        float dy = (float)Math.sin(orientation);
-
-        a.setPosition(
-                a.getX() + ((float)controllerValues[0].get("y") * -1.0f * dx * dt * 0.5f),
-                a.getY() + ((float)controllerValues[0].get("y") * -1.0f * dy * dt * 0.5f)
-        );
-
-        a.setOrientation(
-                a.getOrientation() + ((float)controllerValues[0].get("rx") * dt * (float)Math.PI * 0.5f)
-        );
-
-        if (controllers.size() < 2) return;
-
-        Robot b = Global.getBackendInstance().getMission().getRobotB();
-
-        orientation = b.getOrientation();
-        dx = (float)Math.cos(orientation);
-        dy = (float)Math.sin(orientation);
-
-        b.setPosition(
-                b.getX() + ((float)controllerValues[1].get("y") * -1.0f * dx * dt * 0.5f),
-                b.getY() + ((float)controllerValues[1].get("y") * -1.0f * dy * dt * 0.5f)
-        );
-
-        b.setOrientation(
-                b.getOrientation() + ((float)controllerValues[1].get("rx") * dt * (float)Math.PI * 0.5f)
-        );
     }
 
     private static ControllerEnvironment createDefaultEnvironment() throws ReflectiveOperationException {
