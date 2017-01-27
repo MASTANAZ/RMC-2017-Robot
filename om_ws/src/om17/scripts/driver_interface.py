@@ -52,6 +52,8 @@ def driver_interface():
 def _init():
     global _arduino
 
+    rospy.loginfo("INITIALIZING SERIAL COMMUNICATION")
+
     # search all available COM ports for an arduino
     for p in serial.tools.list_ports.comports():
         d = p.description
