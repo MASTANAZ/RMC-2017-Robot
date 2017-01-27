@@ -22,7 +22,7 @@ from std_msgs.msg import String
 # MODULE VARIABLES
 ################################################################################
 
-_arduino = serial.Serial
+_arduino = serial.Serial()
 
 ################################################################################
 # PUBLIC FUNCTIONS
