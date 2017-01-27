@@ -1,9 +1,15 @@
+// CREATED BY HARRIS NEWSTEDER AND BLAKE NAZARIO-CASEY
+//
+// DESCRIPTION:
+//
+
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
 #include <vector>
 #include <thread>
+#include <algorithm>
 
 #include "ros/ros.h"
 #include "geometry_msgs/Pose2D.h"
@@ -34,7 +40,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
     ros::Rate loop_rate(3);
-    ros::Publisher pose_publisher = node_handle.advertise<geometry_msgs::Pose2D>("poser", 10);
+    ros::Publisher pose_publisher = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
     
     // raspberry pi camera initialization
     raspicam::RaspiCam_Cv camera;
@@ -124,18 +130,30 @@ int main(int argc, char **argv)
             pose.y = tvec.at<double>(0, 0);
             
             
-            // Attempting to get camera (x,y,z) and pose
+            // translation from camera coords to object coords
             cv::Mat R;
             cv::Rodrigues(rvec, R);
             cv::Mat cameraRotationVector;
-            cv::Rodrigues(R.t(), cameraRotationVector);     // Camera pose
-            cv::Mat cameraTranslationVector = R.t()*tvec;   // Camera coordinates
-            /////////////////////////////////////////////////////////////////////
-            std::cout << cameraRotationVector.at<double>(1, 0) << std::endl;
+            cv::Rodrigues(R.t(), cameraRotationVector);
+            cv::Mat cameraTranslationVector = R.t()*tvec;
 
+            // publishin robot location on 
             pose.x = cameraTranslationVector.at<double>(2,0);
             pose.y = cameraTranslationVector.at<double>(0,0);
             pose.theta = cameraRotationVector.at<double>(1, 0);
+
+            // in object space, y = 0 means the robot is centered on the field
+            // (y = 1.89f)
+            pose.y += 1.89f;
+
+            // rotate the robot's angle by 360 degrees so we don't have to
+            // transmit negative data over the network
+            pose.theta += 2.0f * 3.14159f;
+
+            // make sure none of our field coordinates are negative
+            // (this shouldn't be possible but it's still good to check)
+            pose.x = std::max((float)pose.x, 0.0f);
+            pose.y = std::max((float)pose.y, 0.0f);
 
             pose_publisher.publish(pose);
         }
