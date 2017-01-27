@@ -14,6 +14,7 @@
 import sys
 import json
 import serial
+import serial.tools.list_ports
 
 import rospy
 from std_msgs.msg import String
@@ -23,6 +24,14 @@ from std_msgs.msg import String
 ################################################################################
 
 _arduino = serial.Serial()
+_arduino.baudrate = 9600
+_arduino.bytesize = 8
+_arduino.parity = 'N'
+_arduino.stopbits = 1
+_arduino.timeout = None
+_arduino.xonxoff = False
+_arduino.rtscts = False
+_arduino.dsrdtr = False
 
 ################################################################################
 # PUBLIC FUNCTIONS
@@ -41,12 +50,34 @@ def driver_interface():
 ################################################################################
 
 def _init():
-    pass
+    global _arduino
+
+    # search all available COM ports for an arduino
+    for p in serial.tools.list_ports.comports():
+        d = p.description
+        if d[:-1] == "ttyACM":
+            rospy.loginfo("FOUND ARDUINO ON PORT " + p.device)
+            _arduino.port = p.device
+
+    # no open ports found
+    if _arduino.port == None:
+        rospy.logfatal("FAILED TO CONNECT TO ARDUINO")
+        return
+
+    # attempt to open serial communications with arduino
+    try:
+        _arduino.open()
+        rospy.loginfo("SUCCESSFULLY OPENED ARDUINO ON PORT " + _arduino.port)
+    except:
+        rospy.logfatal("FAILED TO OPEN ARDUINO ON PORT " + _arduino.port)
     
 def _tick():
-    pass
+    while _arduino.in_waiting:
+        print _arduino.readline()
 
 def _cleanup():
+    rospy.loginfo("CLOSING COMMUNICATIONS WITH ARDUINO ON PORT " + _arduino.port)
+    _arduino.close()
     pass
 
 ################################################################################
