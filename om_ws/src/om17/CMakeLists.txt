@@ -133,6 +133,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 
 ## Declare a C++ executable
 add_executable(position src/position.cpp)
+add_executable(world src/world.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -142,6 +143,7 @@ add_executable(position src/position.cpp)
 target_link_libraries(position ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
 	raspicam raspicam_cv
 )
+target_link_libraries(world ${catkin_LIBRARIES})
 
 ##
 add_definitions(-std=c++11)

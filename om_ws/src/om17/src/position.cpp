@@ -3,6 +3,10 @@
 // DESCRIPTION:
 //
 
+////////////////////////////////////////////////////////////////////////////////
+// INCLUDES
+////////////////////////////////////////////////////////////////////////////////
+
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
@@ -18,6 +22,10 @@
 
 #include <opencv2/calib3d/calib3d.hpp>
 
+////////////////////////////////////////////////////////////////////////////////
+// CONSTANTS
+////////////////////////////////////////////////////////////////////////////////
+
 // the dimensions of our positioning board in number of intersections
 const int      POS_BOARD_WIDTH        = 9;
 const int      POS_BOARD_HEIGHT       = 6;
@@ -29,10 +37,18 @@ const cv::Size POS_BOARD_SIZE(POS_BOARD_WIDTH, POS_BOARD_HEIGHT);
 // the size of a square on our positioning board in millimeters
 const double   POS_BOARD_SQUARE_SIZE  = 0.1016f;
 
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION DECLARATIONS
+////////////////////////////////////////////////////////////////////////////////
+
 void sleep_millis(int milliseconds)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ENTRY POINT
+////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char **argv)
 {
@@ -137,7 +153,7 @@ int main(int argc, char **argv)
             cv::Rodrigues(R.t(), cameraRotationVector);
             cv::Mat cameraTranslationVector = R.t()*tvec;
 
-            // publishin robot location on 
+            // publishing robot location on 
             pose.x = cameraTranslationVector.at<double>(2,0);
             pose.y = cameraTranslationVector.at<double>(0,0);
             pose.theta = cameraRotationVector.at<double>(1, 0);
