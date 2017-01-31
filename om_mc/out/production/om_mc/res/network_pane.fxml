@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="card" stylesheets="@material-fx-v0_3.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="om.mc.frontend.NetworkController">
+   <children>
+      <Label styleClass="card-title" text="NETWORK USAGE" />
+      <Separator />
+      <Label fx:id="sentLabel" text="SENT: 0B" />
+      <Label fx:id="receivedLabel" text="RECEIVED: 0B" />
+      <Label fx:id="totalLabel" text="TOTAL: 0B" />
+   </children>
+</VBox>
