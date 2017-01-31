@@ -599,6 +599,7 @@ else
           
         end
         
+        esticells = look_ahead(estiCells, estiRover);
         % steps are integers >= 0, round k towards positive infinity.
         k = ceil(k); 
         

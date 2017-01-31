@@ -24,12 +24,13 @@
 
 import matlab.engine
 import os
+import numpy as np
 
 ################################################################################### 
 ### Wrapper + Engine Initialization
 
 # Set working directory to scripts parent directory
-os.chdir("/Users/BlakeNaz/tensorflow/rmc_2017_robot/Algorithm-Sandbox/MATLAB")	
+os.chdir("/Users/BlakeNaz/tensorflow/rmc_2017_robot/Algorithm-Sandbox")	
 
 # Initialize Engine
 eng = matlab.engine.start_matlab()
@@ -42,14 +43,32 @@ eng = matlab.engine.start_matlab()
 ################################################################################### 
 ### MATLAB Script execution
 
-def execute():
-	print("Executing")
+def execute(start, goal, grid):
+	print("Executing...")
 
 	'''
 	
-	From here, call the parent script for autonomy by 
+	From here, call the parent script for autonomy 
 	
 	'''
+
+	w, h = 12, 24
+	# Matrix = [[0 for x in range(w)] for y in range(h)] 
+	# print(Matrix)
+	grid = matlab.double(grid)
+
+	start = matlab.double(start)
+	goal = matlab.double(goal)
+
+	print("Start: " + str(start))
+	print("Goal: " + str(goal))
+
+	path = eng.plan_path(start, goal,grid);
+
+	print("Planned path received\n\n");
+	print(path);
+
+	
 
 ### End MATLAB Script execution
 ################################################################################### 
@@ -66,3 +85,6 @@ def quitEngine():
 ### End Quit Engine
 ###################################################################################
 
+
+## Execute code
+#execute();
