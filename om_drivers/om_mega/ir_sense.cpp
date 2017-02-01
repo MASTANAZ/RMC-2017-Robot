@@ -5,7 +5,8 @@
 
 #include <math.h>
 
-IRSense::IRSense() {
+IRSense::IRSense()
+{
     sensor_pin_ = -1;
     servo_pin_ = -1;
     
@@ -20,25 +21,30 @@ IRSense::IRSense() {
     
     sensor_index_ = 0;
     
-    for (unsigned i = 0; i < SENSOR_SAMPLES; ++i) {
+    for (unsigned i = 0; i < SENSOR_SAMPLES; ++i)
+    {
         sensor_values_[i] = 0;
     }
 }
 
-IRSense::~IRSense() {
+IRSense::~IRSense()
+{
     
 }
 
-void IRSense::setSensorPin(int pin) {
+void IRSense::setSensorPin(int pin)
+{
     sensor_pin_ = pin;
 }
 
-void IRSense::setServoPin(int pin) {
+void IRSense::setServoPin(int pin)
+{
     servo_pin_ = pin;
     servo_.attach(pin);
 }
 
-void IRSense::tick(void) {
+void IRSense::tick(void)
+{
     // calculate the time (in seconds) since the last call to tick()
     time_current_ = millis();
     float dt = (float)(time_current_ - time_old_) / 1000.0f;
@@ -50,12 +56,12 @@ void IRSense::tick(void) {
     sensor_index_++;
     if (sensor_index_ == SENSOR_SAMPLES) sensor_index_ = 0;
     
-    if (rotation_timer_ > ROTATION_TIME) {
+    if (rotation_timer_ > ROTATION_TIME)
+    {
         float avg = 0.0f;
 
-        for (int i = 0; i < SENSOR_SAMPLES; ++i) {
+        for (int i = 0; i < SENSOR_SAMPLES; ++i)
             avg += (float)sensor_values_[i]; 
-        }
         
         avg = avg / (float)SENSOR_SAMPLES;
         
@@ -63,10 +69,13 @@ void IRSense::tick(void) {
         
         Serial.println(dist);
         
-        if (forward_) {
+        if (forward_)
+        {
             ++angle_;
             if (angle_ == ANGLE_UPPER) forward_ = false;
-        } else {
+        }
+        else
+        {
             --angle_;
             if (angle_ == ANGLE_LOWER) forward_ = true;
         }

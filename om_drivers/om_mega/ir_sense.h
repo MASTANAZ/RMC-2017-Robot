@@ -9,7 +9,8 @@
 
 #include <Servo.h>
 
-class IRSense {
+class IRSense
+{
 public:
     IRSense();
     ~IRSense();

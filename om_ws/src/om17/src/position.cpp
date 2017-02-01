@@ -97,14 +97,18 @@ int main(int argc, char **argv)
     // create vector of points on the checkerboard
     std::vector<cv::Point3d> obj_points;
     
-    for (int i = 0; i < POS_BOARD_HEIGHT; ++i) {
-        for (int j = 0; j < POS_BOARD_WIDTH; ++j) {
-            obj_points.push_back(
-                cv::Point3d(
+    for (int i = 0; i < POS_BOARD_HEIGHT; ++i)
+    {
+        for (int j = 0; j < POS_BOARD_WIDTH; ++j)
+        {
+            obj_points.push_back
+            (
+                cv::Point3d
+                (
                     double(j * POS_BOARD_SQUARE_SIZE),
                     double(i * POS_BOARD_SQUARE_SIZE),
                     0.0f
-                )    
+                )
             );
         }
     }
@@ -128,14 +132,16 @@ int main(int argc, char **argv)
         
         bool found = false;
         
-        found = cv::findChessboardCorners(
+        found = cv::findChessboardCorners
+        (
             img,
             POS_BOARD_SIZE,
             intersections,
             cv::CALIB_CB_FAST_CHECK
         );
         
-        if (found) {
+        if (found)
+        {
             cv:drawChessboardCorners(img, POS_BOARD_SIZE, cv::Mat(intersections), found);
             
             // rotation and translation vectors

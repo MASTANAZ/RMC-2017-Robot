@@ -101,13 +101,16 @@ int main(int argc, char** argv)
 void init(void)
 {
     grid = new char*[GRID_HEIGHT];
-    for (unsigned i = 0; i < GRID_HEIGHT; ++i) {
+    for (unsigned i = 0; i < GRID_HEIGHT; ++i)
+    {
         grid[i] = new char[GRID_WIDTH];
     }
 
     // initialize grid values here
-    for (unsigned y = 0; y < GRID_HEIGHT; ++y) {
-        for (unsigned x = 0; x < GRID_WIDTH; ++x) {
+    for (unsigned y = 0; y < GRID_HEIGHT; ++y)
+    {
+        for (unsigned x = 0; x < GRID_WIDTH; ++x)
+        {
             grid[y][x] = '0';    
             
         }
@@ -150,7 +153,8 @@ void chatterCallback(const std_msgs::String::ConstPtr& msg)
 
 void cleanup(void)
 {
-    for (unsigned i = 0; i < GRID_HEIGHT; ++i) {
+    for (unsigned i = 0; i < GRID_HEIGHT; ++i)
+    {
         delete [] grid[i];
     }
     delete [] grid;
