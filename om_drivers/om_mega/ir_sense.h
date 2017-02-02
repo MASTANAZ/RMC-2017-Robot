@@ -2,7 +2,6 @@
 // 
 // CREATED BY HARRIS NEWSTEDER AND BLAKE NAZARIO-CASEY
 //
-// 
 
 #ifndef _IR_SENSE_H
 #define _IR_SENSE_H

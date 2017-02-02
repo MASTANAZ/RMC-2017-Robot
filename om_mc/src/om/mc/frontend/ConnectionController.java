@@ -19,13 +19,13 @@ import java.util.ResourceBundle;
  * Created by Harris on 12/25/16.
  */
 public class ConnectionController implements Initializable {
-    @FXML ProgressIndicator aMCProgressIndicator;
-    @FXML ProgressIndicator bMCProgressIndicator;
+    @FXML ProgressIndicator phobosConnIndicator;
+    @FXML ProgressIndicator deimosConnIndicator;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        aMCProgressIndicator.progressProperty().bind(RNI.connectionAProperty());
-        bMCProgressIndicator.progressProperty().bind(RNI.connectionBProperty());
+        phobosConnIndicator.progressProperty().bind(RNI.phobosConnProperty());
+        deimosConnIndicator.progressProperty().bind(RNI.deimosConnProperty());
     }
 
     @FXML

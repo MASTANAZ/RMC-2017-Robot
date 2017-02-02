@@ -1,9 +1,23 @@
+// CREATED BY HARRIS NEWSTEDER & BLAKE NAZARIO-CASEY
+//
+// DESCRIPTION:
+//   
+//   
+
+////////////////////////////////////////////////////////////////////////////////
+// INCLUDES
+////////////////////////////////////////////////////////////////////////////////
+
 #include "ir_sense.h"
 
 #include <Arduino.h>
 #include <Servo.h>
 
 #include <math.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// PUBLIC FUNCTION DEFINITIONS
+////////////////////////////////////////////////////////////////////////////////
 
 IRSense::IRSense()
 {
@@ -50,25 +64,30 @@ void IRSense::tick(void)
     float dt = (float)(time_current_ - time_old_) / 1000.0f;
     time_old_ = time_current_;
     
-    rotation_timer_ += dt;
-    
+    // push new value to our proximity sensor value array
     sensor_values_[sensor_index_] = analogRead(sensor_pin_);
     sensor_index_++;
     if (sensor_index_ == SENSOR_SAMPLES) sensor_index_ = 0;
+    
+    // update our timer for controlling the servo's rotation
+    rotation_timer_ += dt;
     
     if (rotation_timer_ > ROTATION_TIME)
     {
         float avg = 0.0f;
 
+        // average all values in our proximity sensor array
         for (int i = 0; i < SENSOR_SAMPLES; ++i)
             avg += (float)sensor_values_[i]; 
         
         avg = avg / (float)SENSOR_SAMPLES;
         
+        // calculate distance
         float dist = pow((4187.8 / avg), 1.106);
         
         Serial.println(dist);
         
+        // update servo position
         if (forward_)
         {
             ++angle_;

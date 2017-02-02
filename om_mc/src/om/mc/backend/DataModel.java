@@ -35,10 +35,16 @@ public class DataModel {
         Object unpacked = null;
 
         switch (property) {
-            case PROP_X:
             case PROP_Y:
+                unpacked = ((float) ((int) packed[3]) / 100.0f) + ((float) ((int) packed[2]));
+                unpacked = (float)unpacked + (float)0.42f;
+                break;
+            case PROP_X:
             case PROP_ORIENTATION:
                 unpacked = ((float) ((int) packed[3]) / 100.0f) + ((float) ((int) packed[2]));
+                break;
+            default:
+                break;
         }
 
         dataList.get(index).put(property, unpacked);

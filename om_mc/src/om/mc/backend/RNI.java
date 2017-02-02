@@ -50,8 +50,8 @@ public class RNI {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // JAVAFX VARIABLES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private static SimpleDoubleProperty connectionAProperty = null;
-    private static SimpleDoubleProperty connectionBProperty = null;
+    private static SimpleDoubleProperty phobosConnProperty = null;
+    private static SimpleDoubleProperty deimosConnProperty = null;
     private static SimpleStringProperty receivedProperty = null;
     private static SimpleStringProperty sentProperty = null;
     private static SimpleStringProperty totalProperty = null;
@@ -72,8 +72,8 @@ public class RNI {
         inputs = new ArrayList<DataInputStream>();
         outputs = new ArrayList<DataOutputStream>();
 
-        connectionAProperty = new SimpleDoubleProperty(-1.0f);
-        connectionBProperty = new SimpleDoubleProperty(-1.0f);
+        phobosConnProperty = new SimpleDoubleProperty(-1.0f);
+        deimosConnProperty = new SimpleDoubleProperty(-1.0f);
         receivedProperty = new SimpleStringProperty("RECEIVED: 0B");
         sentProperty = new SimpleStringProperty("SENT: 0B");
         totalProperty = new SimpleStringProperty("TOTAL: 0B");
@@ -111,8 +111,8 @@ public class RNI {
     }
 
     public static void synchronizedTick() {
-        if (clients.size() > 0) connectionAProperty.set(1.0f);
-        if (clients.size() > 1) connectionBProperty.set(1.0f);
+        if (clients.size() > 0) phobosConnProperty.set(1.0f);
+        if (clients.size() > 1) deimosConnProperty.set(1.0f);
 
         receivedProperty.set("RECEIVED: " + Long.toString(received) + "B");
         sentProperty.set("SENT: " + Long.toString(sent) + "B");
@@ -149,12 +149,12 @@ public class RNI {
     // SETTERS / GETTERS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static DoubleProperty connectionAProperty() {
-        return connectionAProperty;
+    public static DoubleProperty phobosConnProperty() {
+        return phobosConnProperty;
     }
 
-    public static DoubleProperty connectionBProperty() {
-        return connectionBProperty;
+    public static DoubleProperty deimosConnProperty() {
+        return deimosConnProperty;
     }
 
     public static StringProperty receivedProperty() {
