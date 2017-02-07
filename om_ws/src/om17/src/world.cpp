@@ -37,6 +37,8 @@ const char ID_PATH_DEIMOS = '+';
 const unsigned int GRID_WIDTH  = 24;
 const unsigned int GRID_HEIGHT = 12;
 
+const float TILE_SIZE = 7.38f / (float)GRID_WIDTH;
+
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,19 +49,24 @@ ros::Publisher world_pub;
 ros::Subscriber phobos_world_sub;
 ros::Subscriber deimos_world_sub;
 
+// phobos grid position
+unsigned phobos_x = 5;
+unsigned phobos_y = 9;
+
+// deimmos grid position
+unsigned deimos_x = 0;
+unsigned deimos_y = 0;
+
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION DECLARATIONS
 ////////////////////////////////////////////////////////////////////////////////
 
 void init(void);
-
-// Publisher for World messages.
-void worldPublisher();
-
-// Callback for subscriber messages
-void chatterCallback(const std_msgs::String::ConstPtr& msg);
-
+void tick(void);
 void cleanup(void);
+
+void phobos_pose_callback(const geometry_msgs::Pose2D& pose);
+void deimos_pose_callback(const geometry_msgs::Pose2D& pose);
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENTRY POINT
@@ -67,27 +74,25 @@ void cleanup(void);
 
 int main(int argc, char** argv)
 {
+    // ROS initialization
     ros::init(argc, argv, "world");
     ros::NodeHandle node_handle;
     ros::Rate loop_rate(3);
 
     init();
 
-    chatter_pub = node_handle.advertise<std_msgs::String>("world_update", 1000);
-    phobos_world_sub = node_handle.subscribe("phobos_world_update", 1000, chatterCallback);
-    deimos_world_sub = node_handle.subscribe("deimos_world_update", 1000, chatterCallback);
-
-    
+    phobos_pose_sub = node_handle.subscribe("/phobos/pose", 1, phobos_pose_callback);
+    deimos_pose_sub = node_handle.subscribe("/deimos/pose", 1, chatterCallback);
 
     while (ros::ok())
     {
         ros::spinOnce();
         worldPublisher();
-
+        
+        tick();
+        
         loop_rate.sleep();    
     }
-
-
 
     cleanup();
 
@@ -111,44 +116,24 @@ void init(void)
     {
         for (unsigned x = 0; x < GRID_WIDTH; ++x)
         {
-            grid[y][x] = '0';    
-            
+            grid[y][x] = '.';
         }
     }
 }
 
-
-/* World Publisher
- * Publishes an aggregated world vector
- *
- * Blake Nazario-Casey
-*/
-void worldPublisher()
+void tick(void)
 {
-    std_msgs::String msg;
-
-    std::stringstream ss;
-    ss << "hello world";
-
-    msg.data = ss.str();
-
-    ROS_INFO("%s", msg.data.c_str());
-
-    chatter_pub.publish(msg);
-}
-
-
-/* World Publisher callback
- * Prints the subscriber message that it reads based on the world_update 
- * publisher defined above.
- *
- * @param msg The message received from the publisher.
- *
- * Blake Nazario-Casey
-*/
-void chatterCallback(const std_msgs::String::ConstPtr& msg)
-{
-    ROS_INFO("I heard: [%s]", msg->data.c_str());
+    grid[deimos_y][deimos_x] = ID_DEIMOS;
+    grid[phobos_y][phobos_x] = ID_PHOBOS;
+    
+    for (unsigned y = 0; y < GRID_HEIGHT; ++y)
+    {
+        for (unsigned x = 0; x < GRID_WIDTH; ++x)
+        {
+            std::cout << grid[y][x] << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 void cleanup(void)
@@ -160,3 +145,13 @@ void cleanup(void)
     delete [] grid;
 }
 
+void phobos_pose_callback(const geometry_msgs::Pose2D& pose)
+{
+    phobos_x = (unsigned)pose.x;
+    phobos_y = (unsigned)pose.y;
+}
+
+void deimos_pose_callback(const geometry_msgs::Pose2D& pose)
+{
+    
+}
