@@ -47,6 +47,9 @@ int                      intersection_count = 0;
 std::vector<cv::Point2f> intersections;
 cv::Mat                  img;
 geometry_msgs::Pose2D    pose;
+cv::Mat                  CAM_INTRINSIC = cv::Mat::zeros(3, 3, CV_64FC1);
+cv::Mat                  CAM_DISTORTION = cv::Mat::zeros(1, 5, CV_64FC1);
+ros::Publisher           pose_pub;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION DECLARATIONS
@@ -71,7 +74,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
     ros::Rate loop_rate(3);
-    ros::Publisher pose_publisher = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
+    pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
     
     init();
     
@@ -100,6 +103,7 @@ int main(int argc, char **argv)
 
 void init(void)
 {
+    
     // raspberry pi camera properties
     camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
@@ -111,9 +115,6 @@ void init(void)
         ROS_FATAL("ERROR: COULD NOT OPEN RASPBERRY PI CAMERA");
         std::exit(EXIT_FAILURE);
     }
-    
-    // initializing the raspberry pi camera intrinsics matrix
-    cv::Mat CAM_INTRINSIC = cv::Mat::zeros(3, 3, CV_64FC1);
 
     CAM_INTRINSIC.at<double>(0, 0) = 630.9776376778118f;
     CAM_INTRINSIC.at<double>(0, 1) = 0.0f;
@@ -124,9 +125,6 @@ void init(void)
     CAM_INTRINSIC.at<double>(2, 0) = 0.0f;
     CAM_INTRINSIC.at<double>(2, 1) = 0.0f;
     CAM_INTRINSIC.at<double>(2, 2) = 1.0f;
-
-    // initializing the raspberry pi distortion coefficients array
-    cv::Mat CAM_DISTORTION = cv::Mat::zeros(1, 5, CV_64FC1);
 
     CAM_DISTORTION.at<double>(0, 0) = 0.09046866588331801f;
     CAM_DISTORTION.at<double>(0, 1) = -0.2441265531225282f;
@@ -203,7 +201,9 @@ void tick(void)
         pose.x = std::max((float)pose.x, 0.0f);
         pose.y = std::max((float)pose.y, 0.0f);
 
-        pose_publisher.publish(pose);
+        std::cout << pose << std::endl;
+        
+        pose_pub.publish(pose);
     }
         
     cv::imshow("POSITION", img);

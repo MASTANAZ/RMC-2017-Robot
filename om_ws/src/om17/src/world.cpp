@@ -46,8 +46,8 @@ const float TILE_SIZE = 7.38f / (float)GRID_WIDTH;
 char** grid = nullptr;
 
 ros::Publisher world_pub;
-ros::Subscriber phobos_world_sub;
-ros::Subscriber deimos_world_sub;
+ros::Subscriber phobos_pose_sub;
+ros::Subscriber deimos_pose_sub;
 
 // phobos grid position
 unsigned phobos_x = 5;
@@ -82,12 +82,11 @@ int main(int argc, char** argv)
     init();
 
     phobos_pose_sub = node_handle.subscribe("/phobos/pose", 1, phobos_pose_callback);
-    deimos_pose_sub = node_handle.subscribe("/deimos/pose", 1, chatterCallback);
+    deimos_pose_sub = node_handle.subscribe("/deimos/pose", 1, deimos_pose_callback);
 
     while (ros::ok())
     {
         ros::spinOnce();
-        worldPublisher();
         
         tick();
         
@@ -123,6 +122,14 @@ void init(void)
 
 void tick(void)
 {
+    for (unsigned y = 0; y < GRID_HEIGHT; ++y)
+    {
+        for (unsigned x = 0; x < GRID_WIDTH; ++x)
+        {
+            grid[y][x] = '.';
+        }
+    }
+    
     grid[deimos_y][deimos_x] = ID_DEIMOS;
     grid[phobos_y][phobos_x] = ID_PHOBOS;
     
@@ -134,6 +141,7 @@ void tick(void)
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl;
 }
 
 void cleanup(void)
@@ -147,8 +155,8 @@ void cleanup(void)
 
 void phobos_pose_callback(const geometry_msgs::Pose2D& pose)
 {
-    phobos_x = (unsigned)pose.x;
-    phobos_y = (unsigned)pose.y;
+    phobos_x = (unsigned)(pose.x / TILE_SIZE);
+    phobos_y = (unsigned)(pose.y / TILE_SIZE);
 }
 
 void deimos_pose_callback(const geometry_msgs::Pose2D& pose)
