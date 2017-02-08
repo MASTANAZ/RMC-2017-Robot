@@ -132,18 +132,20 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 # add_dependencies(om17 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(position src/position.cpp)
+add_executable(poser src/poser.cpp)
 add_executable(world src/world.cpp)
+add_executable(auto_controls src/auto_controls.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 #add_dependencies(om17_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(position ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+target_link_libraries(poser ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
 	raspicam raspicam_cv
 )
 target_link_libraries(world ${catkin_LIBRARIES})
+target_link_libraries(auto_controls ${catkin_LIBRARIES})
 
 ##
 add_definitions(-std=c++11)

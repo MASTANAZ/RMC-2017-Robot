@@ -52,10 +52,11 @@ cv::Mat                  CAM_DISTORTION     = cv::Mat::zeros(1, 5, CV_64FC1);
 //
 std::vector<cv::Point3d> object_points;
 
+//
 int                      intersection_count = 0;
 std::vector<cv::Point2f> intersections;
 
-// current image received from the raspberry pi camera
+// image received from the raspberry pi camera
 cv::Mat                  img;
 
 // 
