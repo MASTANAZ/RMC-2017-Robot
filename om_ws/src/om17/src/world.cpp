@@ -45,7 +45,7 @@ const float TILE_SIZE = 7.38f / (float)GRID_WIDTH;
 
 char** grid = nullptr;
 
-ros::Publisher world_pub;
+ros::Publisher  world_pub;
 ros::Subscriber phobos_pose_sub;
 ros::Subscriber deimos_pose_sub;
 
@@ -161,5 +161,6 @@ void phobos_pose_callback(const geometry_msgs::Pose2D& pose)
 
 void deimos_pose_callback(const geometry_msgs::Pose2D& pose)
 {
-    
+    deimos_x = (unsigned)(pose.x / TILE_SIZE);
+    deimos_y = (unsigned)(pose.y / TILE_SIZE);
 }

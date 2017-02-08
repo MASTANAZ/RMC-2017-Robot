@@ -25,8 +25,8 @@ import rospy
 # PUBLIC FUNCTIONS
 ################################################################################
 
-def watchdog():
-    rospy.init_node("watchdog")
+def man_controls():
+    rospy.init_node("man_controls")
     rate = rospy.Rate(3)
     _init()
     while not rospy.is_shutdown():
@@ -37,19 +37,16 @@ def watchdog():
 # PRIVATE FUNCTIONS
 ################################################################################
 
-def _stop_callback(event):
-    rospy.loginfo("STOP")
-
 def _init():
-    rospy.loginfo("INITIALIZING WATCHDOG")
-    rospy.Timer(rospy.Duration(2), _stop_callback)
+    rospy.loginfo("INITIALIZING MANUAL CONTROLS")
+    pass
     
 
 def _tick():
     pass
 
 def _cleanup():
-    rospy.loginfo("STOPPING WATCHDOG")
+    pass
 
 
 ################################################################################
@@ -58,7 +55,7 @@ def _cleanup():
         
 if __name__ == "__main__":
     try:
-        watchdog()
+        man_controls()
     except rospy.ROSInterruptException:
         pass
         
