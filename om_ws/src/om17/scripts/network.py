@@ -15,12 +15,12 @@ import sys
 import socket
 import time
 import math
-import random
-import json
 import os
+import select
 
 import rospy
 from geometry_msgs.msg import Pose2D
+from std_msgs.msg import Int16
 
 ################################################################################
 # CONSTANTS
@@ -31,6 +31,8 @@ _S_END             = 0xFF
 _S_P_X             = 0x01
 _S_P_Y             = 0x02
 _S_P_ORIENTATION   = 0x03
+_S_P_LCV           = 0x04
+_S_P_RCV           = 0x05
 
 # mission control communication parameters
 _MC_PORT         = 12000
@@ -49,8 +51,12 @@ _mc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _mc.settimeout(1)
 
 _mc_pending = ""
+_mc_to_process = ""
 
 _mc_connected = False
+
+_lcv_publisher = rospy.Publisher('lcv', Int16, queue_size=10)
+_rcv_publisher = rospy.Publisher('rcv', Int16, queue_size=10)
 
 ################################################################################
 # PUBLIC FUNCTIONS
@@ -97,14 +103,26 @@ def _init():
 def _tick():
     if not _mc_connected: return
 
-    global _mc_pending
+    global _mc_pending, _mc_to_process
     
     if len(_mc_pending) > 0:
         _mc.send(_mc_pending)
         _mc_pending = ""
     
-    # receive info from the mission control server on a timeout
-    pass
+    # receive info from the mission control server on a 0.1 second timeout
+    try:
+        ready = select.select([_mc], [], [], 0.1)
+
+        if ready:
+            data = _mc.recv(1024)
+            if not data:
+                sys.exit()
+            else:
+                _mc_to_process += data
+    except:
+        pass
+
+    _parse_data()
 
 def _connect():
     global _mc, _mc_connected
@@ -113,7 +131,6 @@ def _connect():
 
     try:
         _mc.connect((_MC_IP, _MC_PORT))
-        _mc.setblocking(0)
         
         rospy.loginfo("SENDING CONNECTION KEY TO MISSION CONTROL")
         _mc.send(_CONNECTION_KEY)
@@ -122,8 +139,8 @@ def _connect():
         time.sleep(0.5)
         
         confirmation = _mc.recv(1024)
-        
-        if confirmation == _CONFIRMATION_KEY:
+
+        if confirmation[0] == _CONFIRMATION_KEY:
             rospy.loginfo("CONFIRMATION KEY RECEIVED FROM MISSION CONTROL")
             rospy.loginfo("SUCCESSFULLY CONNECTED")
             
@@ -132,6 +149,28 @@ def _connect():
             rospy.logfatal("FAILED TO RECEIVE CONFIRMATION KEY FROM MISSION CONTROL")
     except:
         rospy.logfatal("FAILED TO CONNECT TO MISSION CONTROL")
+
+def _parse_data():
+    global _mc_to_process
+
+    datalen = len(_mc_to_process)
+
+    if (datalen == 0):
+        return
+
+    while (len(_mc_to_process) > 2):
+        if ord(_mc_to_process[0]) == _S_P_LCV:
+            if datalen >= 3:
+                statement = _mc_to_process[:2]
+                _mc_to_process = _mc_to_process[2:]
+                _lcv_publisher.publish(ord(statement[1]) - 100)
+        elif ord(_mc_to_process[0]) == _S_P_RCV:
+            if datalen >= 3:
+                statement = _mc_to_process[:2]
+                _mc_to_process = _mc_to_process[2:]
+                _rcv_publisher.publish(ord(statement[1]) - 100)
+        else:
+            _mc_to_process = _mc_to_process[1:]
 
 def _cleanup():
     rospy.loginfo("DISCONNECTING FROM MISSION CONTROL")
