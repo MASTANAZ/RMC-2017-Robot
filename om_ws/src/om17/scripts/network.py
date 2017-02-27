@@ -35,13 +35,13 @@ _S_P_LCV           = 0x04
 _S_P_RCV           = 0x05
 
 # mission control communication parameters
-_MC_PORT         = 12000
-_MC_BUFFER_SIZE  = 1024
-_MC_RECV_TIMEOUT = 0.05
-_MC_IP           = rospy.get_param(os.environ["ROS_NAMESPACE"] + "/mc_ip")
+_MC_PORT           = 12000
+_MC_BUFFER_SIZE    = 1024
+_MC_RECV_TIMEOUT   = 0.05
+_MC_IP             = rospy.get_param(os.environ["ROS_NAMESPACE"] + "/mc_ip")
 
-_CONNECTION_KEY = "@"
-_CONFIRMATION_KEY = "!"
+_CONNECTION_KEY    = "@"
+_CONFIRMATION_KEY  = "!"
 
 ################################################################################
 # MODULE VARIABLES
@@ -50,10 +50,10 @@ _CONFIRMATION_KEY = "!"
 _mc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 _mc.settimeout(1)
 
-_mc_pending = ""
+_mc_pending    = ""
 _mc_to_process = ""
 
-_mc_connected = False
+_mc_connected  = False
 
 _lcv_publisher = rospy.Publisher('lcv', Int16, queue_size=10)
 _rcv_publisher = rospy.Publisher('rcv', Int16, queue_size=10)
@@ -105,13 +105,14 @@ def _tick():
 
     global _mc_pending, _mc_to_process
     
+    # push all data to mission control
     if len(_mc_pending) > 0:
         _mc.send(_mc_pending)
         _mc_pending = ""
     
-    # receive info from the mission control server on a 0.1 second timeout
+    # receive info from the mission control server on a timeout
     try:
-        ready = select.select([_mc], [], [], 0.1)
+        ready = select.select([_mc], [], [], _MC_RECV_TIMEOUT)
 
         if ready:
             data = _mc.recv(1024)
@@ -122,7 +123,8 @@ def _tick():
     except:
         pass
 
-    _parse_data()
+    # parse data incoming from mission control
+    _parse_incoming()
 
 def _connect():
     global _mc, _mc_connected
@@ -150,25 +152,35 @@ def _connect():
     except:
         rospy.logfatal("FAILED TO CONNECT TO MISSION CONTROL")
 
-def _parse_data():
+def _parse_incoming():
     global _mc_to_process
 
-    datalen = len(_mc_to_process)
+    plen = len(_mc_to_process)
 
-    if (datalen == 0):
+    # there is no data to process, skip
+    if (plen == 0):
         return
 
-    while (len(_mc_to_process) > 2):
-        if ord(_mc_to_process[0]) == _S_P_LCV:
-            if datalen >= 3:
-                statement = _mc_to_process[:2]
+    # process then entire string byte by byte
+    while (plen > 2):
+        # int value of the current byte being processed
+        cbval = ord(_mc_to_process[0])
+        # remaining length of the data string
+        plen = len(_mc_to_process)
+        # essentially a giant switch statement for all available data that
+        # the mission control can send to the robot
+        if cbval == _S_P_LCV:
+            if plen >= 3:
+                _lcv_publisher.publish(ord(_mc_to_process[1]) - 100)
+                print "lcv: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
-                _lcv_publisher.publish(ord(statement[1]) - 100)
-        elif ord(_mc_to_process[0]) == _S_P_RCV:
-            if datalen >= 3:
-                statement = _mc_to_process[:2]
+        elif cbval == _S_P_RCV:
+            if plen >= 3:
+                _rcv_publisher.publish(ord(_mc_to_process[1]) - 100)
+                print "rcv: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
-                _rcv_publisher.publish(ord(statement[1]) - 100)
+        # discard the current byte and continue processing the rest of the
+        # string        
         else:
             _mc_to_process = _mc_to_process[1:]
 
