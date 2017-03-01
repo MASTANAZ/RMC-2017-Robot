@@ -34,6 +34,10 @@ _S_P_ORIENTATION   = 0x03
 _S_P_LCV           = 0x04
 _S_P_RCV           = 0x05
 
+_S_OBSTACLE        = 0x06
+_S_CPU_TEMP        = 0x07
+_S_GPU_TEMP        = 0x08
+
 # mission control communication parameters
 _MC_PORT           = 12000
 _MC_BUFFER_SIZE    = 1024
@@ -87,6 +91,7 @@ def network():
     rospy.init_node("network")
     rate = rospy.Rate(3)
     rospy.Subscriber("pose", Pose2D, callback)
+    rospy.Timer(rospy.Duration(3), _sys_temp)
     _init()
     while not rospy.is_shutdown():
         _tick()
@@ -187,6 +192,20 @@ def _parse_incoming():
 def _cleanup():
     rospy.loginfo("DISCONNECTING FROM MISSION CONTROL")
     _mc.close()
+
+# state the system cpu and gpu temperature to mission control
+def _sys_temp(event):
+    global _mc_pending
+
+    with open("/sys/class/thermal/thermal_zone0/temp", "r") as cpu_thermal:
+        for line in cpu_thermal:
+            cpu_temp = float(int(line.rstrip())) / 1000
+            major = math.floor(cpu_temp)
+            minor = math.floor((cpu_temp - major) * 100)
+            _mc_pending += chr(_S_CPU_TEMP)
+            _mc_pending += chr(int(minor))
+            _mc_pending += chr(int(major))
+            _mc_pending += chr(_S_END)
 
 
 ################################################################################
