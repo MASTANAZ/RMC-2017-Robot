@@ -44,6 +44,7 @@ const float TILE_SIZE = 7.38f / (float)GRID_WIDTH;
 ////////////////////////////////////////////////////////////////////////////////
 
 char** grid = nullptr;
+float** cost_map = nullptr;
 
 ros::Publisher  world_pub;
 ros::Subscriber phobos_pose_sub;
@@ -105,9 +106,12 @@ int main(int argc, char** argv)
 void init(void)
 {
     grid = new char*[GRID_HEIGHT];
+    cost_map = new float*[GRID_HEIGHT];
+
     for (unsigned i = 0; i < GRID_HEIGHT; ++i)
     {
         grid[i] = new char[GRID_WIDTH];
+        cost_map[i] = new float[GRID_WIDTH];
     }
 
     // initialize grid values here
@@ -116,6 +120,7 @@ void init(void)
         for (unsigned x = 0; x < GRID_WIDTH; ++x)
         {
             grid[y][x] = '.';
+            cost_map[y][x] = 0.0f;
         }
     }
 }
@@ -149,8 +154,10 @@ void cleanup(void)
     for (unsigned i = 0; i < GRID_HEIGHT; ++i)
     {
         delete [] grid[i];
+        delete [] cost_map[i];
     }
     delete [] grid;
+    delete [] cost_map;
 }
 
 void phobos_pose_callback(const geometry_msgs::Pose2D& pose)

@@ -5,10 +5,11 @@ project(om17)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+    om17
 	roscpp
 	rospy
 	std_msgs
-	genmsg
+    message_generation
 )
 find_package(OpenCV REQUIRED)
 
@@ -46,11 +47,10 @@ find_package(OpenCV REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+    FILES
+    CellCost.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +67,11 @@ find_package(OpenCV REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+    om17
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -134,7 +135,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 ## Declare a C++ executable
 add_executable(poser src/poser.cpp)
 add_executable(world src/world.cpp)
-add_executable(auto_controls src/auto_controls.cpp)
+add_executable(auto_controls src/auto_controls.cpp src/dstar.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
