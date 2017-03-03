@@ -15,13 +15,13 @@
             <VBox>
                <children>
                   <Label alignment="CENTER" prefHeight="20.0" prefWidth="37.0" text="LCV" />
-                  <Slider min="-100.0" orientation="VERTICAL" />
+                  <Slider fx:id="lcvSlider" min="-100.0" orientation="VERTICAL" />
                </children>
             </VBox>
             <VBox>
                <children>
                   <Label alignment="CENTER" prefHeight="20.0" prefWidth="37.0" text="RCV" />
-                  <Slider min="-100.0" orientation="VERTICAL" />
+                  <Slider fx:id="rcvSlider" min="-100.0" orientation="VERTICAL" />
                </children>
             </VBox>
             <VBox alignment="CENTER_LEFT">
@@ -33,5 +33,7 @@
             </VBox>
          </children>
       </HBox>
+      <Separator />
+      <Label fx:id="cpuTempLabel" alignment="CENTER" prefHeight="18.0" prefWidth="159.0" styleClass="card-subtitle" text="CPU 57.6°C" />
    </children>
 </VBox>

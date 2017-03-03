@@ -1,6 +1,6 @@
 package om.mc.frontend;
 
-import om.mc.backend.RNI;
+import om.mc.backend.Network;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -18,8 +18,8 @@ public class NetworkController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        sentLabel.textProperty().bind(RNI.sentProperty());
-        receivedLabel.textProperty().bind(RNI.receivedProperty());
-        totalLabel.textProperty().bind(RNI.totalProperty());
+        sentLabel.textProperty().bind(Network.sentProperty());
+        receivedLabel.textProperty().bind(Network.receivedProperty());
+        totalLabel.textProperty().bind(Network.totalProperty());
     }
 }

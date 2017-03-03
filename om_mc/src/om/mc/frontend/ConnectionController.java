@@ -1,6 +1,6 @@
 package om.mc.frontend;
 
-import om.mc.backend.RNI;
+import om.mc.backend.Network;
 import om.mc.Global;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,8 +24,8 @@ public class ConnectionController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        phobosConnIndicator.progressProperty().bind(RNI.phobosConnProperty());
-        deimosConnIndicator.progressProperty().bind(RNI.deimosConnProperty());
+        phobosConnIndicator.progressProperty().bind(Network.phobosConnProperty());
+        deimosConnIndicator.progressProperty().bind(Network.deimosConnProperty());
     }
 
     @FXML

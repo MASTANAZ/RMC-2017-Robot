@@ -45,7 +45,7 @@ public class Client extends Application {
         stage.setOnCloseRequest(event -> cleanup());
 
         stage.setFullScreenExitHint("");
-        stage.setFullScreen(false);
+        stage.setFullScreen(true);
 
         // give global a reference to this current instance of this class for the rest of the program to use
         Global.setClientInstance(this);

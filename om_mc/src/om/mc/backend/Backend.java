@@ -23,7 +23,7 @@ public class Backend {
     }
 
     public void initialize() {
-        RNI.initialize();
+        Network.initialize();
         DataModel.initialize();
     }
 
@@ -70,6 +70,10 @@ public class Backend {
         new Thread(task).start();
     }
 
+    public boolean isRunning() {
+        return running;
+    }
+
     public void stop() {
         running = false;
     }
@@ -83,17 +87,18 @@ public class Backend {
     }
 
     private void tick() {
-        RNI.tick(dt);
+        Network.tick(dt);
+        DataModel.tick(dt);
         manualControl.tick(dt);
         mission.tick(dt);
     }
 
     private void synchronizedTick() {
-        RNI.synchronizedTick();
+        Network.synchronizedTick();
         mission.synchronizedTick();
     }
 
     private void cleanup() {
-        RNI.cleanup();
+        Network.cleanup();
     }
 }

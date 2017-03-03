@@ -1,11 +1,15 @@
 package om.mc.backend;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 
+import javax.xml.crypto.Data;
+import java.io.DataOutputStream;
 import java.util.Map;
 
 /**
@@ -30,6 +34,9 @@ public class Robot {
     private String identifier = "";
     private String name = "";
     private int dataModelIndex = -1;
+    private double lcv = 0.0, rcv = 0.0;
+    private float cpuTemp = 0.0f;
+    private float gpuTemp = 0.0f;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // JAVAFX VARIABLES
@@ -38,6 +45,9 @@ public class Robot {
     private SimpleStringProperty xProperty;
     private SimpleStringProperty yProperty;
     private SimpleStringProperty orientationProperty;
+    private SimpleDoubleProperty lcvProperty;
+    private SimpleDoubleProperty rcvProperty;
+    private SimpleStringProperty cpuTempProperty;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // CONSTRUCTOR
@@ -47,6 +57,9 @@ public class Robot {
         xProperty = new SimpleStringProperty("X: 0.00m");
         yProperty = new SimpleStringProperty("Y: 0.00m");
         orientationProperty = new SimpleStringProperty("θ: 0°");
+        lcvProperty = new SimpleDoubleProperty(0.0);
+        rcvProperty = new SimpleDoubleProperty(0.0);
+        cpuTempProperty = new SimpleStringProperty("CPU: 49.6°C");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,12 +72,18 @@ public class Robot {
         setX(DataModel.getData(dataModelIndex, DataModel.PROP_X));
         setY(DataModel.getData(dataModelIndex, DataModel.PROP_Y));
         setOrientation(DataModel.getData(dataModelIndex, DataModel.PROP_ORIENTATION));
+        lcv = DataModel.getData(dataModelIndex, DataModel.PROP_LCV);
+        rcv = DataModel.getData(dataModelIndex, DataModel.PROP_RCV);
+        cpuTemp = (float)DataModel.getData(dataModelIndex, DataModel.CPU_TEMP);
     }
 
     public void draw(GraphicsContext gc) {
         xProperty.set("X: " + String.format("%.2f", x) + "m");
         yProperty.set("Y: " + String.format("%.2f", y) + "m");
         orientationProperty.set("θ: " + (int)((-(orientation - (Math.PI * 2.0f))) * 180.0f / Math.PI) + "°");
+        lcvProperty.set(lcv);
+        rcvProperty.set(rcv);
+        cpuTempProperty.set("CPU: " + cpuTemp + "°C");
 
         // grab our graphics transformation matrix before we draw so we can reset it when we're done
         Affine stack = gc.getTransform();
@@ -160,5 +179,17 @@ public class Robot {
 
     public void setOrientation(float orientation) {
         this.orientation = orientation;
+    }
+
+    public DoubleProperty getLCVProperty() {
+        return lcvProperty;
+    }
+
+    public DoubleProperty getRCVProperty() {
+        return rcvProperty;
+    }
+
+    public StringProperty getCPUTempProperty() {
+        return cpuTempProperty;
     }
 }
