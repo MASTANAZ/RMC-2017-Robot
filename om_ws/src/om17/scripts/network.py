@@ -21,6 +21,7 @@ import select
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Int16
+from om17.msg import CellCost
 
 ################################################################################
 # CONSTANTS
@@ -57,38 +58,42 @@ _mc_to_process = ""
 
 _mc_connected  = False
 
-_lcv_publisher = rospy.Publisher('lcv', Int16, queue_size=10)
-_rcv_publisher = rospy.Publisher('rcv', Int16, queue_size=10)
+_lcv_pub = rospy.Publisher("lcv", Int16, queue_size=10)
+_rcv_pub = rospy.Publisher("rcv", Int16, queue_size=10)
 
 ################################################################################
 # PUBLIC FUNCTIONS
 ################################################################################
 
-def callback(data):
+def pose_callback(data):
     global _mc_pending
     major = math.floor(data.x)
     minor = math.floor((data.x - major) * 100)
     _mc_pending += chr(_S_P_X)
     _mc_pending += chr(int(minor))
     _mc_pending += chr(int(major))
-    _mc_pending += chr(_S_END)
     major = math.floor(data.y)
     minor = math.floor((data.y - major) * 100)
     _mc_pending += chr(_S_P_Y)
     _mc_pending += chr(int(minor))
     _mc_pending += chr(int(major))
-    _mc_pending += chr(_S_END)
     major = math.floor(data.theta)
     minor = math.floor((data.theta - major) * 100)
     _mc_pending += chr(_S_P_ORIENTATION)
     _mc_pending += chr(int(minor))
     _mc_pending += chr(int(major))
-    _mc_pending += chr(_S_END)
+
+def cell_cost_callback(data):
+    print data.x
+    print data.y
+    print data.cost
+    print "--------------"
 
 def network():
     rospy.init_node("network")
     rate = rospy.Rate(3)
-    rospy.Subscriber("pose", Pose2D, callback)
+    rospy.Subscriber("pose", Pose2D, pose_callback)
+    rospy.Subscriber("/world_cost", CellCost, cell_cost_callback)
     rospy.Timer(rospy.Duration(3), _sys_temp)
     _init()
     while not rospy.is_shutdown():
@@ -174,12 +179,12 @@ def _parse_incoming():
         # the mission control can send to the robot
         if cbval == _S_P_LCV:
             if plen >= 3:
-                _lcv_publisher.publish(ord(_mc_to_process[1]) - 100)
+                _lcv_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "lcv: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
         elif cbval == _S_P_RCV:
             if plen >= 3:
-                _rcv_publisher.publish(ord(_mc_to_process[1]) - 100)
+                _rcv_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "rcv: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
         # discard the current byte and continue processing the rest of the
@@ -195,15 +200,18 @@ def _cleanup():
 def _sys_temp(event):
     global _mc_pending
 
-    with open("/sys/class/thermal/thermal_zone0/temp", "r") as cpu_thermal:
-        for line in cpu_thermal:
-            cpu_temp = float(int(line.rstrip())) / 1000
-            major = math.floor(cpu_temp)
-            minor = math.floor((cpu_temp - major) * 100)
-            _mc_pending += chr(_S_CPU_TEMP)
-            _mc_pending += chr(int(minor))
-            _mc_pending += chr(int(major))
-            _mc_pending += chr(_S_END)
+    # this will only work on the raspberry pi
+    try:
+        with open("/sys/class/thermal/thermal_zone0/temp", "r") as cpu_thermal:
+            for line in cpu_thermal:
+                cpu_temp = float(int(line.rstrip())) / 1000
+                major = math.floor(cpu_temp)
+                minor = math.floor((cpu_temp - major) * 100)
+                _mc_pending += chr(_S_CPU_TEMP)
+                _mc_pending += chr(int(minor))
+                _mc_pending += chr(int(major))
+    except:
+        pass
 
 
 ################################################################################

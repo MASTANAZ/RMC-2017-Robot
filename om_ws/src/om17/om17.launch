@@ -11,11 +11,11 @@
   <!--node pkg="om17" type="world" name="world" output="screen" /-->
 
   <!-- ROUND TIMER WATCHDOG -->
-  <node pkg="om17" type="watchdog.py" name="watchdog" output="screen" />
+  <!--node pkg="om17" type="watchdog.py" name="watchdog" output="screen" /-->
 
   <!-- AUTONOMY -->
   <node pkg="om17" type="auto_controls" name="auto_controls" output="screen" />
 
   <!-- ARDUINO INTERFACE -->
-  <node pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0" name="serial_node" output="screen" />
+  <!--node pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0" name="serial_node" output="screen" /-->
 </launch>
