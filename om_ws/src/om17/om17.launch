@@ -1,8 +1,21 @@
 <launch>
   <rosparam command="load" file="$(env HOME)/ops_parameters.yaml" />
+
+  <!-- NETWORK COMMUNICATIONS WITH MISSION CONTROL -->
   <node pkg="om17" type="network.py" name="network" output="screen" />
+
+  <!-- POSITIONING WITH OPENCV AND RASPBERRY PI CAM -->
   <!--node pkg="om17" type="poser" name="poser" output="screen" /-->
+
+  <!-- WORLD VISUALIZER -->
   <!--node pkg="om17" type="world" name="world" output="screen" /-->
+
+  <!-- ROUND TIMER WATCHDOG -->
+  <node pkg="om17" type="watchdog.py" name="watchdog" output="screen" />
+
+  <!-- AUTONOMY -->
   <node pkg="om17" type="auto_controls" name="auto_controls" output="screen" />
+
+  <!-- ARDUINO INTERFACE -->
   <node pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0" name="serial_node" output="screen" />
 </launch>
