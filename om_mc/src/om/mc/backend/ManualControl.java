@@ -85,6 +85,26 @@ public class ManualControl {
 
                 controllerValues[i].put(event.getComponent().getIdentifier().getName(), val);
             }
+
+            // TODO: FIX
+
+            // AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+            double lcv = (double)((float)controllerValues[i].get("y")) * -100;
+            double rcv = (double)((float)controllerValues[i].get("y")) * -100;
+
+            double steering = (double)((float)controllerValues[i].get("rx")) * 100;
+
+            lcv += steering;
+            rcv -= steering;
+
+            if (lcv > 100) lcv = 100;
+            if (lcv < -100) lcv = -100;
+
+            if (rcv > 100) rcv = 100;
+            if (rcv < -100) rcv = -100;
+
+            DataModel.putData(i, DataModel.PROP_LCV, lcv);
+            DataModel.putData(i, DataModel.PROP_RCV, rcv);
         }
     }
 
