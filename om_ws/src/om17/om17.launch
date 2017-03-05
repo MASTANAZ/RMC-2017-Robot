@@ -5,7 +5,7 @@
   <node pkg="om17" type="network.py" name="network" output="screen" />
 
   <!-- POSITIONING WITH OPENCV AND RASPBERRY PI CAM -->
-  <!--node pkg="om17" type="poser" name="poser" output="screen" /-->
+  <node pkg="om17" type="poser" name="poser" output="screen" />
 
   <!-- WORLD VISUALIZER -->
   <!--node pkg="om17" type="world" name="world" output="screen" /-->

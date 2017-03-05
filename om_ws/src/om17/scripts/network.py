@@ -27,11 +27,7 @@ from om17.msg import CellCost
 # CONSTANTS
 ################################################################################
 
-_S_END             = 0xFF
-
-_S_P_X             = 0x01
-_S_P_Y             = 0x02
-_S_P_ORIENTATION   = 0x03
+_S_P_POSE          = 0x01
 _S_P_LCV           = 0x04
 _S_P_RCV           = 0x05
 _S_CELL_COST       = 0x06
@@ -67,9 +63,10 @@ _rcv_pub = rospy.Publisher("rcv", Int16, queue_size=10)
 
 def pose_callback(data):
     global _mc_pending
-    _mc_pending += chr(_S_P_X) + _network_float(data.x)
-    _mc_pending += chr(_S_P_Y) + _network_float(data.y)
-    _mc_pending += chr(_S_P_ORIENTATION) + _network_float(data.theta)
+    _mc_pending += chr(_S_P_POSE)
+    _mc_pending += _network_float(data.x)
+    _mc_pending += _network_float(data.y)
+    _mc_pending += _network_float(data.theta)
 
 def cell_cost_callback(data):
     print data.x
@@ -93,9 +90,9 @@ def network():
 ################################################################################
 
 def _network_float(num):
-    major = math.floor(num)
-    minor = math.floor((num - major) * 100)
-    return chr(major) + chr(minor)
+    major = int(math.floor(num))
+    minor = int(math.floor((num - major) * 100))
+    return (chr(major) + chr(minor))
 
 def _init():
     rospy.loginfo("INITIALIZING MISSION CONTROL CONNECTION")
