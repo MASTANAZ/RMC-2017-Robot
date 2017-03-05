@@ -67,21 +67,9 @@ _rcv_pub = rospy.Publisher("rcv", Int16, queue_size=10)
 
 def pose_callback(data):
     global _mc_pending
-    major = math.floor(data.x)
-    minor = math.floor((data.x - major) * 100)
-    _mc_pending += chr(_S_P_X)
-    _mc_pending += chr(int(minor))
-    _mc_pending += chr(int(major))
-    major = math.floor(data.y)
-    minor = math.floor((data.y - major) * 100)
-    _mc_pending += chr(_S_P_Y)
-    _mc_pending += chr(int(minor))
-    _mc_pending += chr(int(major))
-    major = math.floor(data.theta)
-    minor = math.floor((data.theta - major) * 100)
-    _mc_pending += chr(_S_P_ORIENTATION)
-    _mc_pending += chr(int(minor))
-    _mc_pending += chr(int(major))
+    _mc_pending += chr(_S_P_X) + _network_float(data.x)
+    _mc_pending += chr(_S_P_Y) + _network_float(data.y)
+    _mc_pending += chr(_S_P_ORIENTATION) + _network_float(data.theta)
 
 def cell_cost_callback(data):
     print data.x
@@ -103,6 +91,11 @@ def network():
 ################################################################################
 # PRIVATE FUNCTIONS
 ################################################################################
+
+def _network_float(num):
+    major = math.floor(num)
+    minor = math.floor((num - major) * 100)
+    return chr(major) + chr(minor)
 
 def _init():
     rospy.loginfo("INITIALIZING MISSION CONTROL CONNECTION")
@@ -205,11 +198,7 @@ def _sys_temp(event):
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as cpu_thermal:
             for line in cpu_thermal:
                 cpu_temp = float(int(line.rstrip())) / 1000
-                major = math.floor(cpu_temp)
-                minor = math.floor((cpu_temp - major) * 100)
-                _mc_pending += chr(_S_CPU_TEMP)
-                _mc_pending += chr(int(major))
-                _mc_pending += chr(int(minor))
+                _mc_pending += chr(_S_CPU_TEMP) + _network_float(cpu_temp)
     except:
         pass
 
