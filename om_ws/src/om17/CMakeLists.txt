@@ -5,7 +5,6 @@ project(om17)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-    om17
 	roscpp
 	rospy
 	std_msgs
@@ -105,7 +104,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES om17
-#  CATKIN_DEPENDS other_catkin_pkg
+    CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 

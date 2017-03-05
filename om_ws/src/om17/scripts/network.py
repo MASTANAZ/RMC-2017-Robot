@@ -33,10 +33,8 @@ _S_P_Y             = 0x02
 _S_P_ORIENTATION   = 0x03
 _S_P_LCV           = 0x04
 _S_P_RCV           = 0x05
-
-_S_OBSTACLE        = 0x06
+_S_CELL_COST       = 0x06
 _S_CPU_TEMP        = 0x07
-_S_GPU_TEMP        = 0x08
 
 # mission control communication parameters
 _MC_PORT           = 12000
