@@ -208,8 +208,8 @@ def _sys_temp(event):
                 major = math.floor(cpu_temp)
                 minor = math.floor((cpu_temp - major) * 100)
                 _mc_pending += chr(_S_CPU_TEMP)
-                _mc_pending += chr(int(minor))
                 _mc_pending += chr(int(major))
+                _mc_pending += chr(int(minor))
     except:
         pass
 
