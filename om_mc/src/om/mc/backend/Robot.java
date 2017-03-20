@@ -1,65 +1,67 @@
 package om.mc.backend;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.transform.Affine;
+import om.mc.frontend.StatusController;
+import sun.nio.ch.Net;
 
-import javax.xml.crypto.Data;
-import java.io.DataOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Harris on 12/25/16.
+ * Created by Harris Newsteder on 3/6/17.
  */
 public class Robot {
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // CONSTANTS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private final double X_POINTS[] =  {-0.375f, -0.375f, 0.375f, 0.375f};
-    private final double Y_POINTS[] =  {-0.375f, 0.375f, 0.225f, -0.225f};
-    private final int N_POINTS = 4;
+    private final Color COLOR_CAMERA_FOV = Color.web("#6FC2F2", 0.25);
+    private final Font FONT = new Font(0.25);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // VARIABLES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private float x = 0.75f, y = 1.5f;
-    private float orientation = 0.0f;
-    private String identifier = "";
-    private String name = "";
-    private int dataModelIndex = -1;
-    private double lcv = 0.0, rcv = 0.0;
-    private float cpuTemp = 0.0f;
-    private float gpuTemp = 0.0f;
+    private Map propertyMap;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // JAVAFX VARIABLES
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private int lcv;
+    private int rcv;
+    private String name;
+    private Pose pose;
+    private float cpuTemp;
 
-    private SimpleStringProperty xProperty;
-    private SimpleStringProperty yProperty;
-    private SimpleStringProperty orientationProperty;
-    private SimpleDoubleProperty lcvProperty;
-    private SimpleDoubleProperty rcvProperty;
-    private SimpleStringProperty cpuTempProperty;
+    private int lcvOld, rcvOld;
+
+    private float networkTimer;
+
+    private ArrayList<Integer> statementList;
+
+    private StatusController controller;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // CONSTRUCTOR
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public Robot() {
-        xProperty = new SimpleStringProperty("X: 0.00m");
-        yProperty = new SimpleStringProperty("Y: 0.00m");
-        orientationProperty = new SimpleStringProperty("θ: 0°");
-        lcvProperty = new SimpleDoubleProperty(0.0);
-        rcvProperty = new SimpleDoubleProperty(0.0);
-        cpuTempProperty = new SimpleStringProperty("CPU: 49.6°C");
+        lcv     = 0;
+        rcv     = 0;
+        name    = "";
+        pose    = new Pose();
+        pose.x = 2.0f;
+        pose.y = 1.0f;
+        cpuTemp = 0.0f;
+
+        networkTimer = 0.0f;
+
+        lcvOld = lcv;
+        rcvOld = rcv;
+
+
+        statementList = new ArrayList<Integer>();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,129 +69,163 @@ public class Robot {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void tick(float dt) {
-        if (dataModelIndex == -1) return;
+        parseStatements();
 
-        setX(DataModel.getData(dataModelIndex, DataModel.PROP_X));
-        setY(DataModel.getData(dataModelIndex, DataModel.PROP_Y));
-        setOrientation(DataModel.getData(dataModelIndex, DataModel.PROP_ORIENTATION));
-        lcv = DataModel.getData(dataModelIndex, DataModel.PROP_LCV);
-        rcv = DataModel.getData(dataModelIndex, DataModel.PROP_RCV);
-        cpuTemp = (float)DataModel.getData(dataModelIndex, DataModel.CPU_TEMP);
+        networkTimer += dt;
+
+        if (networkTimer > 0.1f && (Network.getClientSize() > 0)) {
+            String out = "";
+
+            if (lcv != lcvOld) {
+                out += (char)Network.S_LCV;
+                out += (char)((int)(lcv + 100));
+                lcvOld = lcv;
+            }
+
+            if (rcv != rcvOld) {
+                out += (char)Network.S_RCV;
+                out += (char)((int)(rcv + 100));
+                rcvOld = rcv;
+            }
+
+            try {
+                Network.writeString(Network.getClient(0).outStream, out);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            networkTimer -= 0.1f;
+        }
     }
 
     public void draw(GraphicsContext gc) {
-        xProperty.set("X: " + String.format("%.2f", x) + "m");
-        yProperty.set("Y: " + String.format("%.2f", y) + "m");
-        orientationProperty.set("θ: " + (int)((-(orientation - (Math.PI * 2.0f))) * 180.0f / Math.PI) + "°");
-        lcvProperty.set(lcv);
-        rcvProperty.set(rcv);
-        cpuTempProperty.set("CPU: " + cpuTemp + "°C");
+        // update the status monitor
+        if (controller != null) {
+            controller.lcvSlider.setValue((double)lcv);
+            controller.rcvSlider.setValue((double)rcv);
+            controller.xLabel.setText("X: " + pose.x + "m");
+            controller.yLabel.setText("Y: " + pose.y + "m");
+            controller.thetaLabel.setText("θ: " + (int)(pose.theta * 180.0f / Math.PI) + "°");
+            controller.cpuTempLabel.setText("CPU: " + cpuTemp + "°C");
+        }
 
         // grab our graphics transformation matrix before we draw so we can reset it when we're done
         Affine stack = gc.getTransform();
 
-        gc.translate(x, y);
-        gc.rotate((orientation * 180.0f) / Math.PI);
+        Pose p = getPose();
+
+        gc.translate(p.x, p.y);
+        gc.rotate((p.theta * 180.0f) / Math.PI);
 
         // robot body
         gc.setFill(Color.CORNFLOWERBLUE);
-        gc.fillPolygon(X_POINTS, Y_POINTS, N_POINTS);
-        gc.scale(0.85f, 0.85f);
-        gc.setFill(Color.LIGHTSKYBLUE);
-        gc.fillPolygon(X_POINTS, Y_POINTS, N_POINTS);
-        gc.scale(100.0f / 85.0f, 100.0f / 85.0f);
+        gc.fillRect(-0.375f, -0.375f, 0.75f, 0.75f);
 
         gc.setLineWidth(0.02f);
 
         // forward vector
         gc.setStroke(Color.INDIANRED);
-        gc.strokeLine(-0.375f, 0.0f, -0.6f, 0.0f);
-
-        // backwards vector (camera face)
-        gc.setStroke(Color.CORNFLOWERBLUE);
         gc.strokeLine(0.375f, 0.0f, 0.6f, 0.0f);
 
-        // robot name
-        gc.translate(-0.08f, 0.093f);
-        gc.scale(1.0f / 65.0f, 1.0f / 65.0f);
+        // camera FOV
+        gc.setStroke(COLOR_CAMERA_FOV);
+        gc.strokeLine(-0.375f, 0.0f, -15.375f, 6.995f);
+        gc.strokeLine(-0.375f, 0.0f, -15.375f, -6.995f);
+
+        gc.rotate((p.theta * -180.0f) / Math.PI);
+        gc.translate(-0.05, 0.05);
         gc.setFill(Color.BLACK);
-        gc.fillText(this.identifier, 0, 0);
-        gc.scale(65.0f, 65.0f);
+        gc.setFont(FONT);
+        gc.fillText("P", 0, 0);
 
         // reset our graphics transformation matrix
         gc.setTransform(stack);
+    }
+
+    public void pushStatement(int statement) {
+        statementList.add(statement);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PRIVATE FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private void parseStatements() {
+        int cbval, plen;
+
+        while (statementList.size() > 1) {
+            cbval = statementList.get(0);
+            plen = statementList.size();
+
+            switch (cbval) {
+                case Network.S_CPU_TEMP:
+                    if (plen < 3) break;
+
+                    cpuTemp = (float)statementList.get(1) + ((float)statementList.get(2) / 100.0f);
+
+                    statementList.remove(0);
+                    statementList.remove(0);
+                    statementList.remove(0);
+
+                    System.out.println(cpuTemp);
+
+                    break;
+                case Network.S_POSE:
+                    if (plen < 4) break;
+
+                    // SUPA PACKED DATA
+                    pose.x = (float)((statementList.get(1) & 0xF0) >> 4) + ((float)(statementList.get(1) & 0x0F) / 10.0f);
+                    pose.y = (float)((statementList.get(2) & 0xF0) >> 4) + ((float)(statementList.get(2) & 0x0F) / 10.0f);
+                    pose.theta = (float)((statementList.get(3) & 0xF0) >> 4) + ((float)(statementList.get(3) & 0x0F) / 10.0f);
+
+                    statementList.remove(0);
+                    statementList.remove(0);
+                    statementList.remove(0);
+                    statementList.remove(0);
+
+                    break;
+                case Network.S_LCV:
+                case Network.S_RCV:
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public void bindStatusController(StatusController sc) {
+        controller = sc;
+        controller.nameLabel.setText(name);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // SETTERS / GETTERS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public String getName() {
-        return name;
-    }
-
-    public StringProperty getXProperty() {
-        return xProperty;
-    }
-
-    public StringProperty getYProperty() {
-        return yProperty;
-    }
-
-    public StringProperty getOrientationProperty() {
-        return orientationProperty;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public float getOrientation() {
-        return orientation;
+    public void setPose(Pose pose) {
+        this.pose = pose;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setDataModelIndex(int index) {
-        this.dataModelIndex = index;
+    public Pose getPose() {
+        return pose;
     }
 
-    public void setPosition(float x, float y) {
-        this.x = x;
-        this.y = y;
+    public void setLCV(int lcv) {
+        this.lcv = lcv;
     }
 
-    public void setX(float x) {
-        this.x = x;
+    public void setRCV(int rcv) {
+        this.rcv = rcv;
     }
 
-    public void setY(float y) {
-        this.y = y;
+    public int getLCV() {
+        return lcv;
     }
 
-    public void setIdentifier(String name) {
-        this.identifier = name;
-    }
-
-    public void setOrientation(float orientation) {
-        this.orientation = orientation;
-    }
-
-    public DoubleProperty getLCVProperty() {
-        return lcvProperty;
-    }
-
-    public DoubleProperty getRCVProperty() {
-        return rcvProperty;
-    }
-
-    public StringProperty getCPUTempProperty() {
-        return cpuTempProperty;
+    public int getRCV() {
+        return rcv;
     }
 }

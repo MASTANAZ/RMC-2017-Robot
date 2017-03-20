@@ -1,18 +1,18 @@
 /*
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2015 - AGIX | Innovative Engineering
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT 	SHALL THE
@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *                                                                              
+ *
  */
 
 /*
@@ -34,14 +34,14 @@
  ******************************************************************************/
 .root {
 	/* Swatch Colors - Blue*/
-	-swatch-100: #FFE0B2;
-	-swatch-200: #FFCC80;
-	-swatch-300: #FFB74D;
-	-swatch-400: #FFA726;
-	-swatch-500: #FF9800;
+	-swatch-100: #BBDEFB;
+	-swatch-200: #90CAF9;
+	-swatch-300: #64BEF6;
+	-swatch-400: #42A5F5;
+	-swatch-500: #2196F3;
 	/*default text */
 	-fx-text-base-color: rgb(100.0, 100.0, 100.0);
-	-fx-text-button-normal: rgb(100.0, 100.0, 100.0); /*-swatch-500;*/
+	-fx-text-button-normal: -swatch-500;
 	-fx-text-button-colored: rgb(255.0, 255.0, 255.0);
 	-fx-text-button-text: rgb(100.0, 100.0, 100.0);
 	-fx-text-title-color: rgb(45.0, 45.0, 45.0);
@@ -60,7 +60,7 @@
 	-swatch-light-grey: rgb(230.0, 230.0, 230.0);
 	-swatch-toolbar: rgb(245.0, 245.0, 245.0);
 	-swatch-toolbar-selected: rgb(215.0, 215.0, 215.0);
-	/* 
+	/*
      Modena colors
      */
 	-fx-dark-text-color: white; /* Text color when selected*/

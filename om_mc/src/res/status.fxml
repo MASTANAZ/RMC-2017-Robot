@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="5.0" styleClass="card" stylesheets="@material-fx-v0_3.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="om.mc.frontend.StatusController">
+   <children>
+      <Label fx:id="nameLabel" alignment="CENTER" prefWidth="134.0" text="ROBOT" />
+      <Separator />
+      <HBox spacing="5.0">
+         <children>
+            <VBox>
+               <children>
+                  <Label text="    L" />
+                  <Slider fx:id="lcvSlider" blockIncrement="1.0" min="-100.0" orientation="VERTICAL" />
+               </children>
+            </VBox>
+            <VBox>
+               <children>
+                  <Label text="    R" />
+                  <Slider fx:id="rcvSlider" blockIncrement="1.0" min="-100.0" orientation="VERTICAL" />
+               </children>
+            </VBox>
+            <VBox alignment="CENTER_LEFT">
+               <children>
+                  <Label text="X: 0m" fx:id="xLabel" />
+                  <Label fx:id="yLabel" text="Y: 0m" />
+                  <Label fx:id="thetaLabel" text="θ: 0°" />
+               </children>
+            </VBox>
+         </children>
+         <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin>
+      </HBox>
+      <Label alignment="CENTER" prefHeight="18.0" prefWidth="134.0" text="TRAVEL TO DIG SITE" />
+      <Separator />
+      <Label fx:id="cpuTempLabel" alignment="CENTER" prefWidth="134.0" text="CPU: 0°C" />
+   </children>
+</VBox>

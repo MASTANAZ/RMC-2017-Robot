@@ -1,7 +1,7 @@
 package om.mc.backend;
 
-import om.mc.Global;
 import net.java.games.input.*;
+import om.mc.Global;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -9,23 +9,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Harris on 12/25/16.
+ * Created by Harris Newsteder on 3/10/2017.
  */
 public class ManualControl {
-    private final float DEADZONE_THRESHOLD = 0.2f;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTANTS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private static final float DEADZONE_THRESHOLD = 0.2f;
 
-    private ArrayList<Controller> controllers = null;
-    private EventQueue eventQueue = null;
-    private Event event = null;
-    private Map controllerValues[] = null;
-    private boolean controllerAvailable = false;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private static ArrayList<Controller> controllers;
 
-    public ManualControl() {
+    private static EventQueue eventQueue;
+    private static Event event;
+
+    private static Map controllerValues[];
+
+    private static boolean controllerAvailable;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static void initialize() {
         controllers = new ArrayList<Controller>();
+
+        eventQueue = null;
         event = new Event();
+
+        controllerValues = null;
+
+        controllerAvailable = false;
     }
 
-    public void findControllers() {
+    public static void findControllers() {
         // remove all controllers currently in use by the program
         controllerAvailable = false;
         controllers.clear();
@@ -47,13 +65,13 @@ public class ManualControl {
                 controllerAvailable = true;
                 controllers.add(c);
 
-                System.out.println("> FOUND CONTROLLER: \"" + c.getName() + "\"");
+                System.out.println("FOUND CONTROLLER: \"" + c.getName() + "\"");
             }
         }
 
         // create a hash map of values for each available controller (if possible)
         if (!controllerAvailable) {
-            System.err.println("! ERROR: NO SUITABLE CONTROLLERS FOUND");
+            System.err.println("ERROR: NO SUITABLE CONTROLLERS FOUND");
             return;
         } else {
             controllerValues = new HashMap[controllers.size()];
@@ -68,7 +86,7 @@ public class ManualControl {
         }
     }
 
-    public void tick(float dt) {
+    public static void tick(float dt) {
         if (!controllerAvailable) return;
 
         // update the values for every available controller
@@ -85,6 +103,11 @@ public class ManualControl {
 
                 controllerValues[i].put(event.getComponent().getIdentifier().getName(), val);
             }
+
+            // we can only control two robots at a time, even if we have more than two controllers
+            if (i > 1) return;
+
+            Robot bound = Global.getBackendInstance().getMission().getRobot(i);
 
             // TODO: FIX
 
@@ -103,11 +126,14 @@ public class ManualControl {
             if (rcv > 100) rcv = 100;
             if (rcv < -100) rcv = -100;
 
-            DataModel.putData(i, DataModel.PROP_LCV, lcv);
-            DataModel.putData(i, DataModel.PROP_RCV, rcv);
+            bound.setLCV((int)lcv);
+            bound.setRCV((int)rcv);
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PRIVATE FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private static ControllerEnvironment createDefaultEnvironment() throws ReflectiveOperationException {
         Constructor<ControllerEnvironment> constructor = (Constructor<ControllerEnvironment>)
                 Class.forName("net.java.games.input.DefaultControllerEnvironment").getDeclaredConstructors()[0];

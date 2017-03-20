@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="5.0" styleClass="card" stylesheets="@material-fx-v0_3.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="om.mc.frontend.NetworkController">
+   <children>
+      <Label alignment="CENTER" prefHeight="17.0" prefWidth="120.0" text="NETWORK USAGE" />
+      <Separator />
+      <Label fx:id="sentLabel" text="SENT: 0B" />
+      <Label fx:id="recvLabel" text="RECV: 0B" />
+      <Label fx:id="totlLabel" text="TOTL: 0B" />
+   </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
+</VBox>

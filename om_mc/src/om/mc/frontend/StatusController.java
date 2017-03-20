@@ -1,40 +1,35 @@
 package om.mc.frontend;
 
-import javafx.scene.control.Slider;
-import om.mc.backend.Robot;
-import om.mc.Global;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import om.mc.Global;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * Created by OSPREY MINERS on 12/30/2016.
+ * Created by Harris Newsteder on 3/8/2017.
  */
 public class StatusController implements Initializable {
-    @FXML Label nameLabel;
-    @FXML Label xLabel;
-    @FXML Label yLabel;
-    @FXML Label orientationLabel;
-    @FXML Slider lcvSlider;
-    @FXML Slider rcvSlider;
-    @FXML Label cpuTempLabel;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @FXML public Slider lcvSlider;
+    @FXML public Slider rcvSlider;
+    @FXML public Label nameLabel;
+    @FXML public Label cpuTempLabel;
+    @FXML public Label xLabel;
+    @FXML public Label yLabel;
+    @FXML public Label thetaLabel;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Robot monitored = Global.getBackendInstance().getMission().getNextRobot();
-
-        nameLabel.setText(monitored.getName());
-
-        xLabel.textProperty().bind(monitored.getXProperty());
-        yLabel.textProperty().bind(monitored.getYProperty());
-        orientationLabel.textProperty().bind(monitored.getOrientationProperty());
-
-        lcvSlider.valueProperty().bind(monitored.getLCVProperty());
-        rcvSlider.valueProperty().bind(monitored.getRCVProperty());
-
-        cpuTempLabel.textProperty().bind(monitored.getCPUTempProperty());
+        // grab either phobos or deimos and bind to the virtual robot class so the JavaFX properties can be updated
+        Global.getBackendInstance().getMission().getRobot(Global.statusRobotIndex++).bindStatusController(this);
     }
 }

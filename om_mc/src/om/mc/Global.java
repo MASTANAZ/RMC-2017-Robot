@@ -1,33 +1,34 @@
 package om.mc;
 
 import om.mc.backend.Backend;
-import om.mc.frontend.Client;
 
 /**
- * Created by Harris on 12/25/16.
+ * Created by Harris Newsteder on 3/6/17.
  */
 public class Global {
-    public static final int TARGET_WIDTH = 1280;
-    public static final int TARGET_HEIGHT = 720;
-    public static final int PHOBOS_INDEX = 0;
-    public static final int DEIMOS_INDEX = 1;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTANTS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static Client clientInstance;
-    private static Backend backendInstance;
+    public static final int SCREEN_WIDTH = 1280;
+    public static final int SCREEN_HEIGHT = 720;
 
-    public static Client getClientInstance() {
-        return clientInstance;
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private static Backend backend = null;
 
-    public static void setClientInstance(Client client) {
-        clientInstance = client;
+    // used by the statusController class to determine which virtual robot representation the class should bind to
+    public static int statusRobotIndex = 0;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SETTERS / GETTERS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static void setBackendInstance(Backend backendInstance) {
+        backend = backendInstance;
     }
 
     public static Backend getBackendInstance() {
-        return backendInstance;
-    }
-
-    public static void setBackendInstance(Backend backend) {
-        backendInstance = backend;
+        return backend;
     }
 }

@@ -1,25 +1,29 @@
 package om.mc.frontend;
 
-import om.mc.backend.Network;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import om.mc.backend.Network;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * Created by OSPREY MINERS on 12/30/2016.
+ * Created by Harris Newsteder on 3/9/2017.
  */
 public class NetworkController implements Initializable {
-    @FXML private Label sentLabel;
-    @FXML private Label receivedLabel;
-    @FXML private Label totalLabel;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @FXML public Label sentLabel;
+    @FXML public Label recvLabel;
+    @FXML public Label totlLabel;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        sentLabel.textProperty().bind(Network.sentProperty());
-        receivedLabel.textProperty().bind(Network.receivedProperty());
-        totalLabel.textProperty().bind(Network.totalProperty());
+        Network.bindNetworkController(this);
     }
 }

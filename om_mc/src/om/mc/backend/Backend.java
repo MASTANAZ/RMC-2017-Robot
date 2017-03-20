@@ -1,64 +1,73 @@
 package om.mc.backend;
 
-import om.mc.Global;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 /**
- * Created by Harris on 12/25/16.
+ * Created by Harris Newsteder on 3/6/17.
  */
 public class Backend {
-    private boolean running = false;
-    private long oldTime = 0;
-    private long currentTime = 0;
-    private float dt = 0.0f;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // VARIABLES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private boolean running;
+
+    private long oldTime, newTime;
+    private float dt;
 
     private Mission mission;
-    private ManualControl manualControl;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTOR
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public Backend() {
+        running = true;
+        oldTime = 0;
+        newTime = 0;
+        dt = 0.0f;
+
         mission = new Mission();
-        manualControl = new ManualControl();
-        Global.setBackendInstance(this);
     }
 
-    public void initialize() {
-        Network.initialize();
-        DataModel.initialize();
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PUBLIC FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void start() {
-        running = true;
+        initialize();
 
-        // the backend thread
-        Task task = new Task<Void>() {
+        Task backendTask = new Task<Void>() {
             @Override
             public Void call() {
+                // this ensures our first value for dt is zero (or close enough)
                 oldTime = System.nanoTime();
 
                 while (running) {
                     // delta time calculation
-                    currentTime = System.nanoTime();
-                    dt = (float)(currentTime - oldTime) / 1000000000.0f;
+                    // delta time is the time (in seconds) since the last tick on this thread, it helps with all timing
+                    // on the backend thread and with time-dependent tasks (such as animations)
+                    newTime = System.nanoTime();
+                    dt = (float)(newTime - oldTime) / 1000000000.0f;
+                    oldTime = newTime;
 
-                    tick();
+                    tick(dt);
 
-                    // allows all GUI elements to be updated on the JavaFX thread
+                    // all parts of the backend that need to update elements or be synchronized with the JavaFX thread
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            synchronizedTick();
+                            syncTick();
                         }
                     });
 
-                    // give the CPU some time to do other tasks
+                    // give the CPU time to perform other tasks
                     try {
                         Thread.sleep(1);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-                    oldTime = currentTime;
                 }
 
                 cleanup();
@@ -67,38 +76,43 @@ public class Backend {
             }
         };
 
-        new Thread(task).start();
-    }
-
-    public boolean isRunning() {
-        return running;
+        new Thread(backendTask).start();
     }
 
     public void stop() {
         running = false;
     }
 
-    public Mission getMission() {
-        return mission;
+    public void cleanup() {
+        Network.cleanup();
     }
 
-    public ManualControl getManualControl() {
-        return manualControl;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // PRIVATE FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private void initialize() {
+        Network.initialize();
+        ManualControl.initialize();
+        ManualControl.findControllers();
     }
 
-    private void tick() {
+    private void tick(float dt) {
         Network.tick(dt);
-        DataModel.tick(dt);
-        manualControl.tick(dt);
+        ManualControl.tick(dt);
         mission.tick(dt);
     }
 
-    private void synchronizedTick() {
-        Network.synchronizedTick();
-        mission.synchronizedTick();
+    private void syncTick() {
+        Network.syncTick();
+        mission.syncTick();
     }
 
-    private void cleanup() {
-        Network.cleanup();
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SETTERS / GETTERS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Mission getMission() {
+        return mission;
     }
 }
