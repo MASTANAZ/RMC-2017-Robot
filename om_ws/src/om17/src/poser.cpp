@@ -71,11 +71,6 @@ void init(void);
 void tick(void);
 void cleanup(void);
 
-void sleep_millis(int milliseconds)
-{
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ENTRY POINT
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +89,7 @@ int main(int argc, char **argv)
     cv::namedWindow("POSITION", cv::WINDOW_AUTOSIZE);
     
     // sleep for 1 second
-    sleep_millis(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     
     while (ros::ok())
     {

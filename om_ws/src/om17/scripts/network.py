@@ -27,11 +27,16 @@ from om17.msg import CellCost
 # CONSTANTS
 ################################################################################
 
-_S_P_POSE          = 0x01
-_S_P_LCV           = 0x04
-_S_P_RCV           = 0x05
-_S_CELL_COST       = 0x06
-_S_CPU_TEMP        = 0x07
+_S_P_POSE            = 0x01
+_S_P_LCV             = 0x02
+_S_P_RCV             = 0x03
+_S_CELL_COST       = 0x04
+_S_CPU_TEMP        = 0x05
+_S_STARTING_PARAMS = 0x06
+_S_ROUND_START     = 0x07
+_S_ROUND_STOP      = 0x08
+_S_AUTONOMY_STOP   = 0x09
+_S_ROBOT_STATE     = 0x0A
 
 # mission control communication parameters
 _MC_PORT           = 12000
@@ -64,9 +69,9 @@ _rcv_pub = rospy.Publisher("rcv", Int16, queue_size=10)
 def pose_callback(data):
     global _mc_pending
     _mc_pending += chr(_S_P_POSE)
-    _mc_pending += _network_float(data.x)
-    _mc_pending += _network_float(data.y)
-    _mc_pending += _network_float(data.theta)
+    _mc_pending += _pack_float(data.x)
+    _mc_pending += _pack_float(data.y)
+    _mc_pending += _pack_float(data.theta)
 
 def cell_cost_callback(data):
     print data.x
@@ -89,14 +94,25 @@ def network():
 # PRIVATE FUNCTIONS
 ################################################################################
 
-def _network_float(num):
+def _pack_float(num):
     major = int(math.floor(num))
-    minor = int(math.floor((num - major) * 100))
-    return (chr(major) + chr(minor))
+    
+    # we can pack all the info into a single byte by reducing the precision
+    # of the number to a single decimal place and using the two nybbles to carry
+    # the data
+    # i.e. first nybble (0-15) + second nybble (0-9)
+    if major < 16:
+        minor = int(math.floor((num - major) * 10))
+        return chr((major << 4) | minor)
+    # we need two bytes to pack the number so we will use two decimal place
+    # precision
+    else:
+        minor = int(math.floor((num - major) * 100))
+        return chr(major) + chr(minor)
 
 def _init():
     rospy.loginfo("INITIALIZING MISSION CONTROL CONNECTION")
-    _connect() 
+    _connect()
 
 def _tick():
     if not _mc_connected: return
@@ -160,7 +176,7 @@ def _parse_incoming():
         return
 
     # process then entire string byte by byte
-    while (plen > 2):
+    while (plen > 1):
         # int value of the current byte being processed
         cbval = ord(_mc_to_process[0])
         # remaining length of the data string
@@ -168,15 +184,15 @@ def _parse_incoming():
         # essentially a giant switch statement for all available data that
         # the mission control can send to the robot
         if cbval == _S_P_LCV:
-            if plen >= 3:
+            if plen >= 2:
                 _lcv_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "lcv: " + str(ord(_mc_to_process[1]) - 100)
-                _mc_to_process = _mc_to_process[2:]
+                _mc_to_process = _mc_to_process[1:]
         elif cbval == _S_P_RCV:
-            if plen >= 3:
+            if plen >= 2:
                 _rcv_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "rcv: " + str(ord(_mc_to_process[1]) - 100)
-                _mc_to_process = _mc_to_process[2:]
+                _mc_to_process = _mc_to_process[1:]
         # discard the current byte and continue processing the rest of the
         # string        
         else:
@@ -195,7 +211,7 @@ def _sys_temp(event):
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as cpu_thermal:
             for line in cpu_thermal:
                 cpu_temp = float(int(line.rstrip())) / 1000
-                _mc_pending += chr(_S_CPU_TEMP) + _network_float(cpu_temp)
+                _mc_pending += chr(_S_CPU_TEMP) + _pack_float(cpu_temp)
     except:
         pass
 
