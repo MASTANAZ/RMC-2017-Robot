@@ -21,25 +21,21 @@
 #include <raspicam/raspicam_cv.h>
 
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/aruco.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
 ////////////////////////////////////////////////////////////////////////////////
 
-// the dimensions of our positioning board in number of intersections
-const int      POS_BOARD_WIDTH        = 9;
-const int      POS_BOARD_HEIGHT       = 6;
-
-// precalculated values that help opencv
-const int      POS_INTERSECTION_COUNT = POS_BOARD_WIDTH * POS_BOARD_HEIGHT;
-const cv::Size POS_BOARD_SIZE(POS_BOARD_WIDTH, POS_BOARD_HEIGHT);
-
-// the size of a square on our positioning board in millimeters
-const double   POS_BOARD_SQUARE_SIZE  = 0.1016f;
-
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
+
+cv::Ptr<cv::aruco::Dictionary> dictionary =
+    cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    
+cv::Ptr<cv::aruco::Board> board =
+    cv::aruco::GridBoard::create(5, 3, 0.13, 0.0325, dictionary);
 
 // the handle to the raspberry pi camera
 raspicam::RaspiCam_Cv    camera;
@@ -48,13 +44,6 @@ raspicam::RaspiCam_Cv    camera;
 // for image correction
 cv::Mat                  CAM_INTRINSIC      = cv::Mat::zeros(3, 3, CV_64FC1);
 cv::Mat                  CAM_DISTORTION     = cv::Mat::zeros(1, 5, CV_64FC1);
-
-//
-std::vector<cv::Point3d> object_points;
-
-//
-int                      intersection_count = 0;
-std::vector<cv::Point2f> intersections;
 
 // image received from the raspberry pi camera
 cv::Mat                  img;
@@ -80,7 +69,9 @@ int main(int argc, char **argv)
     // ROS initialization
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
+    
     ros::Rate loop_rate(5);
+    
     pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
     
     init();
@@ -111,7 +102,7 @@ int main(int argc, char **argv)
 void init(void)
 {
     // raspberry pi camera properties
-    camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
+    //camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
     camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
     
@@ -139,77 +130,63 @@ void init(void)
     CAM_DISTORTION.at<double>(0, 2) = 0.0005479489398905696f;
     CAM_DISTORTION.at<double>(0, 2) = -0.002218002368217438f;
     CAM_DISTORTION.at<double>(0, 4) = 0.0f;
-    
-    // create the vector of points on the checkerboard
-    for (int i = 0; i < POS_BOARD_HEIGHT; ++i)
-    {
-        for (int j = 0; j < POS_BOARD_WIDTH; ++j)
-        {
-            object_points.push_back
-            (
-                cv::Point3d
-                (
-                    double(j * POS_BOARD_SQUARE_SIZE),
-                    double(i * POS_BOARD_SQUARE_SIZE),
-                    0.0f
-                )
-            );
-        }
-    }
 }
 
 void tick(void)
 {
     camera.grab();
     camera.retrieve(img);
-    
-    bool found = false;
-        
-    found = cv::findChessboardCorners
-    (
-        img,
-        POS_BOARD_SIZE,
-        intersections,
-        cv::CALIB_CB_FAST_CHECK
-    );
-    
-    if (found)
+
+    std::vector<int> ids;
+    std::vector<std::vector<cv::Point2f>> corners;
+
+    // look for aruco markers
+    cv::aruco::detectMarkers(img, dictionary, corners, ids);
+
+    // at least one marker was found
+    if (ids.size() > 0)
     {
-        cv:drawChessboardCorners(img, POS_BOARD_SIZE, cv::Mat(intersections), found);
-            
-        // rotation and translation vectors
-        cv::Mat rvec, tvec;
-        cv::solvePnP(object_points, intersections, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec);
-            
-        pose.x = tvec.at<double>(2, 0);
-        pose.y = tvec.at<double>(0, 0);
-            
-        // translation from camera coords to object coords
-        cv::Mat R;
-        cv::Rodrigues(rvec, R);
-        cv::Mat cameraRotationVector;
-        cv::Rodrigues(R.t(), cameraRotationVector);
-        cv::Mat cameraTranslationVector = R.t()*tvec;
-
-        // publishing robot location on 
-        pose.x = cameraTranslationVector.at<double>(2,0);
-        pose.y = cameraTranslationVector.at<double>(0,0);
-        pose.theta = cameraRotationVector.at<double>(1, 0);
-
-        // in object space, y = 0 means the robot is centered on the field
-        // (y = 1.89f)
-        pose.y += 1.89f;
-
-        // rotate the robot's angle by 360 degrees so we don't have to
-        // transmit negative data over the network
-        pose.theta += 2.0f * 3.14159f;
-
-        // make sure none of our field coordinates are negative
-        // (this shouldn't be possible but it's still good to check)
-        pose.x = std::max((float)pose.x, 0.0f);
-        pose.y = std::max((float)pose.y, 0.0f);
+        cv::aruco::drawDetectedMarkers(img, corners, ids);
+        //cv::Vec3d rvec, tvec;
+        //int valid = cv::aruco::estimatePoseBoard(corners, ids, board, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec);
         
-        pose_pub.publish(pose);
+        /*if (valid > 0)
+        {
+            cv::aruco::drawAxis(img, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec, 0.13);
+            
+            //cv::Mat r = cv::Mat(rvec);
+            //cv::Mat t = cv::Mat(tvec);
+            
+            // translation from camera coords to object coords
+            cv::Mat R;
+            cv::Rodrigues(rvec, R);
+            cv::Mat camera_rvec;
+            cv::Rodrigues(R.t(), camera_rvec);
+            cv::Mat camera_tvec = -R.t() * (cv::Mat)tvec;
+    
+            // publishing robot location on 
+            pose.x = camera_tvec.at<double>(2,0);
+            pose.y = camera_tvec.at<double>(0,0);
+            pose.theta = camera_rvec.at<double>(1, 0);
+    
+            // in object space, y = 0 means the robot is centered on the field
+            // (y = 1.89f)
+            pose.y += 1.89f;
+    
+            // rotate the robot's angle by 360 degrees so we don't have to
+            // transmit negative data over the network
+            pose.theta += 2.0f * 3.14159f;
+    
+            // make sure none of our field coordinates are negative
+            // (this shouldn't be possible but it's still good to check)
+            pose.x = std::max((float)pose.x, 0.0f);
+            pose.y = std::max((float)pose.y, 0.0f);
+            
+            std::cout << pose.x << std::endl;
+            std::cout << pose.y << std::endl << std::endl;
+            
+            pose_pub.publish(pose);
+        }*/
     }
         
     cv::imshow("POSITION", img);

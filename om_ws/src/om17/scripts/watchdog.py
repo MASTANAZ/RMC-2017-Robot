@@ -37,12 +37,8 @@ def watchdog():
 # PRIVATE FUNCTIONS
 ################################################################################
 
-def _stop_callback(event):
-    rospy.loginfo("STOP")
-
 def _init():
     rospy.loginfo("INITIALIZING WATCHDOG")
-    rospy.Timer(rospy.Duration(2), _stop_callback)
     
 
 def _tick():
