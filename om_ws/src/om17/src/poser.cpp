@@ -35,7 +35,7 @@ cv::Ptr<cv::aruco::Dictionary> dictionary =
     cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
     
 cv::Ptr<cv::aruco::Board> board =
-    cv::aruco::GridBoard::create(5, 3, 0.13, 0.0325, dictionary);
+    cv::aruco::GridBoard::create(5, 3, 0.13, 0.0112522, dictionary);
 
 // the handle to the raspberry pi camera
 raspicam::RaspiCam_Cv    camera;
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     }
 
     cleanup();
-    
+
     return EXIT_SUCCESS;
 }
 
@@ -146,33 +146,31 @@ void tick(void)
     // at least one marker was found
     if (ids.size() > 0)
     {
+
         cv::aruco::drawDetectedMarkers(img, corners, ids);
-        //cv::Vec3d rvec, tvec;
-        //int valid = cv::aruco::estimatePoseBoard(corners, ids, board, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec);
+        cv::Mat rvec, tvec;
+        int valid = cv::aruco::estimatePoseBoard(corners, ids, board, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec);
         
-        /*if (valid > 0)
+        if (valid > 0) //valid > 0
         {
-            cv::aruco::drawAxis(img, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec, 0.13);
-            
-            //cv::Mat r = cv::Mat(rvec);
-            //cv::Mat t = cv::Mat(tvec);
-            
+            cv::aruco::drawAxis(img, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec, 0.39);
+
             // translation from camera coords to object coords
             cv::Mat R;
             cv::Rodrigues(rvec, R);
-            cv::Mat camera_rvec;
-            cv::Rodrigues(R.t(), camera_rvec);
-            cv::Mat camera_tvec = -R.t() * (cv::Mat)tvec;
+            cv::Mat cameraRotationVector;
+            cv::Rodrigues(R.t(), cameraRotationVector);
+            cv::Mat cameraTranslationVector = -R.t()*tvec;
     
             // publishing robot location on 
-            pose.x = camera_tvec.at<double>(2,0);
-            pose.y = camera_tvec.at<double>(0,0);
-            pose.theta = camera_rvec.at<double>(1, 0);
-    
+            pose.x = cameraTranslationVector.at<double>(2,0);
+            pose.y = cameraTranslationVector.at<double>(0,0);
+            pose.theta = cameraRotationVector.at<double>(2, 0);
+
             // in object space, y = 0 means the robot is centered on the field
             // (y = 1.89f)
-            pose.y += 1.89f;
-    
+            pose.y += 1.89 - 0.35;
+
             // rotate the robot's angle by 360 degrees so we don't have to
             // transmit negative data over the network
             pose.theta += 2.0f * 3.14159f;
@@ -182,11 +180,8 @@ void tick(void)
             pose.x = std::max((float)pose.x, 0.0f);
             pose.y = std::max((float)pose.y, 0.0f);
             
-            std::cout << pose.x << std::endl;
-            std::cout << pose.y << std::endl << std::endl;
-            
             pose_pub.publish(pose);
-        }*/
+        }
     }
         
     cv::imshow("POSITION", img);
