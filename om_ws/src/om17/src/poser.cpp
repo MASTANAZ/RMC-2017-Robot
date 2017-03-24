@@ -14,6 +14,7 @@
 #include <vector>
 #include <thread>
 #include <algorithm>
+#include <cmath>
 
 #include "ros/ros.h"
 #include "geometry_msgs/Pose2D.h"
@@ -26,6 +27,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
 ////////////////////////////////////////////////////////////////////////////////
+
+// the displacement of the camera from the center of the robot
+const float CAMERA_X = -0.34925f;
+const float CAMERA_Y = 0.1397f;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
@@ -70,7 +75,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
     
-    ros::Rate loop_rate(5);
+    ros::Rate loop_rate(3);
     
     pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
     
@@ -102,7 +107,7 @@ int main(int argc, char **argv)
 void init(void)
 {
     // raspberry pi camera properties
-    //camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
+    camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
     camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
     
@@ -146,12 +151,11 @@ void tick(void)
     // at least one marker was found
     if (ids.size() > 0)
     {
-
         cv::aruco::drawDetectedMarkers(img, corners, ids);
         cv::Mat rvec, tvec;
         int valid = cv::aruco::estimatePoseBoard(corners, ids, board, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec);
         
-        if (valid > 0) //valid > 0
+        if (valid > 0)
         {
             cv::aruco::drawAxis(img, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec, 0.39);
 
@@ -166,10 +170,13 @@ void tick(void)
             pose.x = cameraTranslationVector.at<double>(2,0);
             pose.y = cameraTranslationVector.at<double>(0,0);
             pose.theta = cameraRotationVector.at<double>(2, 0);
+ 
+            pose.x -= CAMERA_X * cos(pose.theta);
+            pose.y -= CAMERA_Y * sin(1.57079632679f - pose.theta);
 
             // in object space, y = 0 means the robot is centered on the field
             // (y = 1.89f)
-            pose.y += 1.89 - 0.35;
+            pose.y += 1.89 - .2;
 
             // rotate the robot's angle by 360 degrees so we don't have to
             // transmit negative data over the network

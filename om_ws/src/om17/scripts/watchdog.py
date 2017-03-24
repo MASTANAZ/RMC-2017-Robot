@@ -13,6 +13,8 @@
 
 import rospy
 
+from om17.msg import CellCost
+
 ################################################################################
 # CONSTANTS
 ################################################################################
@@ -21,13 +23,15 @@ import rospy
 # MODULE VARIABLES
 ################################################################################
 
+_cc_pub = rospy.Publisher("/world_cost", CellCost, queue_size=10)
+
 ################################################################################
 # PUBLIC FUNCTIONS
 ################################################################################
 
 def watchdog():
     rospy.init_node("watchdog")
-    rate = rospy.Rate(3)
+    rate = rospy.Rate(0.25)
     _init()
     while not rospy.is_shutdown():
         _tick()
@@ -42,6 +46,11 @@ def _init():
     
 
 def _tick():
+    test = CellCost()
+    test.x = 5
+    test.y = 5
+    test.cost = -1
+    _cc_pub.publish(test)
     pass
 
 def _cleanup():

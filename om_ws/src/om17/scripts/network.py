@@ -23,6 +23,7 @@ import rospy
 from geometry_msgs.msg import Pose2D
 
 from std_msgs.msg import Int16
+from std_msgs.msg import Int8
 from std_msgs.msg import Bool
 
 from om17.msg import CellCost
@@ -40,7 +41,8 @@ _S_STARTING_PARAMS = 0x06
 _S_ROUND_START     = 0x07
 _S_ROUND_STOP      = 0x08
 _S_AUTONOMY_STOP   = 0x09
-_S_ROBOT_STATE     = 0x0A
+_S_AUTONOMY_START  = 0x0A
+_S_STATE           = 0x0B
 
 # mission control communication parameters
 _MC_PORT           = 12000
@@ -72,24 +74,37 @@ _autonomy_active_pub = rospy.Publisher("/autonomy_active", Bool, queue_size = 10
 # PUBLIC FUNCTIONS
 ################################################################################
 
-def pose_callback(data):
+def state_callback(msg):
+    global _mc_pending
+    _mc_pending += chr(_S_STATE)
+    _mc_pending += chr(msg.data)
+
+def pose_callback(msg):
     global _mc_pending
     _mc_pending += chr(_S_POSE)
-    _mc_pending += _pack_float(data.x)
-    _mc_pending += _pack_float(data.y)
-    _mc_pending += _pack_float(data.theta)
+    _mc_pending += _pack_float(msg.x)
+    _mc_pending += _pack_float(msg.y)
+    _mc_pending += _pack_float(msg.theta)
 
-def cell_cost_callback(data):
-    print data.x
-    print data.y
-    print data.cost
+def cell_cost_callback(msg):
+    global _mc_pending
+    _mc_pending += chr(_S_CELL_COST)
+    _mc_pending += chr(int(msg.x))
+    _mc_pending += chr(int(msg.y))
+    print msg.x
+    print msg.y
+    print msg.cost
     print "--------------"
+    
 
 def network():
     rospy.init_node("network")
     rate = rospy.Rate(3)
+    
     rospy.Subscriber("pose", Pose2D, pose_callback)
     rospy.Subscriber("/world_cost", CellCost, cell_cost_callback)
+    rospy.Subscriber("state", Int8, state_callback)
+    
     rospy.Timer(rospy.Duration(3), _sys_temp)
     _init()
     while not rospy.is_shutdown():
@@ -193,28 +208,30 @@ def _parse_incoming():
             if plen >= 2:
                 _lcv_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "lcv: " + str(ord(_mc_to_process[1]) - 100)
-                _mc_to_process = _mc_to_process[1:]
+                _mc_to_process = _mc_to_process[2:]
+            else: break
         elif cbval == _S_RCV:
             if plen >= 2:
                 _rcv_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "rcv: " + str(ord(_mc_to_process[1]) - 100)
-                _mc_to_process = _mc_to_process[1:]
+                _mc_to_process = _mc_to_process[2:]
+            else: break
         elif cbval == _S_STARTING_PARAMS:
-            pass
+            _mc_to_process = _mc_to_process[1:]
         elif cbval == _S_ROUND_START:
             _round_active_pub.publish(True)
             _mc_to_process = _mc_to_process[1:]
-            pass
         elif cbval == _S_ROUND_STOP:
             _round_active_pub.publish(False)
             _mc_to_process = _mc_to_process[1:]
-            pass
-        elif cbval == _S_AUTONOMOY_STOP:
+        elif cbval == _S_AUTONOMY_STOP:
             _autonomy_active_pub.publish(False)
             _mc_to_process = _mc_to_process[1:]
-            pass
+        elif cbval == _S_AUTONOMY_START:
+            _autonomy_active_pub.publish(True)
+            _mc_to_process = _mc_to_process[1:]
         # discard the current byte and continue processing the rest of the
-        # string        
+        # string
         else:
             _mc_to_process = _mc_to_process[1:]
 
