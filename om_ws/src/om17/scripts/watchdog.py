@@ -13,6 +13,8 @@
 
 import rospy
 
+from random import randint
+
 from om17.msg import CellCost
 
 ################################################################################
@@ -31,7 +33,7 @@ _cc_pub = rospy.Publisher("/world_cost", CellCost, queue_size=10)
 
 def watchdog():
     rospy.init_node("watchdog")
-    rate = rospy.Rate(0.25)
+    rate = rospy.Rate(3)
     _init()
     while not rospy.is_shutdown():
         _tick()
@@ -46,11 +48,6 @@ def _init():
     
 
 def _tick():
-    test = CellCost()
-    test.x = 5
-    test.y = 5
-    test.cost = -1
-    _cc_pub.publish(test)
     pass
 
 def _cleanup():

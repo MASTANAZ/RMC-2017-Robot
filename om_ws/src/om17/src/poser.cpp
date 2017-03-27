@@ -75,7 +75,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
     
-    ros::Rate loop_rate(3);
+    ros::Rate loop_rate(12);
     
     pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
     
