@@ -4,6 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.transform.Affine;
+import om.mc.Global;
 import om.mc.frontend.StatusController;
 import sun.nio.ch.Net;
 
@@ -19,6 +20,23 @@ public class Robot {
     // CONSTANTS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private final float ROBOT_WIDTH = 0.889f;
+    private final float ROBOT_WIDTH_HALF = ROBOT_WIDTH / 2.0f;
+    private final float ROBOT_HEIGHT = 0.7239f;
+    private final float ROBOT_HEIGHT_HALF = ROBOT_HEIGHT / 2.0f;
+
+    private final int STATE_LNCH = 0;
+    private final int STATE_TTES = 1;
+    private final int STATE_EXCV = 2;
+    private final int STATE_TTDS = 3;
+    private final int STATE_DEPO = 4;
+
+    private final int CTRL_STATE_TRVL = 0;
+    private final int CTRL_STATE_EXCV = 1;
+    private final int CTRL_STATE_DEPO = 2;
+
+    private final String STATE_DESCRIPTIONS[] = {"STATE_LNCH", "STATE_TTES", "STATE_EXCV", "STATE_TTDS", "STATE_DEPO"};
+
     private final Color COLOR_CAMERA_FOV = Color.web("#6FC2F2", 0.25);
     private final Font FONT = new Font(0.25);
 
@@ -26,16 +44,16 @@ public class Robot {
     // VARIABLES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Map propertyMap;
-
     private int lcv;
     private int rcv;
     private String name;
     private Pose pose;
     private float cpuTemp;
 
-    private int lcvOld, rcvOld;
+    private int state, ctrlState;
+    private String stateDescription, ctrlStateDescription;
 
+    private int lcvOld, rcvOld;
     private float networkTimer;
 
     private ArrayList<Integer> statementList;
@@ -51,15 +69,21 @@ public class Robot {
         rcv     = 0;
         name    = "";
         pose    = new Pose();
-        pose.x = 2.0f;
-        pose.y = 1.0f;
+        pose.x = -1.0f;
+        pose.y = -1.0f;
+        pose.theta = 0.0f;
+
         cpuTemp = 0.0f;
+
+        state = STATE_LNCH;
+        ctrlState = CTRL_STATE_TRVL;
+        stateDescription = "STATE_LNCH";
+        ctrlStateDescription = "CTRL_TRVL";
 
         networkTimer = 0.0f;
 
         lcvOld = lcv;
         rcvOld = rcv;
-
 
         statementList = new ArrayList<Integer>();
     }
@@ -104,8 +128,9 @@ public class Robot {
             controller.rcvSlider.setValue((double)rcv);
             controller.xLabel.setText("X: " + pose.x + "m");
             controller.yLabel.setText("Y: " + pose.y + "m");
-            controller.thetaLabel.setText("θ: " + (int)(pose.theta * 180.0f / Math.PI) + "°");
+            controller.thetaLabel.setText("θ: " + pose.theta + "°");
             controller.cpuTempLabel.setText("CPU: " + cpuTemp + "°C");
+            controller.stateLabel.setText(stateDescription + " --- " + ctrlStateDescription);
         }
 
         // grab our graphics transformation matrix before we draw so we can reset it when we're done
@@ -113,29 +138,30 @@ public class Robot {
 
         Pose p = getPose();
 
-        gc.translate(p.x, p.y);
-        gc.rotate((p.theta * 180.0f) / Math.PI);
+        gc.translate(0.0f, Field.FIELD_HEIGHT);
+        gc.translate(p.x, -p.y);
+        gc.rotate(-p.theta);
 
         // robot body
         gc.setFill(Color.CORNFLOWERBLUE);
-        gc.fillRect(-0.375f, -0.375f, 0.75f, 0.75f);
+        gc.fillRect(-ROBOT_WIDTH_HALF, -ROBOT_HEIGHT_HALF, ROBOT_WIDTH, ROBOT_HEIGHT);
 
         gc.setLineWidth(0.02f);
 
         // forward vector
         gc.setStroke(Color.INDIANRED);
-        gc.strokeLine(0.375f, 0.0f, 0.6f, 0.0f);
+        gc.strokeLine(ROBOT_WIDTH_HALF, 0.0f, ROBOT_WIDTH + 0.1f, 0.0f);
 
         // camera FOV
         gc.setStroke(COLOR_CAMERA_FOV);
         gc.strokeLine(-0.375f, 0.0f, -15.375f, 6.995f);
         gc.strokeLine(-0.375f, 0.0f, -15.375f, -6.995f);
 
-        gc.rotate((p.theta * -180.0f) / Math.PI);
+        gc.rotate(p.theta);
         gc.translate(-0.05, 0.05);
         gc.setFill(Color.BLACK);
         gc.setFont(FONT);
-        gc.fillText("P", 0, 0);
+        gc.fillText("" + name.charAt(0), 0, 0);
 
         // reset our graphics transformation matrix
         gc.setTransform(stack);
@@ -166,8 +192,6 @@ public class Robot {
                     statementList.remove(0);
                     statementList.remove(0);
 
-                    System.out.println(cpuTemp);
-
                     break;
                 case Network.S_POSE:
                     if (plen < 4) break;
@@ -175,7 +199,7 @@ public class Robot {
                     // SUPA PACKED DATA
                     pose.x = (float)((statementList.get(1) & 0xF0) >> 4) + ((float)(statementList.get(1) & 0x0F) / 10.0f);
                     pose.y = (float)((statementList.get(2) & 0xF0) >> 4) + ((float)(statementList.get(2) & 0x0F) / 10.0f);
-                    pose.theta = (float)((statementList.get(3) & 0xF0) >> 4) + ((float)(statementList.get(3) & 0x0F) / 10.0f);
+                    pose.theta = (float)(statementList.get(3) - 90);
 
                     statementList.remove(0);
                     statementList.remove(0);
@@ -185,6 +209,28 @@ public class Robot {
                     break;
                 case Network.S_LCV:
                 case Network.S_RCV:
+                    break;
+                case Network.S_STATE:
+                    if (plen < 2) break;
+
+                    state = statementList.get(1);
+                    stateDescription = STATE_DESCRIPTIONS[state];
+
+                    statementList.remove(0);
+                    statementList.remove(0);
+
+                    break;
+
+                // TODO: UPDATE SO NETWORK CAN HANDLE ACTUAL COST VALUES INSTEAD OF JUST -1
+                case Network.S_CELL_COST:
+                    if (plen < 3) break;
+
+                    Global.getBackendInstance().getMission().getField().updateCostMap(statementList.get(1), statementList.get(2),-1.0f);
+
+                    statementList.remove(0);
+                    statementList.remove(0);
+                    statementList.remove(0);
+
                     break;
                 default:
                     break;

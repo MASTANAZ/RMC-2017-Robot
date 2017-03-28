@@ -37,6 +37,9 @@ public class Network {
     public static final int S_STARTING_PARAMS    = 0x06;
     public static final int S_ROUND_START        = 0x07;
     public static final int S_ROUND_STOP         = 0x08;
+    public static final int S_AUTONOMY_STOP      = 0x09;
+    public static final int S_AUTONOMY_START     = 0x0A;
+    public static final int S_STATE              = 0x0B;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // VARIABLES

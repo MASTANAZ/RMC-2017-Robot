@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="card" stylesheets="@material-fx-v0_3.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="om.mc.frontend.RoundMonitorController">
+   <children>
+      <Label fx:id="elapsedLabel" text="E+00:00:00" />
+      <Label fx:id="remainingLabel" text="R-10:00:00" />
+   </children>
+</VBox>

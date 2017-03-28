@@ -31,6 +31,7 @@ public class OverviewController implements Initializable {
 
         try {
             controlsPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/controls.fxml")));
+            controlsPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/round_monitor.fxml")));
             statusPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/status.fxml")));
             statusPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/status.fxml")));
             networkPane.getChildren().add(FXMLLoader.load(getClass().getClassLoader().getResource("res/network.fxml")));
