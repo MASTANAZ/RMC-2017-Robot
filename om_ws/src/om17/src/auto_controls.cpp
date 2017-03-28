@@ -58,9 +58,15 @@ const float CELL_SIZE = FIELD_WIDTH / (float)GRID_WIDTH;
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
 
-float x = 0.0f, y = 0.0f, theta = 0.0f;
+float x[2] = {0.0f, 0.0f}, y[2] = {0.0f, 0.0f};
+
+// Array of previous angle and current angle
+float thetas[2] = {0.0, 0.0};
+
+unsigned int tick_count = 0;
 
 int lcv = 0, rcv = 0;
+int lcv_rcv[2] = {0,0};
 
 // 
 int current_state = -1;
@@ -71,7 +77,8 @@ bool round_active = false;
 
 // path planning variables
 Dstar *dstar = nullptr;
-list<state> path;
+list<state> mypath;
+//list<state> path;
 
 // all topics that the auto_controls node subscribes to
 ros::Subscriber pose_sub, world_cost_sub;
@@ -101,6 +108,7 @@ void publishControls(const ros::TimerEvent& timer_event);
 void pathTest();
 float getAngularTime(float angle_one, float angle_two); 
 float getForwardTime(float pos1[2], float pos2[2]);
+void getLCVandRCVvalues(float pos1[2], float pos2[2], float angles[2]);
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENTRY POINT
@@ -154,10 +162,17 @@ void init(ros::NodeHandle &node_handle)
 
 void tick(void)
 {
+    // Increase the tick count by 1 every tick.
+    // The tick is at 30/second. 
+    tick_count++;
     switch (current_state) {
     case STATE_LNCH:
         break;
     case STATE_TTES:
+        getLCVandRCVvalues(x, y, thetas);
+        
+       
+/*
         if (x < 4.4) {
             lcv = 80;
             rcv = 80;
@@ -166,6 +181,8 @@ void tick(void)
             rcv = 0;
             setState(STATE_EXCV);
         }
+
+**/
         break;
     case STATE_EXCV:
         break;
@@ -193,9 +210,10 @@ void setState(int new_state)
     switch (new_state)
     {
     case STATE_TTES:
-        std::cout << (int)(x / CELL_SIZE) << ", " << (int)(y / CELL_SIZE) << std::endl;
+        std::cout << (int)(x[1] / CELL_SIZE) << ", " << (int)(y[1] / CELL_SIZE) << std::endl;
     
-        dstar->init((int)(x / CELL_SIZE),(int)(y / CELL_SIZE), 18, 6);
+        dstar->init((int)(x[1] / CELL_SIZE),(int)(y[1] / CELL_SIZE), 18, 6);
+        mypath = dstar->getPath();
         break;
     default:
         break;
@@ -235,9 +253,17 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
-    x     = (float)msg->x;
-    y     = (float)msg->y;
-    theta = (float)msg->theta;
+    x[0]      = x[1];
+    x[1]      = (float)msg->x;
+
+    y[0]      = y[1];
+    y[1]      = (float)msg->y;
+    
+    // Move the thetas down the queue
+    thetas[0] = thetas[1];
+    thetas[1] = (float)msg->theta;
+
+    dstar->updateStart((int)(x[1] / CELL_SIZE),(int)(y[1] / CELL_SIZE));
 }
 
 void pathTest()
@@ -268,6 +294,43 @@ float getAngularTime(float angle_one, float angle_two) {
 float getForwardTime(float pos1[2], float pos2[2]) {
     float distance = sqrt(((pos2[1] - pos1[1])*(pos2[1] - pos1[1])) + ((pos2[0] - pos1[0])*(pos2[0] - pos1[0])));
     return OMEGA_DISTANCE * distance;
+}
+
+// Determine if the rover needs to turn left/right or forward/backward
+void getLCVandRCVvalues(float pos1[2], float pos2[2], float angles[2]) {
+    float delta_x, delta_y, delta_r = 0.0;
+
+    delta_x = pos2[0] - pos1[0];
+    delta_y = pos2[1] - pos1[1];
+    delta_r = angles[1] - angles[0];
+
+    int lcv_rcv[2] = {0,0};
+    
+    if (delta_x > 0 && delta_y > 0 && delta_r > 0) {
+        lcv_rcv[0] = -1;
+        lcv_rcv[1] = 1;
+    }
+
+    else if (delta_x > 0 && delta_y > 0 && delta_r == 0) {
+        lcv_rcv[0] = 1;
+        lcv_rcv[1] = 1;
+    }
+
+    else if (delta_x > 0 && delta_y < 0 && delta_r < 0) {
+        lcv_rcv[0] = 1;
+        lcv_rcv[1] = -1;
+    }
+
+    else if (delta_x < 0 && delta_y < 0 && delta_r < 0) {
+        lcv_rcv[0] = -1;
+        lcv_rcv[1] = -1;
+    }
+
+    else if (delta_x < 0 && delta_y < 0 && delta_r == 0) {
+        lcv_rcv[0] = -1;
+        lcv_rcv[1] = -1;
+    }
+
 }
 
 void publishControls(const ros::TimerEvent& timer_event)
