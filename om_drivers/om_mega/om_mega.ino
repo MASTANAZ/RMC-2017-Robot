@@ -41,21 +41,21 @@ const int RELAY_STATES[3][3] = {
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
 
-ros::NodeHandle nh;
+ros::NodeHandle node_handle;
 
-Servo lcv;
-Servo rcv;
+Servo mc1;
+Servo mc2;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION DECLARATIONS
 ////////////////////////////////////////////////////////////////////////////////
 
-void lcvCallback(const std_msgs::Int16& lcv_msg);
-void rcvCallback(const std_msgs::Int16& rcv_msg);
+void mc1Callback(const std_msgs::Int16& msg);
+void mc2Callback(const std_msgs::Int16& msg);
 void setControlState(int control_state);
 
-ros::Subscriber<std_msgs::Int16> lcv_sub("lcv", &lcvCallback);
-ros::Subscriber<std_msgs::Int16> rcv_sub("rcv", &rcvCallback);
+ros::Subscriber<std_msgs::Int16> mc1_sub("lcv", &mc1Callback);
+ros::Subscriber<std_msgs::Int16> mc2_sub("rcv", &mc2Callback);
 
 ////////////////////////////////////////////////////////////////////////////////
 // ARDUINO FUNCTIONS
@@ -63,21 +63,21 @@ ros::Subscriber<std_msgs::Int16> rcv_sub("rcv", &rcvCallback);
 
 void setup()
 {
-  nh.initNode();
-  nh.subscribe(lcv_sub);
-  nh.subscribe(rcv_sub);
+  node_handle.initNode();
+  node_handle.subscribe(lcv_sub);
+  node_handle.subscribe(rcv_sub);
 
   pinMode(RELAY_1, OUTPUT);
   pinMode(RELAY_2, OUTPUT);
   pinMode(RELAY_3, OUTPUT);
   
-  lcv.attach(3);
-  rcv.attach(2);
+  mc1.attach(3);
+  mc2.attach(2);
 }
 
 void loop()
 {
-  nh.spinOnce();
+  node_handle.spinOnce();
   delay(5);
 }
 
@@ -85,14 +85,14 @@ void loop()
 // FUNCTION DEFINITIONS
 ////////////////////////////////////////////////////////////////////////////////
 
-void lcvCallback(const std_msgs::Int16& lcv_msg)
+void mc1Callback(const std_msgs::Int16& msg)
 {
-  lcv.writeMicroseconds(((int)lcv_msg.data * 5) + 1500);
+  mc1.writeMicroseconds(((int)msg.data * 5) + 1500);
 }
 
-void rcvCallback(const std_msgs::Int16& rcv_msg)
+void mc2Callback(const std_msgs::Int16& msg)
 {
-  lcv.writeMicroseconds(((int)rcv_msg.data * 5) + 1500);
+  mc2.writeMicroseconds(((int)msg.data * 5) + 1500);
 }
 
 void setControlState(int control_state)
