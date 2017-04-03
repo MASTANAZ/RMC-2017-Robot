@@ -30,8 +30,8 @@ public class Network {
     private static final int MAX_CLIENTS         = 2;
 
     public static final int S_POSE               = 0x01;
-    public static final int S_LCV                = 0x02;
-    public static final int S_RCV                = 0x03;
+    public static final int S_MC1                = 0x02;
+    public static final int S_MC2                = 0x03;
     public static final int S_CELL_COST          = 0x04;
     public static final int S_CPU_TEMP           = 0x05;
     public static final int S_STARTING_PARAMS    = 0x06;

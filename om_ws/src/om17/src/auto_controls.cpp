@@ -147,8 +147,8 @@ int main(int argc, char **argv)
 
 void init(ros::NodeHandle &node_handle)
 {
-    lcv_pub = node_handle.advertise<std_msgs::Int16>("lcv", 10);
-    rcv_pub = node_handle.advertise<std_msgs::Int16>("rcv", 10);
+    lcv_pub = node_handle.advertise<std_msgs::Int16>("mc1", 10);
+    rcv_pub = node_handle.advertise<std_msgs::Int16>("mc2", 10);
     control_state_pub = node_handle.advertise<std_msgs::Int8>("control_state", 10);
     state_pub = node_handle.advertise<std_msgs::Int8>("state", 10);
 

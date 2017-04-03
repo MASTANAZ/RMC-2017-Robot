@@ -101,13 +101,13 @@ public class Robot {
             String out = "";
 
             if (lcv != lcvOld) {
-                out += (char)Network.S_LCV;
+                out += (char)Network.S_MC1;
                 out += (char)((int)(lcv + 100));
                 lcvOld = lcv;
             }
 
             if (rcv != rcvOld) {
-                out += (char)Network.S_RCV;
+                out += (char)Network.S_MC2;
                 out += (char)((int)(rcv + 100));
                 rcvOld = rcv;
             }
@@ -207,8 +207,8 @@ public class Robot {
                     statementList.remove(0);
 
                     break;
-                case Network.S_LCV:
-                case Network.S_RCV:
+                case Network.S_MC1:
+                case Network.S_MC2:
                     break;
                 case Network.S_STATE:
                     if (plen < 2) break;

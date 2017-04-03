@@ -17,7 +17,7 @@ public class Field {
     public static final float FIELD_HEIGHT   = 3.78f;
 
     // the dimensions of the cost map in number of cells
-    private static final int GRID_WIDTH       = 48;
+    private static final int GRID_WIDTH       = 24;
     private static final int GRID_HEIGHT      = GRID_WIDTH / 2;
 
     private static final float CELL_SIZE      = FIELD_WIDTH / (float)GRID_WIDTH;

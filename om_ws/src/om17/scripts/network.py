@@ -33,8 +33,8 @@ from om17.msg import CellCost
 ################################################################################
 
 _S_POSE            = 0x01
-_S_LCV             = 0x02
-_S_RCV             = 0x03
+_S_MC1             = 0x02
+_S_MC2             = 0x03
 _S_CELL_COST       = 0x04
 _S_CPU_TEMP        = 0x05
 _S_STARTING_PARAMS = 0x06
@@ -65,8 +65,8 @@ _mc_to_process = ""
 
 _mc_connected  = False
 
-_lcv_pub             = rospy.Publisher("lcv", Int16, queue_size=10)
-_rcv_pub             = rospy.Publisher("rcv", Int16, queue_size=10)
+_mc1_pub             = rospy.Publisher("mc1", Int16, queue_size=10)
+_mc2_pub             = rospy.Publisher("mc2", Int16, queue_size=10)
 _round_active_pub    = rospy.Publisher("/round_active", Bool, queue_size = 10)
 _autonomy_active_pub = rospy.Publisher("/autonomy_active", Bool, queue_size = 10)
 
@@ -204,15 +204,15 @@ def _parse_incoming():
         plen = len(_mc_to_process)
         # essentially a giant switch statement for all available data that
         # the mission control can send to the robot
-        if cbval == _S_LCV:
+        if cbval == _S_MC1:
             if plen >= 2:
-                _lcv_pub.publish(ord(_mc_to_process[1]) - 100)
+                _mc1_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "lcv: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
             else: break
-        elif cbval == _S_RCV:
+        elif cbval == _S_MC2:
             if plen >= 2:
-                _rcv_pub.publish(ord(_mc_to_process[1]) - 100)
+                _mc2_pub.publish(ord(_mc_to_process[1]) - 100)
                 print "rcv: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
             else: break
