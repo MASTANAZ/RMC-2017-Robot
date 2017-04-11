@@ -52,21 +52,30 @@ const float FIELD_HEIGHT = 3.78f;
 const int GRID_WIDTH = 24;
 const int GRID_HEIGHT = GRID_WIDTH / 2;
 
-const float CELL_SIZE = FIELD_WIDTH / (float)GRID_WIDTH;
+const float CELL_SIZE = (float)FIELD_WIDTH / (float)GRID_WIDTH;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
 
-float x[2] = {0.0f, 0.0f}, y[2] = {0.0f, 0.0f};
+struct Point
+{
+  float x, y;
+};
+
+float x = 0.0f;
+float y = 0.0f;
 
 // Array of previous angle and current angle
-float thetas[2] = {0.0, 0.0};
+float theta = 0.0f;
+
+unsigned int next_index = -1;
 
 unsigned int tick_count = 0;
 
 int lcv = 0, rcv = 0;
-int lcv_rcv[2] = {0,0};
+int lcv_drive = 0;
+int rcv_drive = 0;
 
 // 
 int current_state = -1;
@@ -78,7 +87,8 @@ bool round_active = false;
 // path planning variables
 Dstar *dstar = nullptr;
 list<state> mypath;
-//list<state> path;
+
+std::vector<Point> real_path;
 
 // all topics that the auto_controls node subscribes to
 ros::Subscriber pose_sub, world_cost_sub;
@@ -108,7 +118,7 @@ void publishControls(const ros::TimerEvent& timer_event);
 void pathTest();
 float getAngularTime(float angle_one, float angle_two); 
 float getForwardTime(float pos1[2], float pos2[2]);
-void getLCVandRCVvalues(float pos1[2], float pos2[2], float angles[2]);
+void getLCVandRCVvalues(void);
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENTRY POINT
@@ -147,8 +157,8 @@ int main(int argc, char **argv)
 
 void init(ros::NodeHandle &node_handle)
 {
-    lcv_pub = node_handle.advertise<std_msgs::Int16>("mc1", 10);
-    rcv_pub = node_handle.advertise<std_msgs::Int16>("mc2", 10);
+    lcv_pub = node_handle.advertise<std_msgs::Int16>("lcv", 10);
+    rcv_pub = node_handle.advertise<std_msgs::Int16>("rcv", 10);
     control_state_pub = node_handle.advertise<std_msgs::Int8>("control_state", 10);
     state_pub = node_handle.advertise<std_msgs::Int8>("state", 10);
 
@@ -169,20 +179,11 @@ void tick(void)
     case STATE_LNCH:
         break;
     case STATE_TTES:
-        getLCVandRCVvalues(x, y, thetas);
-        
-       
-/*
-        if (x < 4.4) {
-            lcv = 80;
-            rcv = 80;
-        } else {
-            lcv = 0;
-            rcv = 0;
-            setState(STATE_EXCV);
-        }
-
-**/
+        getLCVandRCVvalues();
+        std::cout << "lcv : " << lcv_drive << std::endl;
+        std::cout << "rcv : " << rcv_drive << std::endl;
+        lcv = lcv_drive * 30;
+        rcv = rcv_drive * 30;
         break;
     case STATE_EXCV:
         break;
@@ -210,10 +211,24 @@ void setState(int new_state)
     switch (new_state)
     {
     case STATE_TTES:
-        std::cout << (int)(x[1] / CELL_SIZE) << ", " << (int)(y[1] / CELL_SIZE) << std::endl;
-    
-        dstar->init((int)(x[1] / CELL_SIZE),(int)(y[1] / CELL_SIZE), 18, 6);
+        std::cout << (int)(x / CELL_SIZE) << ", " << (int)(y / CELL_SIZE) << std::endl;
+        dstar->init((int)(x / CELL_SIZE),(int)(y / CELL_SIZE), 18, 6);
+        dstar->replan();
         mypath = dstar->getPath();
+        
+        real_path.clear();
+        
+        for (state s : mypath)
+        {
+            Point tmp;
+            tmp.x = (float)s.x * CELL_SIZE;
+            tmp.y = (float)s.y * CELL_SIZE;
+            std::cout << tmp.x << ", ";
+            std::cout << tmp.y << std::endl;
+            real_path.push_back(tmp);
+        }
+        
+        next_index = 1;
         break;
     default:
         break;
@@ -253,17 +268,11 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
-    x[0]      = x[1];
-    x[1]      = (float)msg->x;
-
-    y[0]      = y[1];
-    y[1]      = (float)msg->y;
+    x = (float)msg->x;
+    y = (float)msg->y;
     
     // Move the thetas down the queue
-    thetas[0] = thetas[1];
-    thetas[1] = (float)msg->theta;
-
-    dstar->updateStart((int)(x[1] / CELL_SIZE),(int)(y[1] / CELL_SIZE));
+    theta = (float)msg->theta;
 }
 
 void pathTest()
@@ -297,39 +306,46 @@ float getForwardTime(float pos1[2], float pos2[2]) {
 }
 
 // Determine if the rover needs to turn left/right or forward/backward
-void getLCVandRCVvalues(float pos1[2], float pos2[2], float angles[2]) {
+void getLCVandRCVvalues(void) {
     float delta_x, delta_y, delta_r = 0.0;
+    float delta_len = 0.0f;
 
-    delta_x = pos2[0] - pos1[0];
-    delta_y = pos2[1] - pos1[1];
-    delta_r = angles[1] - angles[0];
-
-    int lcv_rcv[2] = {0,0};
+    delta_x = real_path.at(next_index).x - x;
+    delta_y = real_path.at(next_index).y - y;
     
-    if (delta_x > 0 && delta_y > 0 && delta_r > 0) {
-        lcv_rcv[0] = -1;
-        lcv_rcv[1] = 1;
-    }
+    delta_len = (float)sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+    
+    std::cout << "dl = "<< delta_len << std::endl;
+    
+    //if (delta_len < 0.01f) next_index++;
+    
+    std::cout << "dx = " << delta_x << std::endl;
+    std::cout << "dy = " << delta_y << std::endl;
 
-    else if (delta_x > 0 && delta_y > 0 && delta_r == 0) {
-        lcv_rcv[0] = 1;
-        lcv_rcv[1] = 1;
+    float phi = (float)atan(delta_y / delta_x);
+    
+    std::cout << "theta = " << theta << std::endl;
+    std::cout << "phi = " << phi << std::endl;
+    
+    delta_r = phi - theta;
+    
+    std::cout << "dr = " << delta_r << std::endl;
+    
+    if (delta_r > 0.2) {
+        lcv_drive = -1;
+        rcv_drive = 1;
     }
-
-    else if (delta_x > 0 && delta_y < 0 && delta_r < 0) {
-        lcv_rcv[0] = 1;
-        lcv_rcv[1] = -1;
+    else if (delta_r <= 0.2 && delta_r >= -0.2) {
+        lcv_drive = 1;
+        rcv_drive = 1;
     }
-
-    else if (delta_x < 0 && delta_y < 0 && delta_r < 0) {
-        lcv_rcv[0] = -1;
-        lcv_rcv[1] = -1;
+    else if (delta_r < -0.2) {
+        lcv_drive = 1;
+        rcv_drive = -1;
     }
-
-    else if (delta_x < 0 && delta_y < 0 && delta_r == 0) {
-        lcv_rcv[0] = -1;
-        lcv_rcv[1] = -1;
-    }
+    
+    std::cout << "lcv : " << lcv_drive << std::endl;
+    std::cout << "rcv : " << rcv_drive << std::endl;
 
 }
 
