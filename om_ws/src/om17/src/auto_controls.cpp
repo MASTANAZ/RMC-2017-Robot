@@ -15,6 +15,7 @@
 #include <thread>
 #include <algorithm>
 #include <stdlib.h>
+#include <math.h>
 
 #include "ros/ros.h"
 
@@ -77,6 +78,10 @@ int lcv = 0, rcv = 0;
 int lcv_drive = 0;
 int rcv_drive = 0;
 
+// store measurements for the kalman filter
+float tofMeasurements[50] = {};
+
+
 // 
 int current_state = -1;
 
@@ -95,6 +100,10 @@ ros::Subscriber pose_sub, world_cost_sub;
 ros::Subscriber autonomy_active_sub;
 ros::Subscriber round_active_sub;
 
+// Get msg data from ToF sensor
+ros::Subscriber tof_sensor_sub;
+
+
 // all topics that the auto_controls node publishes to
 ros::Publisher lcv_pub, rcv_pub, control_state_pub, state_pub;
 
@@ -108,11 +117,28 @@ void cleanup(void);
 
 void setState(int new_state);
 
+/**
+ Callback functions for subscribers
+**/
 void worldCostCallback(const om17::CellCost::ConstPtr& msg);
 void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
 
+#warning THIS WILL NOT BE A STANDARD MESSAGE; ADD CUSTOM MESSAGE TYPE
+// Message type required:
+//   'ToFSensor'
+//
+// Parameters:
+//   distance (in cm?)
+//   angle (radians)  
+//
+// WILL TOF SENSOR CALLBACK RETURN THE DATA FROM BOTH SENSORS?
+void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
+
+/**
+ Publisher functions
+**/
 void publishControls(const ros::TimerEvent& timer_event);
 
 void pathTest();
@@ -161,12 +187,17 @@ void init(ros::NodeHandle &node_handle)
     rcv_pub = node_handle.advertise<std_msgs::Int16>("rcv", 10);
     control_state_pub = node_handle.advertise<std_msgs::Int8>("control_state", 10);
     state_pub = node_handle.advertise<std_msgs::Int8>("state", 10);
+    
+    
 
     world_cost_sub = node_handle.subscribe("/world_cost", 10, worldCostCallback);
     round_active_sub = node_handle.subscribe("/round_active", 10, roundActiveCallback);
     pose_sub = node_handle.subscribe("pose", 10, poseCallback);
     autonomy_active_sub = node_handle.subscribe("/autonomy_active", 10, autonomyActiveCallback);
 
+    // Subscribe to ToF sensor topic
+    tof_sensor_sub = node_handle.subscribe("tof_sensor", 10, tofSensorCallback);
+    
     dstar = new Dstar();
 }
 
@@ -275,6 +306,26 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     theta = (float)msg->theta;
 }
 
+/**
+  msg->x     = Left sensor distance
+  msg->y     = Right sensor distance
+  msg->theta = Angle of each sensor (they share the same answer)
+**/
+void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg) {
+  // ToF sensor stuff
+  leftDist   = (float)msg->x;
+  rightDist  = (float)msg->y;
+  msg->theta = (float)msg->theta;
+  
+  float distAvg = (leftDist + rightDist) / 2.0f;
+  
+  dx = x + (distAvg * cos(theta));
+  dy = y + (distAvg * sin(theta));
+  
+  gridX = floor(dx / CELL_SIZE);
+  gridY = floor(dy / CELL_SIZE);
+} 
+
 void pathTest()
 {
     /*Dstar *dstar = new Dstar();
@@ -346,8 +397,9 @@ void getLCVandRCVvalues(void) {
     
     std::cout << "lcv : " << lcv_drive << std::endl;
     std::cout << "rcv : " << rcv_drive << std::endl;
-
 }
+
+
 
 void publishControls(const ros::TimerEvent& timer_event)
 {

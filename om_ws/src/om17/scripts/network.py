@@ -43,6 +43,7 @@ _S_ROUND_STOP      = 0x08
 _S_AUTONOMY_STOP   = 0x09
 _S_AUTONOMY_START  = 0x0A
 _S_STATE           = 0x0B
+_S_CONTROL_STATE   = 0x0C
 
 # mission control communication parameters
 _MC_PORT           = 12000
@@ -69,6 +70,7 @@ _mc1_pub             = rospy.Publisher("mc1", Int16, queue_size=10)
 _mc2_pub             = rospy.Publisher("mc2", Int16, queue_size=10)
 _round_active_pub    = rospy.Publisher("/round_active", Bool, queue_size = 10)
 _autonomy_active_pub = rospy.Publisher("/autonomy_active", Bool, queue_size = 10)
+_control_state_pub   = rospy.Publisher("control_state", Int8, queue_size = 10)
 
 ################################################################################
 # PUBLIC FUNCTIONS
@@ -230,6 +232,11 @@ def _parse_incoming():
         elif cbval == _S_AUTONOMY_START:
             _autonomy_active_pub.publish(True)
             _mc_to_process = _mc_to_process[1:]
+        elif cbval == _S_CONTROL_STATE:
+            if plen >= 2:
+              _control_state_pub.publish(ord(_mc_to_process[1]))
+              _mc_to_process = _mc_to_process[2:]
+            else: break
         # discard the current byte and continue processing the rest of the
         # string
         else:
