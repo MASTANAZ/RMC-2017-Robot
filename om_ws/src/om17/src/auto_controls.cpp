@@ -313,17 +313,17 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 **/
 void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg) {
   // ToF sensor stuff
-  leftDist   = (float)msg->x;
-  rightDist  = (float)msg->y;
-  msg->theta = (float)msg->theta;
+  float leftDist   = (float)msg->x;
+  float rightDist  = (float)msg->y;
+  float theta = (float)msg->theta;
   
   float distAvg = (leftDist + rightDist) / 2.0f;
   
-  dx = x + (distAvg * cos(theta));
-  dy = y + (distAvg * sin(theta));
+  float dx = x + (distAvg * cos(theta));
+  float dy = y + (distAvg * sin(theta));
   
-  gridX = floor(dx / CELL_SIZE);
-  gridY = floor(dy / CELL_SIZE);
+  float gridX = floor(dx / CELL_SIZE);
+  float gridY = floor(dy / CELL_SIZE);
 } 
 
 void pathTest()
