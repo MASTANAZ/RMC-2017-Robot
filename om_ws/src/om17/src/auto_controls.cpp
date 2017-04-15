@@ -29,6 +29,8 @@
 
 #include "dstar.h"
 
+#include "follower.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,28 +61,13 @@ const float CELL_SIZE = (float)FIELD_WIDTH / (float)GRID_WIDTH;
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
 
-struct Point
-{
-  float x, y;
-};
+int mc1, mc2;
 
-float x = 0.0f;
-float y = 0.0f;
-
-// Array of previous angle and current angle
-float theta = 0.0f;
-
-unsigned int next_index = -1;
-
-unsigned int tick_count = 0;
-
-int lcv = 0, rcv = 0;
-int lcv_drive = 0;
-int rcv_drive = 0;
+Point position;
+float theta = 0;
 
 // store measurements for the kalman filter
 float tofMeasurements[50] = {};
-
 
 // 
 int current_state = -1;
@@ -93,8 +80,6 @@ bool round_active = false;
 Dstar *dstar = nullptr;
 list<state> mypath;
 
-std::vector<Point> real_path;
-
 // all topics that the auto_controls node subscribes to
 ros::Subscriber pose_sub, world_cost_sub;
 ros::Subscriber autonomy_active_sub;
@@ -103,9 +88,10 @@ ros::Subscriber round_active_sub;
 // Get msg data from ToF sensor
 ros::Subscriber tof_sensor_sub;
 
-
 // all topics that the auto_controls node publishes to
-ros::Publisher lcv_pub, rcv_pub, control_state_pub, state_pub;
+ros::Publisher mc1_pub, mc2_pub, control_state_pub, state_pub;
+
+Follower follower;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION DECLARATIONS
@@ -142,9 +128,6 @@ void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
 void publishControls(const ros::TimerEvent& timer_event);
 
 void pathTest();
-float getAngularTime(float angle_one, float angle_two); 
-float getForwardTime(float pos1[2], float pos2[2]);
-void getLCVandRCVvalues(void);
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENTRY POINT
@@ -183,8 +166,8 @@ int main(int argc, char **argv)
 
 void init(ros::NodeHandle &node_handle)
 {
-    lcv_pub = node_handle.advertise<std_msgs::Int16>("lcv", 10);
-    rcv_pub = node_handle.advertise<std_msgs::Int16>("rcv", 10);
+    mc1_pub = node_handle.advertise<std_msgs::Int16>("mc1", 10);
+    mc2_pub = node_handle.advertise<std_msgs::Int16>("mc2", 10);
     control_state_pub = node_handle.advertise<std_msgs::Int8>("control_state", 10);
     state_pub = node_handle.advertise<std_msgs::Int8>("state", 10);
     
@@ -196,7 +179,7 @@ void init(ros::NodeHandle &node_handle)
     autonomy_active_sub = node_handle.subscribe("/autonomy_active", 10, autonomyActiveCallback);
 
     // Subscribe to ToF sensor topic
-    tof_sensor_sub = node_handle.subscribe("tof_sensor", 10, tofSensorCallback);
+    //tof_sensor_sub = node_handle.subscribe("tof_sensor", 10, tofSensorCallback);
     
     dstar = new Dstar();
 }
@@ -205,16 +188,10 @@ void tick(void)
 {
     // Increase the tick count by 1 every tick.
     // The tick is at 30/second. 
-    tick_count++;
     switch (current_state) {
     case STATE_LNCH:
         break;
     case STATE_TTES:
-        getLCVandRCVvalues();
-        std::cout << "lcv : " << lcv_drive << std::endl;
-        std::cout << "rcv : " << rcv_drive << std::endl;
-        lcv = lcv_drive * 30;
-        rcv = rcv_drive * 30;
         break;
     case STATE_EXCV:
         break;
@@ -239,27 +216,32 @@ void setState(int new_state)
     send.data = new_state;
     state_pub.publish(send);
     
+    std::vector<Point> tmp;
+
+
     switch (new_state)
     {
+
     case STATE_TTES:
-        std::cout << (int)(x / CELL_SIZE) << ", " << (int)(y / CELL_SIZE) << std::endl;
-        dstar->init((int)(x / CELL_SIZE),(int)(y / CELL_SIZE), 18, 6);
+        std::cout << (int)(position.x / CELL_SIZE) << ", " << (int)(position.y / CELL_SIZE) << std::endl;
+        dstar->init((int)(position.x / CELL_SIZE),(int)(position.y / CELL_SIZE), 18, 6);
         dstar->replan();
         mypath = dstar->getPath();
         
-        real_path.clear();
         
         for (state s : mypath)
         {
-            Point tmp;
-            tmp.x = (float)s.x * CELL_SIZE;
-            tmp.y = (float)s.y * CELL_SIZE;
-            std::cout << tmp.x << ", ";
-            std::cout << tmp.y << std::endl;
-            real_path.push_back(tmp);
+            Point t;
+            t.x = s.x;
+            t.y = s.y;
+            std::cout << t.x << ", ";
+            std::cout << t.y << std::endl;
+            
+            tmp.push_back(t);
         }
-        
-        next_index = 1;
+
+        follower.processPath(tmp);
+
         break;
     default:
         break;
@@ -280,16 +262,16 @@ void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 {
     autonomy_active = (bool)msg->data;
     // stop all motors
-    lcv = 0;
-    rcv = 0;
+    mc1 = 0;
+    mc2 = 0;
 }
 
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 {
     round_active = (bool)msg->data;
     // stop all motors
-    lcv = 0;
-    rcv = 0;
+    mc1 = 0;
+    mc2 = 0;
     
     if (round_active)
     {
@@ -299,8 +281,8 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
-    x = (float)msg->x;
-    y = (float)msg->y;
+    position.x = (float)msg->x;
+    position.y = (float)msg->y;
     
     // Move the thetas down the queue
     theta = (float)msg->theta;
@@ -311,6 +293,8 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
   msg->y     = Right sensor distance
   msg->theta = Angle of each sensor (they share the same answer)
 **/
+
+/*
 void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg) {
   // ToF sensor stuff
   float leftDist   = (float)msg->x;
@@ -324,7 +308,7 @@ void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg) {
   
   float gridX = floor(dx / CELL_SIZE);
   float gridY = floor(dy / CELL_SIZE);
-} 
+} */
 
 void pathTest()
 {
@@ -356,7 +340,7 @@ float getForwardTime(float pos1[2], float pos2[2]) {
     return OMEGA_DISTANCE * distance;
 }
 
-// Determine if the rover needs to turn left/right or forward/backward
+/*/ Determine if the rover needs to turn left/right or forward/backward
 void getLCVandRCVvalues(void) {
     float delta_x, delta_y, delta_r = 0.0;
     float delta_len = 0.0f;
@@ -383,21 +367,21 @@ void getLCVandRCVvalues(void) {
     std::cout << "dr = " << delta_r << std::endl;
     
     if (delta_r > 0.2) {
-        lcv_drive = -1;
+        mc1_drive = -1;
         rcv_drive = 1;
     }
     else if (delta_r <= 0.2 && delta_r >= -0.2) {
-        lcv_drive = 1;
+        mc1_drive = 1;
         rcv_drive = 1;
     }
     else if (delta_r < -0.2) {
-        lcv_drive = 1;
+        mc1_drive = 1;
         rcv_drive = -1;
     }
     
-    std::cout << "lcv : " << lcv_drive << std::endl;
+    std::cout << "mc1 : " << mc1_drive << std::endl;
     std::cout << "rcv : " << rcv_drive << std::endl;
-}
+}*/
 
 
 
@@ -406,18 +390,18 @@ void publishControls(const ros::TimerEvent& timer_event)
     if (!round_active) {
         std_msgs::Int16 send;
         send.data = 0;
-        lcv_pub.publish(send);
+        mc1_pub.publish(send);
         send.data = 0;
-        rcv_pub.publish(send);
+        mc2_pub.publish(send);
         return;
     }
     
     if (autonomy_active) {
         std_msgs::Int16 send;
-        send.data = lcv;
-        lcv_pub.publish(send);
-        send.data = rcv;
-        rcv_pub.publish(send);
+        send.data = mc1;
+        mc1_pub.publish(send);
+        send.data = mc2;
+        mc2_pub.publish(send);
     }
 }
 

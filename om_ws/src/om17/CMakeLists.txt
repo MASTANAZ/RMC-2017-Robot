@@ -133,8 +133,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 
 ## Declare a C++ executable
 add_executable(poser src/poser.cpp)
-add_executable(world src/world.cpp)
-add_executable(auto_controls src/auto_controls.cpp src/dstar.cpp)
+add_executable(auto_controls src/auto_controls.cpp src/dstar.cpp src/follower.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -144,7 +143,6 @@ add_executable(auto_controls src/auto_controls.cpp src/dstar.cpp)
 target_link_libraries(poser ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
 	raspicam raspicam_cv
 )
-target_link_libraries(world ${catkin_LIBRARIES})
 target_link_libraries(auto_controls ${catkin_LIBRARIES})
 
 ##
