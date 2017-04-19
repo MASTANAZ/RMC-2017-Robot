@@ -33,9 +33,9 @@ const int LS_DEPO_UP = 28;
 const int LS_DEPO_DOWN = 29;
 
 // the pins that control the states of the automotive relays
-const int RELAY_1 = 8;
-const int RELAY_2 = 9;
-const int RELAY_3 = 10;
+const int RELAY_1 = 22;
+const int RELAY_2 = 23;
+const int RELAY_3 = 24;
 
 // 
 const int CONTROL_STATE_TRVL = 0;
@@ -44,9 +44,9 @@ const int CONTROL_STATE_DEPO = 2;
 
 //
 const int RELAY_STATES[3][3] = {
-  {0, 0, 0},
-  {1, 0, 1},
-  {0, 1, 0}
+  {0, 0, 0}, // CONTROL_STATE_TRVL
+  {1, 0, 1}, // CONTROL_STATE_EXCV
+  {0, 1, 0}  // CONTROL_STATE_DEPO
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +68,10 @@ void mc1Callback(const std_msgs::Int16& msg);
 void mc2Callback(const std_msgs::Int16& msg);
 void setControlState(int control_state);
 
+// TODO: move these to node variables
 ros::Subscriber<std_msgs::Int16> mc1_sub("mc1", &mc1Callback);
 ros::Subscriber<std_msgs::Int16> mc2_sub("mc2", &mc2Callback);
+ros::Subscriber<std_msgs::Int8> cstate_sub("control_state", &cstate_subCallback);
 
 ////////////////////////////////////////////////////////////////////////////////
 // ARDUINO FUNCTIONS
@@ -78,11 +80,12 @@ ros::Subscriber<std_msgs::Int16> mc2_sub("mc2", &mc2Callback);
 void setup()
 { 
   node_handle.initNode();
-
+  // initialilze i2c bus communications
   Wire.begin();
   
   node_handle.subscribe(mc1_sub);
   node_handle.subscribe(mc2_sub);
+  node_handle.subscribe(cstate_sub);
 
   pinMode(RELAY_1, OUTPUT);
   pinMode(RELAY_2, OUTPUT);
@@ -95,7 +98,8 @@ void setup()
   
   mc1.attach(MC1);
   mc2.attach(MC2);
-
+  // Attach cstate_sub??
+  
   // initialize the TOF sensors
   tf1.init();
   tf1.setMeasurementTimingBudget(200000);
@@ -114,6 +118,7 @@ void loop()
 // FUNCTION DEFINITIONS
 ////////////////////////////////////////////////////////////////////////////////
 
+// Motor Controller 1 callback
 void mc1Callback(const std_msgs::Int16& msg)
 {
   // convert message value of [-100, 100] to [1000, 2000]
@@ -124,6 +129,14 @@ void mc2Callback(const std_msgs::Int16& msg)
 {
   // convert message value of [-100, 100] to [1000, 2000]
   mc2.writeMicroseconds(((int)msg.data * 5) + 1500);
+}
+
+void cstate_subcallback(const std_msgs::Int8& msg) {
+
+  // Control State Callback data
+  digitalWrite(RELAY_1, RELAY_STATES[msg.data][0]);
+  digitalWrite(RELAY_2, RELAY_STATES[msg.data][1]);
+  digitalWrite(RELAY_3, RELAY_STATES[msg.data][2]);
 }
 
 void setControlState(int control_state)

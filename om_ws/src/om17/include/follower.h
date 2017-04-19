@@ -8,8 +8,9 @@
 
 #include <vector>
 
-const int PATH_TYPE_STAIGHT = 0;
-const int PATH_TYPE_TURN    = 1;
+const int PATH_TYPE_HORIZONTAL = 0;
+const int PATH_TYPE_VERTICAL   = 1;
+const int PATH_TYPE_TURN       = 2;
 
 struct Point
 {

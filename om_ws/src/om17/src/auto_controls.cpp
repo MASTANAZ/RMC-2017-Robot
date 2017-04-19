@@ -27,23 +27,19 @@
 
 #include "om17/CellCost.h"
 
-#include "dstar.h"
-
-#include "follower.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
 ////////////////////////////////////////////////////////////////////////////////
 
-const int STATE_LNCH = 0;
-const int STATE_TTES = 1;
-const int STATE_EXCV = 2;
-const int STATE_TTDS = 3;
-const int STATE_DEPO = 4;
+const int   STATE_LNCH = 0;
+const int   STATE_TTES = 1;
+const int   STATE_EXCV = 2;
+const int   STATE_TTDS = 3;
+const int   STATE_DEPO = 4;
 
-const int CTRL_STATE_TRVL = 0;
-const int CTRL_STATE_EXCV = 1;
-const int CTRL_STATE_DEPO = 2;
+const int   CTRL_STATE_TRVL = 0;
+const int   CTRL_STATE_EXCV = 1;
+const int   CTRL_STATE_DEPO = 2;
 
 const float OMEGA_ROTATION = 5.0; // Time in seconds to rotate 360 degrees
 const float OMEGA_DISTANCE = 0.5; // Time to travel straight 1 meter. Each 
@@ -52,8 +48,8 @@ const float OMEGA_DISTANCE = 0.5; // Time to travel straight 1 meter. Each
 const float FIELD_WIDTH = 7.38f;
 const float FIELD_HEIGHT = 3.78f;
 
-const int GRID_WIDTH = 24;
-const int GRID_HEIGHT = GRID_WIDTH / 2;
+const int   GRID_WIDTH = 24;
+const int   GRID_HEIGHT = GRID_WIDTH / 2;
 
 const float CELL_SIZE = (float)FIELD_WIDTH / (float)GRID_WIDTH;
 
@@ -61,24 +57,19 @@ const float CELL_SIZE = (float)FIELD_WIDTH / (float)GRID_WIDTH;
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
 
-int mc1, mc2;
+float x = 0.0f, y = 0.0f, theta = 0.0f;
 
-Point position;
-float theta = 0;
+int mc1 = 0, mc2 = 0;
 
 // store measurements for the kalman filter
 float tofMeasurements[50] = {};
 
-// 
+//
 int current_state = -1;
 
 //
 bool autonomy_active = true;
 bool round_active = false;
-
-// path planning variables
-Dstar *dstar = nullptr;
-list<state> mypath;
 
 // all topics that the auto_controls node subscribes to
 ros::Subscriber pose_sub, world_cost_sub;
@@ -89,9 +80,13 @@ ros::Subscriber round_active_sub;
 ros::Subscriber tof_sensor_sub;
 
 // all topics that the auto_controls node publishes to
-ros::Publisher mc1_pub, mc2_pub, control_state_pub, state_pub;
+ros::Publisher mc1_pub, mc2_pub;
+ros::Publisher control_state_pub;
+ros::Publisher state_pub;
 
-Follower follower;
+ros::Time old_time;
+ros::Duration tick_elapsed;
+float dt = 0.0f;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION DECLARATIONS
@@ -102,6 +97,11 @@ void tick(void);
 void cleanup(void);
 
 void setState(int new_state);
+
+void stateTTES(void);
+void stateEXCV(void);
+void stateTTDS(void);
+void stateDEPO(void);
 
 /**
  Callback functions for subscribers
@@ -144,8 +144,15 @@ int main(int argc, char **argv)
 
     init(node_handle);
     
+    old_time = ros::Time::now();
+    
     while (ros::ok())
     {
+        tick_elapsed = ros::Time::now() - old_time;
+        dt = tick_elapsed.toSec();
+        std::cout << dt << std::endl;
+        old_time = ros::Time::now();
+        
         if (autonomy_active && round_active)
         {
             tick();
@@ -171,33 +178,28 @@ void init(ros::NodeHandle &node_handle)
     control_state_pub = node_handle.advertise<std_msgs::Int8>("control_state", 10);
     state_pub = node_handle.advertise<std_msgs::Int8>("state", 10);
     
-    
-
     world_cost_sub = node_handle.subscribe("/world_cost", 10, worldCostCallback);
     round_active_sub = node_handle.subscribe("/round_active", 10, roundActiveCallback);
     pose_sub = node_handle.subscribe("pose", 10, poseCallback);
     autonomy_active_sub = node_handle.subscribe("/autonomy_active", 10, autonomyActiveCallback);
-
-    // Subscribe to ToF sensor topic
-    //tof_sensor_sub = node_handle.subscribe("tof_sensor", 10, tofSensorCallback);
-    
-    dstar = new Dstar();
 }
 
 void tick(void)
 {
-    // Increase the tick count by 1 every tick.
-    // The tick is at 30/second. 
     switch (current_state) {
     case STATE_LNCH:
         break;
     case STATE_TTES:
+        stateTTES();
         break;
     case STATE_EXCV:
+        stateEXCV();
         break;
     case STATE_TTDS:
+        stateTTDS();
         break;
     case STATE_DEPO:
+        stateDEPO();
         break;
     default:
         break;
@@ -212,40 +214,41 @@ void cleanup(void)
 void setState(int new_state)
 {
     current_state = new_state;
-    std_msgs::Int8 send;
-    send.data = new_state;
-    state_pub.publish(send);
     
-    std::vector<Point> tmp;
-
+    // let everyone else know
+    std_msgs::Int8 out;
+    out.data = new_state;
+    state_pub.publish(out);
 
     switch (new_state)
     {
 
     case STATE_TTES:
-        std::cout << (int)(position.x / CELL_SIZE) << ", " << (int)(position.y / CELL_SIZE) << std::endl;
-        dstar->init((int)(position.x / CELL_SIZE),(int)(position.y / CELL_SIZE), 18, 6);
-        dstar->replan();
-        mypath = dstar->getPath();
         
-        
-        for (state s : mypath)
-        {
-            Point t;
-            t.x = s.x;
-            t.y = s.y;
-            std::cout << t.x << ", ";
-            std::cout << t.y << std::endl;
-            
-            tmp.push_back(t);
-        }
-
-        follower.processPath(tmp);
-
         break;
     default:
         break;
     }
+}
+
+void stateTTES(void)
+{
+    
+}
+
+void stateEXCV(void)
+{
+    
+}
+
+void stateTTDS(void)
+{
+    
+}
+
+void stateDEPO(void)
+{
+    
 }
 
 void worldCostCallback(const om17::CellCost::ConstPtr& msg)
@@ -254,8 +257,6 @@ void worldCostCallback(const om17::CellCost::ConstPtr& msg)
     std::cout << msg->y << std::endl;
     std::cout << msg->cost << std::endl;
     std::cout << "----------" << std::endl;
-    //dstar->updateCell(msg->x, msg->y, msg->cost);
-    //dstar->replan();
 }
 
 void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg)
@@ -269,6 +270,7 @@ void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 {
     round_active = (bool)msg->data;
+    
     // stop all motors
     mc1 = 0;
     mc2 = 0;
@@ -281,54 +283,9 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
-    position.x = (float)msg->x;
-    position.y = (float)msg->y;
-    
-    // Move the thetas down the queue
+    x = (float)msg->x;
+    y = (float)msg->y;
     theta = (float)msg->theta;
-}
-
-/**
-  msg->x     = Left sensor distance
-  msg->y     = Right sensor distance
-  msg->theta = Angle of each sensor (they share the same answer)
-**/
-
-/*
-void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg) {
-  // ToF sensor stuff
-  float leftDist   = (float)msg->x;
-  float rightDist  = (float)msg->y;
-  float theta = (float)msg->theta;
-  
-  float distAvg = (leftDist + rightDist) / 2.0f;
-  
-  float dx = x + (distAvg * cos(theta));
-  float dy = y + (distAvg * sin(theta));
-  
-  float gridX = floor(dx / CELL_SIZE);
-  float gridY = floor(dy / CELL_SIZE);
-} */
-
-void pathTest()
-{
-    /*Dstar *dstar = new Dstar();
-    list<state> mypath;
-
-    dstar->init(0,0,10,5);         // set start to (0,0) and goal to (10,5)
-    dstar->updateCell(3,4,-1);     // set cell (3,4) to be non traversable
-    dstar->updateCell(2,2,42.432); // set set (2,2) to have cost 42.432
-
-    dstar->replan();               // plan a path
-    mypath = dstar->getPath();     // retrieve path
-
-    dstar->updateStart(10,2);      // move start to (10,2)
-    dstar->replan();               // plan a path
-    mypath = dstar->getPath();     // retrieve path
-
-    dstar->updateGoal(0,1);        // move goal to (0,1)
-    dstar->replan();               // plan a path
-    mypath = dstar->getPath();     // retrieve path*/
 }
 
 float getAngularTime(float angle_one, float angle_two) {
@@ -339,51 +296,6 @@ float getForwardTime(float pos1[2], float pos2[2]) {
     float distance = sqrt(((pos2[1] - pos1[1])*(pos2[1] - pos1[1])) + ((pos2[0] - pos1[0])*(pos2[0] - pos1[0])));
     return OMEGA_DISTANCE * distance;
 }
-
-/*/ Determine if the rover needs to turn left/right or forward/backward
-void getLCVandRCVvalues(void) {
-    float delta_x, delta_y, delta_r = 0.0;
-    float delta_len = 0.0f;
-
-    delta_x = real_path.at(next_index).x - x;
-    delta_y = real_path.at(next_index).y - y;
-    
-    delta_len = (float)sqrt(pow(delta_x, 2) + pow(delta_y, 2));
-    
-    std::cout << "dl = "<< delta_len << std::endl;
-    
-    //if (delta_len < 0.01f) next_index++;
-    
-    std::cout << "dx = " << delta_x << std::endl;
-    std::cout << "dy = " << delta_y << std::endl;
-
-    float phi = (float)atan(delta_y / delta_x);
-    
-    std::cout << "theta = " << theta << std::endl;
-    std::cout << "phi = " << phi << std::endl;
-    
-    delta_r = phi - theta;
-    
-    std::cout << "dr = " << delta_r << std::endl;
-    
-    if (delta_r > 0.2) {
-        mc1_drive = -1;
-        rcv_drive = 1;
-    }
-    else if (delta_r <= 0.2 && delta_r >= -0.2) {
-        mc1_drive = 1;
-        rcv_drive = 1;
-    }
-    else if (delta_r < -0.2) {
-        mc1_drive = 1;
-        rcv_drive = -1;
-    }
-    
-    std::cout << "mc1 : " << mc1_drive << std::endl;
-    std::cout << "rcv : " << rcv_drive << std::endl;
-}*/
-
-
 
 void publishControls(const ros::TimerEvent& timer_event)
 {

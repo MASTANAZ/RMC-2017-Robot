@@ -16,12 +16,27 @@ void Follower::processPath(std::vector<Point> path_points)
 {
     std::cout << path_points.size() << std::endl;
     
-    int size = path_points.size();
+    int npoints = path_points.size();
 
-    Point first, last;
+    // the start and end point of the current section we are processing
+    Point start, end;
+    // 
+    Point curr, next;
     PathSection current_section;
 
-    first = path_points.at(0);
+    start = path_points.at(0);
+    
+    for (unsigned i = 1; i < npoints - 1; ++i)
+    {
+        curr = path_points.at(i);
+        next = path_points.at(i+1);
+        
+        //
+        if (i == npoints - 1)
+        {
+            
+        }
+    }
 
     int i = 0;
 
@@ -29,9 +44,6 @@ void Follower::processPath(std::vector<Point> path_points)
 
     while (true)
     {
-        Point curr = path_points.at(i);
-        Point next = path_points.at(i+1);
-
         i++;
 
         // last point reached
