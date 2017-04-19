@@ -30,7 +30,7 @@
 
 // the displacement of the camera from the center of the robot
 const float CAMERA_X = -0.34925f;
-const float CAMERA_Y = 0.1397f;
+const float CAMERA_Y = 0.0f;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 void init(void)
 {
     // raspberry pi camera properties
-    camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
+    //camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
     camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
     
@@ -177,15 +177,13 @@ void tick(void)
             // in object space, y = 0 means the robot is centered on the field
             // (y = 1.89f)
             pose.y += 1.89 - .2;
-
-            // rotate the robot's angle by 360 degrees so we don't have to
-            // transmit negative data over the network
-            pose.theta += 2.0f * 3.14159f;
     
             // make sure none of our field coordinates are negative
             // (this shouldn't be possible but it's still good to check)
             pose.x = std::max((float)pose.x, 0.0f);
             pose.y = std::max((float)pose.y, 0.0f);
+            
+            // min for field dimensions
             
             pose_pub.publish(pose);
         }

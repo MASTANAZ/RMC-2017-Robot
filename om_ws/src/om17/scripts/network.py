@@ -86,7 +86,7 @@ def pose_callback(msg):
     _mc_pending += chr(_S_POSE)
     _mc_pending += _pack_float(msg.x)
     _mc_pending += _pack_float(msg.y)
-    _mc_pending += _pack_float(msg.theta)
+    _mc_pending += chr(int(msg.theta * (180.0 / 3.14159)) + 90)
 
 def cell_cost_callback(msg):
     global _mc_pending
