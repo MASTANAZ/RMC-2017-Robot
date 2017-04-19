@@ -7,9 +7,6 @@
   <!-- POSITIONING WITH OPENCV AND RASPBERRY PI CAM -->
   <node pkg="om17" type="poser" name="poser" output="screen" />
 
-  <!-- WORLD VISUALIZER -->
-  <!--node pkg="om17" type="world" name="world" output="screen" /-->
-
   <!-- ROUND CONTROL WATCHDOG -->
   <node pkg="om17" type="watchdog.py" name="watchdog" output="screen" />
 
