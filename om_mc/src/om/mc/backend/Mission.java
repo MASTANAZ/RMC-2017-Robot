@@ -43,11 +43,11 @@ public class Mission {
 
         roundTime = 0.0f;
 
-        Robot phobos = new Robot();
+        Robot phobos = new Robot(Robot.ID_PHOBOS);
         phobos.setName("PHOBOS");
         robotList.add(phobos);
 
-        Robot deimos = new Robot();
+        Robot deimos = new Robot(Robot.ID_DEIMOS);
         deimos.setName("DEIMOS");
         robotList.add(deimos);
     }

@@ -38,6 +38,7 @@
          </VBox.margin>
       </HBox>
       <Label fx:id="stateLabel" alignment="CENTER" prefHeight="18.0" prefWidth="250.0" text="TRAVELLING TO EXCAVATION SITE" />
+      <Label fx:id="controlStateLabel" alignment="CENTER" prefHeight="18.0" prefWidth="250.0" text="TRAVELLING TO EXCAVATION SITE" />
       <Separator />
       <Label fx:id="cpuTempLabel" alignment="CENTER" prefWidth="250.0" text="CPU: 0°C" />
    </children>

@@ -40,6 +40,7 @@ public class Network {
     public static final int S_AUTONOMY_STOP      = 0x09;
     public static final int S_AUTONOMY_START     = 0x0A;
     public static final int S_STATE              = 0x0B;
+    public static final int S_CONTROL_STATE      = 0x0C;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // VARIABLES
@@ -52,6 +53,8 @@ public class Network {
 
     private static long sent, received, total;
 
+    private static int nConnected;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PUBLIC FUNCTIONS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,11 +62,17 @@ public class Network {
     public static void initialize() {
         clientList = new ArrayList<Client>();
 
+        for (int i = 0; i < MAX_CLIENTS; ++i) {
+            clientList.add(new Client());
+        }
+
         sent = 0;
         received = 0;
         total = 0;
 
         networkController = null;
+
+        nConnected = 0;
 
         // host the server at our current ip on the specified port
         try {
@@ -76,7 +85,7 @@ public class Network {
     }
 
     public static void tick(float dt) {
-        if (clientList.size() < 2) {
+        if (nConnected < MAX_CLIENTS) {
             try {
                 Socket socket = server.accept();
                 processClient(socket);
@@ -86,6 +95,7 @@ public class Network {
             }
         }
 
+        monitorClients(dt);
         transferIncoming();
     }
 
@@ -100,12 +110,16 @@ public class Network {
         }
 
         if (connectionController != null) {
-            if (clientList.size() >= 1) {
+            if (clientList.get(0).alive) {
                 connectionController.phobosProgress.setProgress(1.0);
+            } else {
+                connectionController.phobosProgress.setProgress(-1.0);
             }
 
-            if (clientList.size() >= 2) {
+            if (clientList.get(1).alive) {
                 connectionController.deimosProgress.setProgress(1.0);
+            } else {
+                connectionController.deimosProgress.setProgress(-1.0);
             }
         }
     }
@@ -143,7 +157,7 @@ public class Network {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private static void processClient(Socket candidate) throws Exception {
-        if (clientList.size() >= MAX_CLIENTS) {
+        if (nConnected >= MAX_CLIENTS) {
             System.err.println("ERROR: MAX NUMBER OF CLIENTS REACHED\nTERMINATING CONNECTION");
             candidate.close();
             return;
@@ -156,6 +170,8 @@ public class Network {
         c.inStream = new DataInputStream(candidate.getInputStream());
         c.outStream = new DataOutputStream(candidate.getOutputStream());
         c.socket = candidate;
+        c.connectionTimer = 0.0f;
+        c.alive = true;
 
         // wait for client to send connection key
         Thread.sleep(250);
@@ -170,12 +186,24 @@ public class Network {
             return;
         }
 
+        // the id of the robot that is connecting (0 for phobos and 1 for deimos)
+        int id = readByte(c.inStream);
+
+        if (id == 0) {
+            System.out.println("PHOBOS CONNECTED");
+        } else {
+            System.out.println("DEIMOS CONNECTED");
+        }
+
         // client sent the correct connection key
         System.out.println("CONNECTION KEY ACCEPTED; SENDING CONFIRMATION KEY");
         writeString(c.outStream, CONFIRMATION_KEY);
         System.out.println("CLIENT SUCCESSFULLY ADDED");
 
-        clientList.add(c);
+        // add the client to its respective position in the list
+        clientList.set(id, c);
+
+        nConnected++;
     }
 
     private static int readByte(DataInputStream in) throws Exception {
@@ -190,6 +218,8 @@ public class Network {
 
     private static void transferIncoming() {
         for (int i = 0; i < clientList.size(); ++i) {
+            if (clientList.get(i).alive == false) continue;
+
             DataInputStream in = clientList.get(i).inStream;
             Robot robot = Global.getBackendInstance().getMission().getRobot(i);
 
@@ -197,6 +227,8 @@ public class Network {
             // virtual robot representation
             try {
                 while (in.available() > 0) {
+                    // we received data from this client, reset the timer so we know the connection is not dead
+                    clientList.get(i).connectionTimer = 0.0f;
                     robot.pushStatement(readByte(in));
                 }
             } catch (Exception e) {
@@ -205,11 +237,24 @@ public class Network {
         }
     }
 
+    private static void monitorClients(float dt)
+    {
+        for (Client c : clientList) {
+            c.connectionTimer += dt;
+
+            if (c.connectionTimer > 5.0f && c.alive) {
+                c.alive = false;
+                System.err.println("LOST CLIENT CONNECTION");
+                nConnected--;
+            }
+        }
+    }
+
     public static Client getClient(int index) {
         return clientList.get(index);
     }
 
-    public static int getClientSize() {
-        return clientList.size();
+    public static int getConnected() {
+        return nConnected;
     }
 }
