@@ -24,6 +24,7 @@ public class StatusController implements Initializable {
     @FXML public Label yLabel;
     @FXML public Label thetaLabel;
     @FXML public Label stateLabel;
+    @FXML public Label controlStateLabel;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PUBLIC FUNCTIONS

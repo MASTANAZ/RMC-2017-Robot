@@ -27,8 +27,6 @@ public class Backend {
         oldTime = 0;
         newTime = 0;
         dt = 0.0f;
-
-        mission = new Mission();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +93,9 @@ public class Backend {
         Network.initialize();
         ManualControl.initialize();
         ManualControl.findControllers();
+
+        // the Network needs to initialize before the mission does
+        mission = new Mission();
     }
 
     private void tick(float dt) {

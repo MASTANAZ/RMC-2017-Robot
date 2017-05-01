@@ -20,6 +20,9 @@ public class Robot {
     // CONSTANTS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static final int ID_PHOBOS = 0;
+    public static final int ID_DEIMOS = 1;
+
     private final float ROBOT_WIDTH = 0.889f;
     private final float ROBOT_WIDTH_HALF = ROBOT_WIDTH / 2.0f;
     private final float ROBOT_HEIGHT = 0.7239f;
@@ -31,11 +34,22 @@ public class Robot {
     private final int STATE_TTDS = 3;
     private final int STATE_DEPO = 4;
 
-    private final int CTRL_STATE_TRVL = 0;
-    private final int CTRL_STATE_EXCV = 1;
-    private final int CTRL_STATE_DEPO = 2;
+    private final int CONTROL_STATE_TRVL = 0;
+    private final int CONTROL_STATE_EXCV = 1;
+    private final int CONTROL_STATE_DEPO = 2;
 
-    private final String STATE_DESCRIPTIONS[] = {"STATE_LNCH", "STATE_TTES", "STATE_EXCV", "STATE_TTDS", "STATE_DEPO"};
+    private final String STATE_DESCRIPTIONS[] = {
+            "LAUNCH CONFIGURATION",
+            "TRAVELLING TO EXCAVATION SITE",
+            "EXCAVATING",
+            "TRAVELLING TO DEPOSITION BIN",
+            "DEPOSITING PAYLOAD"
+    };
+    private final String CONTROL_STATE_DESCRIPTIONS[] = {
+            "CONTROL STATE TRAVEL",
+            "CONTROL STATE EXCAVATE",
+            "CONTROL STATE DEPOSIT"
+    };
 
     private final Color COLOR_CAMERA_FOV = Color.web("#6FC2F2", 0.25);
     private final Font FONT = new Font(0.25);
@@ -50,8 +64,10 @@ public class Robot {
     private Pose pose;
     private float cpuTemp;
 
-    private int state, ctrlState;
-    private String stateDescription, ctrlStateDescription;
+    private int id;
+    private Client boundClient;
+
+    private int state, controlState;
 
     private int lcvOld, rcvOld;
     private float networkTimer;
@@ -60,11 +76,13 @@ public class Robot {
 
     private StatusController controller;
 
+    private int removeme = 0;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // CONSTRUCTOR
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Robot() {
+    public Robot(int id) {
         lcv     = 0;
         rcv     = 0;
         name    = "";
@@ -75,13 +93,15 @@ public class Robot {
 
         cpuTemp = 0.0f;
 
+        this.id = id;
+        this.boundClient = Network.getClient(id);
+
         state = STATE_LNCH;
-        ctrlState = CTRL_STATE_TRVL;
-        stateDescription = "STATE_LNCH";
-        ctrlStateDescription = "CTRL_TRVL";
+        controlState = CONTROL_STATE_TRVL;
 
         networkTimer = 0.0f;
 
+        // TODO: remove
         lcvOld = lcv;
         rcvOld = rcv;
 
@@ -97,7 +117,7 @@ public class Robot {
 
         networkTimer += dt;
 
-        if (networkTimer > 0.1f && (Network.getClientSize() > 0)) {
+        if (networkTimer > 0.1f && boundClient.alive) {
             String out = "";
 
             if (lcv != lcvOld) {
@@ -113,7 +133,7 @@ public class Robot {
             }
 
             try {
-                Network.writeString(Network.getClient(0).outStream, out);
+                Network.writeString(boundClient.outStream, out);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -130,7 +150,8 @@ public class Robot {
             controller.yLabel.setText("Y: " + pose.y + "m");
             controller.thetaLabel.setText("θ: " + pose.theta + "°");
             controller.cpuTempLabel.setText("CPU: " + cpuTemp + "°C");
-            controller.stateLabel.setText(stateDescription + " --- " + ctrlStateDescription);
+            controller.stateLabel.setText(STATE_DESCRIPTIONS[state]);
+            controller.controlStateLabel.setText(CONTROL_STATE_DESCRIPTIONS[controlState]);
         }
 
         // grab our graphics transformation matrix before we draw so we can reset it when we're done
@@ -214,7 +235,6 @@ public class Robot {
                     if (plen < 2) break;
 
                     state = statementList.get(1);
-                    stateDescription = STATE_DESCRIPTIONS[state];
 
                     statementList.remove(0);
                     statementList.remove(0);
@@ -232,6 +252,15 @@ public class Robot {
                     statementList.remove(0);
 
                     break;
+                case Network.S_CONTROL_STATE:
+                    if (plen < 2) break;
+
+                    controlState = statementList.get(1);
+
+                    statementList.remove(0);
+                    statementList.remove(0);
+
+                    break;
                 default:
                     break;
             }
@@ -241,6 +270,23 @@ public class Robot {
     public void bindStatusController(StatusController sc) {
         controller = sc;
         controller.nameLabel.setText(name);
+    }
+
+    public void toggleControlState() {
+        this.controlState++;
+
+        if (controlState > 2) controlState = 0;
+
+        String out = "";
+
+        out += (char)Network.S_CONTROL_STATE;
+        out += (char)controlState;
+
+        try {
+            Network.writeString(boundClient.outStream, out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

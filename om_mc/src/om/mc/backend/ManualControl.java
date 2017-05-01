@@ -29,6 +29,8 @@ public class ManualControl {
 
     private static boolean controllerAvailable;
 
+    private static boolean removeme = false;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PUBLIC FUNCTIONS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +116,16 @@ public class ManualControl {
             // AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
             double lcv = (double)((float)controllerValues[i].get("y")) * -100;
             double rcv = (double)((float)controllerValues[i].get("y")) * -100;
+
+            if ((float)controllerValues[i].get("3") == 1.0f && !removeme) {
+                removeme = true;
+                // asdf
+                bound.toggleControlState();
+            }
+
+            if ((float)controllerValues[i].get("3") == 0.0f) {
+                removeme = false;
+            }
 
             double steering = (double)((float)controllerValues[i].get("rx")) * 100;
 
