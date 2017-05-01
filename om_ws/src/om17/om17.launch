@@ -8,7 +8,7 @@
   <node pkg="om17" type="poser" name="poser" output="screen" />
 
   <!-- ROUND CONTROL WATCHDOG -->
-  <node pkg="om17" type="watchdog.py" name="watchdog" output="screen" />
+  <!-- node pkg="om17" type="watchdog.py" name="watchdog" output="screen" /-->
 
   <!-- AUTONOMY -->
   <node pkg="om17" type="auto_controls" name="auto_controls" output="screen" />

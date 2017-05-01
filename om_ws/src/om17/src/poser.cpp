@@ -75,7 +75,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
     
-    ros::Rate loop_rate(12);
+    ros::Rate loop_rate(15);
     
     pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
     
@@ -169,7 +169,7 @@ void tick(void)
             // publishing robot location on 
             pose.x = cameraTranslationVector.at<double>(2,0);
             pose.y = cameraTranslationVector.at<double>(0,0);
-            pose.theta = cameraRotationVector.at<double>(2, 0);
+            pose.theta = -cameraRotationVector.at<double>(2, 0);
  
             pose.x -= CAMERA_X * cos(pose.theta);
             pose.y -= CAMERA_Y * sin(1.57079632679f - pose.theta);

@@ -97,7 +97,11 @@ def cell_cost_callback(msg):
     print msg.y
     print msg.cost
     print "--------------"
-    
+
+def control_state_callback(msg):
+    global _mc_pending
+    _mc_pending += chr(_S_CONTROL_STATE)
+    _mc_pending += chr(int(msg.data))
 
 def network():
     rospy.init_node("network")
@@ -106,6 +110,7 @@ def network():
     rospy.Subscriber("pose", Pose2D, pose_callback)
     rospy.Subscriber("/world_cost", CellCost, cell_cost_callback)
     rospy.Subscriber("state", Int8, state_callback)
+    rospy.Subscriber("control_state", Int8, control_state_callback)
     
     rospy.Timer(rospy.Duration(3), _sys_temp)
     _init()
@@ -173,6 +178,7 @@ def _connect():
         
         rospy.loginfo("SENDING CONNECTION KEY TO MISSION CONTROL")
         _mc.send(_CONNECTION_KEY)
+        _mc.send(chr(rospy.get_param("id")))
         
         # wait for mc to process connection key and send back a confirmation
         time.sleep(0.5)
@@ -209,13 +215,13 @@ def _parse_incoming():
         if cbval == _S_MC1:
             if plen >= 2:
                 _mc1_pub.publish(ord(_mc_to_process[1]) - 100)
-                print "lcv: " + str(ord(_mc_to_process[1]) - 100)
+                print "mc1: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
             else: break
         elif cbval == _S_MC2:
             if plen >= 2:
                 _mc2_pub.publish(ord(_mc_to_process[1]) - 100)
-                print "rcv: " + str(ord(_mc_to_process[1]) - 100)
+                print "mc2: " + str(ord(_mc_to_process[1]) - 100)
                 _mc_to_process = _mc_to_process[2:]
             else: break
         elif cbval == _S_STARTING_PARAMS:

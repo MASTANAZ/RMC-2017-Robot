@@ -31,15 +31,17 @@
 // CONSTANTS
 ////////////////////////////////////////////////////////////////////////////////
 
+const int   LOOP_RATE = 30;
+
 const int   STATE_LNCH = 0;
 const int   STATE_TTES = 1;
 const int   STATE_EXCV = 2;
 const int   STATE_TTDS = 3;
 const int   STATE_DEPO = 4;
 
-const int   CTRL_STATE_TRVL = 0;
-const int   CTRL_STATE_EXCV = 1;
-const int   CTRL_STATE_DEPO = 2;
+const int   CONTROL_STATE_TRVL = 0;
+const int   CONTROL_STATE_EXCV = 1;
+const int   CONTROL_STATE_DEPO = 2;
 
 const float OMEGA_ROTATION = 5.0; // Time in seconds to rotate 360 degrees
 const float OMEGA_DISTANCE = 0.5; // Time to travel straight 1 meter. Each 
@@ -57,55 +59,60 @@ const float CELL_SIZE = (float)FIELD_WIDTH / (float)GRID_WIDTH;
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
 
-float x = 0.0f, y = 0.0f, theta = 0.0f;
+struct
+{
+    float x = 0.0f, y = 0.0f, theta = 0.0f;
+    int mc1 = 0, mc2 = 0;
+    int current_state = -1;
+    int control_state = -1;
+} self;
 
-int mc1 = 0, mc2 = 0;
+float targety = 1.89f;
 
 // store measurements for the kalman filter
 float tofMeasurements[50] = {};
 
 //
-int current_state = -1;
+ros::Time old_time;
+ros::Duration tick_elapsed;
+float dt = 0.0f;
+float timer = 0.0f;
 
 //
 bool autonomy_active = true;
 bool round_active = false;
 
-// all topics that the auto_controls node subscribes to
+// subscribers
 ros::Subscriber pose_sub, world_cost_sub;
 ros::Subscriber autonomy_active_sub;
 ros::Subscriber round_active_sub;
-
-// Get msg data from ToF sensor
 ros::Subscriber tof_sensor_sub;
 
-// all topics that the auto_controls node publishes to
+// publishers
 ros::Publisher mc1_pub, mc2_pub;
 ros::Publisher control_state_pub;
 ros::Publisher state_pub;
-
-ros::Time old_time;
-ros::Duration tick_elapsed;
-float dt = 0.0f;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION DECLARATIONS
 ////////////////////////////////////////////////////////////////////////////////
 
+//
 void init(ros::NodeHandle &node_handle);
 void tick(void);
 void cleanup(void);
 
+//
 void setState(int new_state);
+void setControlState(int new_control_state);
 
+//
 void stateTTES(void);
 void stateEXCV(void);
 void stateTTDS(void);
 void stateDEPO(void);
 
-/**
- Callback functions for subscribers
-**/
+// subscribers callbacks
 void worldCostCallback(const om17::CellCost::ConstPtr& msg);
 void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg);
@@ -138,24 +145,41 @@ int main(int argc, char **argv)
     // ROS initialization
     ros::init(argc, argv, "auto_controls");
     ros::NodeHandle node_handle;
-    ros::Rate loop_rate(30);
+    ros::Rate loop_rate(LOOP_RATE);
 
     ros::Timer timer = node_handle.createTimer(ros::Duration(0.2), publishControls);
 
     init(node_handle);
     
+    // makes sure the initial dt value is zero
     old_time = ros::Time::now();
     
     while (ros::ok())
     {
+        // delta time calculation used for autonomy
         tick_elapsed = ros::Time::now() - old_time;
         dt = tick_elapsed.toSec();
-        std::cout << dt << std::endl;
         old_time = ros::Time::now();
         
-        if (autonomy_active && round_active)
+        //
+        if (round_active)
         {
-            tick();
+            // autonomous control
+            if (autonomy_active)
+            {
+                tick();
+            }
+            // manual control
+            else
+            {
+                // do nothing
+            }
+        }
+        // round is not active, robot should not be moving
+        else
+        {
+            self.mc1 = 0;
+            self.mc2 = 0;
         }
 
         ros::spinOnce();
@@ -173,11 +197,13 @@ int main(int argc, char **argv)
 
 void init(ros::NodeHandle &node_handle)
 {
+    // publishers
     mc1_pub = node_handle.advertise<std_msgs::Int16>("mc1", 10);
     mc2_pub = node_handle.advertise<std_msgs::Int16>("mc2", 10);
     control_state_pub = node_handle.advertise<std_msgs::Int8>("control_state", 10);
     state_pub = node_handle.advertise<std_msgs::Int8>("state", 10);
     
+    // subscribers
     world_cost_sub = node_handle.subscribe("/world_cost", 10, worldCostCallback);
     round_active_sub = node_handle.subscribe("/round_active", 10, roundActiveCallback);
     pose_sub = node_handle.subscribe("pose", 10, poseCallback);
@@ -186,7 +212,7 @@ void init(ros::NodeHandle &node_handle)
 
 void tick(void)
 {
-    switch (current_state) {
+    switch (self.current_state) {
     case STATE_LNCH:
         break;
     case STATE_TTES:
@@ -208,28 +234,45 @@ void tick(void)
 
 void cleanup(void)
 {
-    delete dstar;
+    
 }
 
 void setState(int new_state)
 {
-    current_state = new_state;
-    
-    // let everyone else know
-    std_msgs::Int8 out;
-    out.data = new_state;
-    state_pub.publish(out);
+    self.current_state = new_state;
+
+    std_msgs::Int8 msg;
+    msg.data = new_state;
+    state_pub.publish(msg);
 
     switch (new_state)
     {
-
     case STATE_TTES:
-        
+    case STATE_TTDS:
+        setControlState(CONTROL_STATE_TRVL);
+        break;
+    case STATE_EXCV:
+        setControlState(CONTROL_STATE_EXCV);
+        break;
+    case STATE_DEPO:
+        setControlState(CONTROL_STATE_DEPO);
         break;
     default:
         break;
     }
 }
+
+void setControlState(int new_control_state)
+{
+    std_msgs::Int8 msg;
+    self.control_state = new_control_state;
+    msg.data = new_control_state;
+    control_state_pub.publish(msg);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// STATE FUNCTIONS
+////////////////////////////////////////////////////////////////////////////////
 
 void stateTTES(void)
 {
@@ -243,13 +286,17 @@ void stateEXCV(void)
 
 void stateTTDS(void)
 {
-    
+
 }
 
 void stateDEPO(void)
 {
     
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// SUBSCRIBER CALLBACKS
+////////////////////////////////////////////////////////////////////////////////
 
 void worldCostCallback(const om17::CellCost::ConstPtr& msg)
 {
@@ -262,18 +309,11 @@ void worldCostCallback(const om17::CellCost::ConstPtr& msg)
 void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 {
     autonomy_active = (bool)msg->data;
-    // stop all motors
-    mc1 = 0;
-    mc2 = 0;
 }
 
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 {
     round_active = (bool)msg->data;
-    
-    // stop all motors
-    mc1 = 0;
-    mc2 = 0;
     
     if (round_active)
     {
@@ -283,10 +323,14 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
 
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
-    x = (float)msg->x;
-    y = (float)msg->y;
-    theta = (float)msg->theta;
+    self.x = (float)msg->x;
+    self.y = (float)msg->y;
+    self.theta = (float)msg->theta;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// 
+////////////////////////////////////////////////////////////////////////////////
 
 float getAngularTime(float angle_one, float angle_two) {
     return OMEGA_ROTATION * (angle_two - angle_one) / 360.0;
@@ -299,21 +343,12 @@ float getForwardTime(float pos1[2], float pos2[2]) {
 
 void publishControls(const ros::TimerEvent& timer_event)
 {
-    if (!round_active) {
-        std_msgs::Int16 send;
-        send.data = 0;
-        mc1_pub.publish(send);
-        send.data = 0;
-        mc2_pub.publish(send);
-        return;
-    }
-    
-    if (autonomy_active) {
-        std_msgs::Int16 send;
-        send.data = mc1;
-        mc1_pub.publish(send);
-        send.data = mc2;
-        mc2_pub.publish(send);
-    }
+    if (round_active && !autonomy_active) return;
+        
+    std_msgs::Int16 send;
+    send.data = self.mc1;
+    mc1_pub.publish(send);
+    send.data = self.mc2;
+    mc2_pub.publish(send);
 }
 
