@@ -118,23 +118,8 @@ void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
 
-#warning THIS WILL NOT BE A STANDARD MESSAGE; ADD CUSTOM MESSAGE TYPE
-// Message type required:
-//   'ToFSensor'
 //
-// Parameters:
-//   distance (in cm?)
-//   angle (radians)  
-//
-// WILL TOF SENSOR CALLBACK RETURN THE DATA FROM BOTH SENSORS?
-void tofSensorCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
-
-/**
- Publisher functions
-**/
 void publishControls(const ros::TimerEvent& timer_event);
-
-void pathTest();
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENTRY POINT
@@ -276,22 +261,23 @@ void setControlState(int new_control_state)
 
 void stateTTES(void)
 {
-    
+    // follow d-star path to excavation area
+    setState(STATE_EXCV);
 }
 
 void stateEXCV(void)
 {
-    
+    // arduino handles the excavation cycle
 }
 
 void stateTTDS(void)
 {
-
+    // follow d-star path deposition area
 }
 
 void stateDEPO(void)
 {
-    
+    // arduino handles the deposition cycle
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -331,15 +317,6 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 ////////////////////////////////////////////////////////////////////////////////
 // 
 ////////////////////////////////////////////////////////////////////////////////
-
-float getAngularTime(float angle_one, float angle_two) {
-    return OMEGA_ROTATION * (angle_two - angle_one) / 360.0;
-}
-
-float getForwardTime(float pos1[2], float pos2[2]) {
-    float distance = sqrt(((pos2[1] - pos1[1])*(pos2[1] - pos1[1])) + ((pos2[0] - pos1[0])*(pos2[0] - pos1[0])));
-    return OMEGA_DISTANCE * distance;
-}
 
 void publishControls(const ros::TimerEvent& timer_event)
 {
