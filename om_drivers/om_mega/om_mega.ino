@@ -15,7 +15,6 @@
 #include <std_msgs/Int8.h>
 
 #include <Wire.h>
-#include <VL53L0X.h>
 #include <Servo.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,10 +70,10 @@ ros::NodeHandle node_handle;
 
 int mc1_val, mc2_val;
 
-Servo mc1_servo, mc2_servo;
+Servo mc1, mc2;
 Servo tf1_servo, tf2_servo;
 
-VL53L0X tf1, tf2;
+//VL53L0X tf1, tf2;
 
 int control_state;
 
@@ -101,6 +100,8 @@ void setup()
   // initialilze i2c bus communications
   Wire.begin();
   
+  node_handle.advertise(state_pub);
+  
   node_handle.subscribe(mc1_sub);
   node_handle.subscribe(mc2_sub);
   node_handle.subscribe(control_state_sub);
@@ -123,11 +124,11 @@ void setup()
   mc2.attach(MC2);
   
   // initialize the TOF sensors
-  tf1.init();
-  tf1.setMeasurementTimingBudget(200000);
+  //tf1.init();
+  //tf1.setMeasurementTimingBudget(200000);
   // TODO: change address of tf2 on the bus to 42 (NEED TO USE XSHUT PIN)
-  tf2.init();
-  tf2.setMeasurementTimingBudget(200000);
+  //tf2.init();
+  //tf2.setMeasurementTimingBudget(200000);
 
   // ensures the first value of dt is zero
   old_time = millis();
