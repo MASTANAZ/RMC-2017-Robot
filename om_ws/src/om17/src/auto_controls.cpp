@@ -87,6 +87,8 @@ ros::Subscriber pose_sub, world_cost_sub;
 ros::Subscriber autonomy_active_sub;
 ros::Subscriber round_active_sub;
 ros::Subscriber tof_sensor_sub;
+ros::Subscriber state_sub;
+
 
 // publishers
 ros::Publisher mc1_pub, mc2_pub;
@@ -103,7 +105,7 @@ void tick(void);
 void cleanup(void);
 
 //
-void setState(int new_state);
+void setState(int new_state, bool external_call = false);
 void setControlState(int new_control_state);
 
 //
@@ -117,6 +119,7 @@ void worldCostCallback(const om17::CellCost::ConstPtr& msg);
 void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
+void stateCallback(const std_msgs::Int8::ConstPtr& msg);
 
 //
 void publishControls(const ros::TimerEvent& timer_event);
@@ -193,6 +196,7 @@ void init(ros::NodeHandle &node_handle)
     round_active_sub = node_handle.subscribe("/round_active", 10, roundActiveCallback);
     pose_sub = node_handle.subscribe("pose", 10, poseCallback);
     autonomy_active_sub = node_handle.subscribe("/autonomy_active", 10, autonomyActiveCallback);
+    state_sub = node_handle.subscribe("state", 10, stateCallback);
 }
 
 void tick(void)
@@ -222,13 +226,18 @@ void cleanup(void)
     
 }
 
-void setState(int new_state)
+void setState(int new_state, bool external_call)
 {
     self.current_state = new_state;
 
-    std_msgs::Int8 msg;
-    msg.data = new_state;
-    state_pub.publish(msg);
+    // this function was called from outside the program and we don't need to
+    // publish the new state value (this would result in an infinite loop)
+    if (!external_call)
+    {
+      std_msgs::Int8 msg;
+      msg.data = new_state;
+      state_pub.publish(msg);
+    }
 
     switch (new_state)
     {
@@ -312,6 +321,12 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     self.x = (float)msg->x;
     self.y = (float)msg->y;
     self.theta = (float)msg->theta;
+}
+
+void stateCallback(const std_msgs::Int8::ConstPtr& msg)
+{
+    std::cout << "state callback popped" << std::endl;
+    setState((int)msg->data, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
