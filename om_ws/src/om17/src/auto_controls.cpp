@@ -89,7 +89,6 @@ ros::Subscriber round_active_sub;
 ros::Subscriber tof_sensor_sub;
 ros::Subscriber state_sub;
 
-
 // publishers
 ros::Publisher mc1_pub, mc2_pub;
 ros::Publisher control_state_pub;
@@ -274,9 +273,18 @@ void stateTTES(void)
     setState(STATE_EXCV);
 }
 
+float temp = 0.0f;
+
 void stateEXCV(void)
 {
     // arduino handles the excavation cycle
+    std::cout << "excavate" << std::endl;
+    temp += dt;
+    
+    if (temp > 5.0f)
+    {
+        setState(STATE_TTDS);
+    }
 }
 
 void stateTTDS(void)
@@ -325,7 +333,6 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 
 void stateCallback(const std_msgs::Int8::ConstPtr& msg)
 {
-    std::cout << "state callback popped" << std::endl;
     setState((int)msg->data, true);
 }
 

@@ -13,7 +13,6 @@
 
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int8.h>
-#include <std_msgs/Bool.h>
 
 #include <Wire.h>
 #include <Servo.h>
@@ -37,12 +36,6 @@ const int RELAY_1 = 22;
 const int RELAY_2 = 23;
 const int RELAY_3 = 24;
 
-const int STATE_LNCH = 0;
-const int STATE_TTES = 1;
-const int STATE_EXCV = 2;
-const int STATE_TTDS = 3;
-const int STATE_DEPO = 4;
-
 // 
 const int CONTROL_STATE_TRVL = 0;
 const int CONTROL_STATE_EXCV = 1;
@@ -62,7 +55,6 @@ const int RELAY_STATES[3][3] = {
 void mc1Callback(const std_msgs::Int16& msg);
 void mc2Callback(const std_msgs::Int16& msg);
 void controlStateCallback(const std_msgs::Int8& msg);
-void autonomyActiveCallback(const std_msgs::Bool& msg);
 
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
@@ -70,29 +62,22 @@ void autonomyActiveCallback(const std_msgs::Bool& msg);
 
 ros::NodeHandle node_handle;
 
-int mc1_val, mc2_val;
+int mc1_val = 0;
+int mc2_val = 0;
 
 Servo mc1, mc2;
 Servo tf1_servo, tf2_servo;
 
 //VL53L0X tf1, tf2;
 
-bool autonomy_active;
-
-int control_state;
+int control_state = 0;
 
 long old_time, new_time;
 float dt;
 
-std_msgs::Int8 state_msg;
-ros::Publisher state_pub("state", &state_msg);
-
-ros::Subscriber<std_msgs::Bool> autonomy_active_sub("/autonomy_active", &autonomyActiveCallback);
 ros::Subscriber<std_msgs::Int16> mc1_sub("mc1", &mc1Callback);
 ros::Subscriber<std_msgs::Int16> mc2_sub("mc2", &mc2Callback);
 ros::Subscriber<std_msgs::Int8> control_state_sub("control_state", &controlStateCallback);
-
-float temp = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ARDUINO FUNCTIONS
@@ -105,12 +90,9 @@ void setup()
   // initialilze i2c bus communications
   Wire.begin();
   
-  node_handle.advertise(state_pub);
-  
   node_handle.subscribe(mc1_sub);
   node_handle.subscribe(mc2_sub);
   node_handle.subscribe(control_state_sub);
-  node_handle.subscribe(autonomy_active_sub);
 
   pinMode(RELAY_1, OUTPUT);
   pinMode(RELAY_2, OUTPUT);
@@ -120,13 +102,6 @@ void setup()
   pinMode(LS_EXCV_RETRACTED, INPUT);
   pinMode(LS_DEPO_UP, INPUT);
   pinMode(LS_DEPO_DOWN, INPUT);
-
-  autonomy_active = true;
-
-  mc1_val = 0;
-  mc2_val = 0;
-
-  control_state = 0;
   
   mc1.attach(MC1);
   mc2.attach(MC2);
@@ -152,28 +127,19 @@ void loop()
   
   node_handle.spinOnce();
 
-  if (!autonomy_active) return;
-
-  node_handle.logdebug("THIS SHOULDN'T RUN");
-
   if (control_state == CONTROL_STATE_TRVL)
   {
     // auto controls controls everything here; do nothing
   }
   else if (control_state == CONTROL_STATE_EXCV) 
   {
-    // excavation cycle
-    temp += dt;
-    if (temp > 5.0f)
-    {
-      state_msg.data = STATE_TTDS;
-      state_pub.publish(&state_msg);
-      temp = 0;
-    }
+    // excavation is happening, check limit switches to make sure the linear
+    // position of the excavator is out of bounds
   }
   else if (control_state == CONTROL_STATE_DEPO)
   {
-    // deposition cycle
+    // deposition cycle, check limit switches to make sure position of the
+    // deposition bucket isn't out of bounds
   }
 }
 
@@ -204,10 +170,5 @@ void controlStateCallback(const std_msgs::Int8& msg)
   digitalWrite(RELAY_1, RELAY_STATES[msg.data][0]);
   digitalWrite(RELAY_2, RELAY_STATES[msg.data][1]);
   digitalWrite(RELAY_3, RELAY_STATES[msg.data][2]);
-}
-
-void autonomyActiveCallback(const std_msgs::Bool& msg)
-{
-  autonomy_active = msg.data;
 }
 
