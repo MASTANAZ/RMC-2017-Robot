@@ -13,6 +13,7 @@
 
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int8.h>
+#include <std_msgs/Bool.h>
 
 #include <Wire.h>
 #include <Servo.h>
@@ -61,6 +62,7 @@ const int RELAY_STATES[3][3] = {
 void mc1Callback(const std_msgs::Int16& msg);
 void mc2Callback(const std_msgs::Int16& msg);
 void controlStateCallback(const std_msgs::Int8& msg);
+void autonomyActiveCallback(const std_msgs::Bool& msg);
 
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
@@ -75,6 +77,8 @@ Servo tf1_servo, tf2_servo;
 
 //VL53L0X tf1, tf2;
 
+bool autonomy_active;
+
 int control_state;
 
 long old_time, new_time;
@@ -83,6 +87,7 @@ float dt;
 std_msgs::Int8 state_msg;
 ros::Publisher state_pub("state", &state_msg);
 
+ros::Subscriber<std_msgs::Bool> autonomy_active_sub("/autonomy_active", &autonomyActiveCallback);
 ros::Subscriber<std_msgs::Int16> mc1_sub("mc1", &mc1Callback);
 ros::Subscriber<std_msgs::Int16> mc2_sub("mc2", &mc2Callback);
 ros::Subscriber<std_msgs::Int8> control_state_sub("control_state", &controlStateCallback);
@@ -105,6 +110,7 @@ void setup()
   node_handle.subscribe(mc1_sub);
   node_handle.subscribe(mc2_sub);
   node_handle.subscribe(control_state_sub);
+  node_handle.subscribe(autonomy_active_sub);
 
   pinMode(RELAY_1, OUTPUT);
   pinMode(RELAY_2, OUTPUT);
@@ -114,6 +120,8 @@ void setup()
   pinMode(LS_EXCV_RETRACTED, INPUT);
   pinMode(LS_DEPO_UP, INPUT);
   pinMode(LS_DEPO_DOWN, INPUT);
+
+  autonomy_active = true;
 
   mc1_val = 0;
   mc2_val = 0;
@@ -136,11 +144,17 @@ void setup()
 
 void loop()
 {
+  delay(5);
+  
   new_time = millis();
   dt = (float)(new_time - old_time) / 1000.0f;
   old_time = new_time;
   
   node_handle.spinOnce();
+
+  if (!autonomy_active) return;
+
+  node_handle.logdebug("THIS SHOULDN'T RUN");
 
   if (control_state == CONTROL_STATE_TRVL)
   {
@@ -161,8 +175,6 @@ void loop()
   {
     // deposition cycle
   }
-  
-  delay(5);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,5 +204,10 @@ void controlStateCallback(const std_msgs::Int8& msg)
   digitalWrite(RELAY_1, RELAY_STATES[msg.data][0]);
   digitalWrite(RELAY_2, RELAY_STATES[msg.data][1]);
   digitalWrite(RELAY_3, RELAY_STATES[msg.data][2]);
+}
+
+void autonomyActiveCallback(const std_msgs::Bool& msg)
+{
+  autonomy_active = msg.data;
 }
 
