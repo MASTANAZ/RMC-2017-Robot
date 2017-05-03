@@ -336,7 +336,9 @@ void stateCallback(const std_msgs::Int8::ConstPtr& msg)
 void publishControls(const ros::TimerEvent& timer_event)
 {
     if (round_active && !autonomy_active) return;
-        
+    
+    if (self.control_state == CONTROL_STATE_EXCV || self.control_state == CONTROL_STATE_DEPO) return;
+    
     std_msgs::Int16 send;
     send.data = self.mc1;
     mc1_pub.publish(send);
