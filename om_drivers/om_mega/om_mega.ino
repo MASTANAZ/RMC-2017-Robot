@@ -27,9 +27,9 @@ const int MC2 = 2;
 
 // limit switch input pins
 const int LS_EXCV_EXTENDED = 26;
-const int LS_EXCV_RETRACTED = 27;
+const int LS_EXCV_RETRACTED = 29;
 const int LS_DEPO_UP = 28;
-const int LS_DEPO_DOWN = 29;
+const int LS_DEPO_DOWN = 27;
 
 // the pins that control the states of the automotive relays
 const int RELAY_1 = 22;
@@ -71,6 +71,10 @@ Servo tf1_servo, tf2_servo;
 //VL53L0X tf1, tf2;
 
 int control_state = 0;
+
+// set to true to force stop movement of all motors;
+// useful when limit switches are activated
+bool force_stop = false;
 
 long old_time, new_time;
 float dt;
@@ -130,14 +134,25 @@ void loop()
   if (control_state == CONTROL_STATE_TRVL)
   {
     // auto controls controls everything here; do nothing
+    force_stop = false;
   }
   else if (control_state == CONTROL_STATE_EXCV) 
   {
     // excavation is happening, check limit switches to make sure the linear
-    // position of the excavator is out of bounds
+    // position of the excavator isn't out of bounds
+    if (digitalRead(LS_EXCV_RETRACTED) == HIGH)
+    {
+      force_stop = true;
+      mc1.writeMicroseconds(1500);
+    }
+    else
+    {
+      force_stop = false; 
+    }
   }
   else if (control_state == CONTROL_STATE_DEPO)
   {
+    force_stop = false;
     // deposition cycle, check limit switches to make sure position of the
     // deposition bucket isn't out of bounds
   }
@@ -150,6 +165,8 @@ void loop()
 // Motor Controller 1 callback
 void mc1Callback(const std_msgs::Int16& msg)
 {
+  if (force_stop) return;
+  
   mc1_val = msg.data;
   // convert message value of [-100, 100] to [1000, 2000]
   mc1.writeMicroseconds(((int)msg.data * 5) + 1500);
@@ -157,6 +174,9 @@ void mc1Callback(const std_msgs::Int16& msg)
 
 void mc2Callback(const std_msgs::Int16& msg)
 {
+  // don't set new values while the motors are in force stop
+  if (force_stop) return;
+  
   mc2_val = msg.data;
   // convert message value of [-100, 100] to [1000, 2000]
   mc2.writeMicroseconds(((int)msg.data * 5) + 1500);

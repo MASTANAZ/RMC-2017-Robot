@@ -237,6 +237,10 @@ void setState(int new_state, bool external_call)
       msg.data = new_state;
       state_pub.publish(msg);
     }
+    
+    // stop all motors on a state switch
+    self.mc1 = 0;
+    self.mc2 = 0;
 
     switch (new_state)
     {
@@ -280,7 +284,7 @@ void stateEXCV(void)
     std::cout << "excavate" << std::endl;
     temp += dt;
     
-    mc2 = -100;
+    self.mc2 = -100;
     
     if (temp > 5.0f)
     {
