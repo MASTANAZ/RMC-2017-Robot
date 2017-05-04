@@ -74,7 +74,11 @@ int control_state = 0;
 
 // set to true to force stop movement of all motors;
 // useful when limit switches are activated
-bool force_stop = false;
+bool mc1_fs_p = false;
+bool mc1_fs_n = false;
+
+bool mc2_fs_p = false;
+bool mc1_fs_n = false;
 
 long old_time, new_time;
 float dt;
@@ -124,7 +128,8 @@ void setup()
 void loop()
 {
   delay(5);
-  
+
+  // delta time calculation
   new_time = millis();
   dt = (float)(new_time - old_time) / 1000.0f;
   old_time = new_time;
@@ -134,7 +139,8 @@ void loop()
   if (control_state == CONTROL_STATE_TRVL)
   {
     // auto controls controls everything here; do nothing
-    force_stop = false;
+    mc1_fs = false;
+    mc2_fs = false;
   }
   else if (control_state == CONTROL_STATE_EXCV) 
   {
@@ -142,17 +148,18 @@ void loop()
     // position of the excavator isn't out of bounds
     if (digitalRead(LS_EXCV_RETRACTED) == HIGH)
     {
-      force_stop = true;
+      mc1_fs_p = true;
       mc1.writeMicroseconds(1500);
     }
     else
     {
-      force_stop = false; 
+      mc1_fs_p = false; 
     }
   }
   else if (control_state == CONTROL_STATE_DEPO)
   {
-    force_stop = false;
+    mc1_fs = false;
+    mc2_fs = false;
     // deposition cycle, check limit switches to make sure position of the
     // deposition bucket isn't out of bounds
   }
@@ -162,10 +169,19 @@ void loop()
 // FUNCTION DEFINITIONS
 ////////////////////////////////////////////////////////////////////////////////
 
-// Motor Controller 1 callback
 void mc1Callback(const std_msgs::Int16& msg)
 {
-  if (force_stop) return;
+  // stop positive values from being written to the motor controller
+  if (mc1_fs_p)
+  {
+    if (msg.data > 0) return;
+  }
+
+  // stop negative values from being written to the motor controller
+  if (mc1_fs_n)
+  {
+    if (msg.data < 0) return;
+  }
   
   mc1_val = msg.data;
   // convert message value of [-100, 100] to [1000, 2000]
@@ -175,7 +191,7 @@ void mc1Callback(const std_msgs::Int16& msg)
 void mc2Callback(const std_msgs::Int16& msg)
 {
   // don't set new values while the motors are in force stop
-  if (force_stop) return;
+  if (mc2_fs) return;
   
   mc2_val = msg.data;
   // convert message value of [-100, 100] to [1000, 2000]
@@ -186,7 +202,6 @@ void controlStateCallback(const std_msgs::Int8& msg)
 {
   control_state = msg.data;
   
-  // Control State Callback data
   digitalWrite(RELAY_1, RELAY_STATES[msg.data][0]);
   digitalWrite(RELAY_2, RELAY_STATES[msg.data][1]);
   digitalWrite(RELAY_3, RELAY_STATES[msg.data][2]);
