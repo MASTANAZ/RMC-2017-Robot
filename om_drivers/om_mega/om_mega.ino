@@ -72,13 +72,12 @@ Servo tf1_servo, tf2_servo;
 
 int control_state = 0;
 
-// set to true to force stop movement of all motors;
-// useful when limit switches are activated
+// 
 bool mc1_fs_p = false;
 bool mc1_fs_n = false;
 
 bool mc2_fs_p = false;
-bool mc1_fs_n = false;
+bool mc2_fs_n = false;
 
 long old_time, new_time;
 float dt;
@@ -139,8 +138,6 @@ void loop()
   if (control_state == CONTROL_STATE_TRVL)
   {
     // auto controls controls everything here; do nothing
-    mc1_fs = false;
-    mc2_fs = false;
   }
   else if (control_state == CONTROL_STATE_EXCV) 
   {
@@ -149,7 +146,11 @@ void loop()
     if (digitalRead(LS_EXCV_RETRACTED) == HIGH)
     {
       mc1_fs_p = true;
-      mc1.writeMicroseconds(1500);
+      if (mc1_val > 0)
+      {
+        mc1_val = 0;
+        mc1.writeMicroseconds(1500);
+      }
     }
     else
     {
@@ -158,8 +159,6 @@ void loop()
   }
   else if (control_state == CONTROL_STATE_DEPO)
   {
-    mc1_fs = false;
-    mc2_fs = false;
     // deposition cycle, check limit switches to make sure position of the
     // deposition bucket isn't out of bounds
   }
@@ -174,25 +173,22 @@ void mc1Callback(const std_msgs::Int16& msg)
   // stop positive values from being written to the motor controller
   if (mc1_fs_p)
   {
-    if (msg.data > 0) return;
+    if ((int)msg.data > 0) return;
   }
 
   // stop negative values from being written to the motor controller
   if (mc1_fs_n)
   {
-    if (msg.data < 0) return;
+    if ((int)msg.data < 0) return;
   }
   
-  mc1_val = msg.data;
+  mc1_val = (int)msg.data;
   // convert message value of [-100, 100] to [1000, 2000]
   mc1.writeMicroseconds(((int)msg.data * 5) + 1500);
 }
 
 void mc2Callback(const std_msgs::Int16& msg)
 {
-  // don't set new values while the motors are in force stop
-  if (mc2_fs) return;
-  
   mc2_val = msg.data;
   // convert message value of [-100, 100] to [1000, 2000]
   mc2.writeMicroseconds(((int)msg.data * 5) + 1500);
@@ -201,6 +197,11 @@ void mc2Callback(const std_msgs::Int16& msg)
 void controlStateCallback(const std_msgs::Int8& msg)
 {
   control_state = msg.data;
+  
+  mc1_fs_p = false;
+  mc1_fs_n = false;
+  mc2_fs_p = false;
+  mc2_fs_n = false;
   
   digitalWrite(RELAY_1, RELAY_STATES[msg.data][0]);
   digitalWrite(RELAY_2, RELAY_STATES[msg.data][1]);

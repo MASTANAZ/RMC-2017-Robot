@@ -27,6 +27,11 @@
 
 #include "om17/CellCost.h"
 
+#include "excv.h"
+#include "ttes.h"
+
+#include "robot.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,13 +64,7 @@ const float CELL_SIZE = (float)FIELD_WIDTH / (float)GRID_WIDTH;
 // NODE VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
 
-struct
-{
-    float x = 0.0f, y = 0.0f, theta = 0.0f;
-    int mc1 = 0, mc2 = 0;
-    int current_state = -1;
-    int control_state = -1;
-} self;
+Robot self;
 
 float targety = 1.89f;
 
@@ -87,7 +86,6 @@ ros::Subscriber pose_sub, world_cost_sub;
 ros::Subscriber autonomy_active_sub;
 ros::Subscriber round_active_sub;
 ros::Subscriber tof_sensor_sub;
-ros::Subscriber state_sub;
 
 // publishers
 ros::Publisher mc1_pub, mc2_pub;
@@ -195,7 +193,6 @@ void init(ros::NodeHandle &node_handle)
     round_active_sub = node_handle.subscribe("/round_active", 10, roundActiveCallback);
     pose_sub = node_handle.subscribe("pose", 10, poseCallback);
     autonomy_active_sub = node_handle.subscribe("/autonomy_active", 10, autonomyActiveCallback);
-    state_sub = node_handle.subscribe("state", 10, stateCallback);
 }
 
 void tick(void)
@@ -245,11 +242,15 @@ void setState(int new_state, bool external_call)
     switch (new_state)
     {
     case STATE_TTES:
+        setControlState(CONTROL_STATE_TRVL);
+        ttes::init(&self);
+        break;
     case STATE_TTDS:
         setControlState(CONTROL_STATE_TRVL);
         break;
     case STATE_EXCV:
         setControlState(CONTROL_STATE_EXCV);
+        excv::init(&self);
         break;
     case STATE_DEPO:
         setControlState(CONTROL_STATE_DEPO);
@@ -274,20 +275,23 @@ void setControlState(int new_control_state)
 void stateTTES(void)
 {
     // follow d-star path to excavation area
-    setState(STATE_EXCV);
+    //setState(STATE_EXCV);
+    ttes::tick(dt, &self);
+    
+    if (ttes::changeState())
+    {
+        ttes::reset();
+        setState(STATE_EXCV);
+    }
 }
-
-float temp = 0.0f;
 
 void stateEXCV(void)
 {
-    std::cout << "excavate" << std::endl;
-    temp += dt;
+    excv::tick(dt, &self);
     
-    self.mc2 = -100;
-    
-    if (temp > 5.0f)
+    if (excv::changeState())
     {
+        excv::reset();
         setState(STATE_TTDS);
     }
 }
@@ -325,7 +329,7 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
     
     if (round_active)
     {
-        setState(STATE_TTES);
+        setState(STATE_EXCV);
     }
 }
 
@@ -334,11 +338,6 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     self.x = (float)msg->x;
     self.y = (float)msg->y;
     self.theta = (float)msg->theta;
-}
-
-void stateCallback(const std_msgs::Int8::ConstPtr& msg)
-{
-    setState((int)msg->data, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

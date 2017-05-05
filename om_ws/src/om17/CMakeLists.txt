@@ -8,13 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	rospy
 	std_msgs
-    message_generation
+  message_generation
 )
 find_package(OpenCV REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -133,7 +132,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 
 ## Declare a C++ executable
 add_executable(poser src/poser.cpp)
-add_executable(auto_controls src/auto_controls.cpp src/dstar.cpp src/follower.cpp src/ttes.cpp)
+add_executable(auto_controls src/auto_controls.cpp src/dstar.cpp src/follower.cpp src/ttes.cpp src/excv.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
