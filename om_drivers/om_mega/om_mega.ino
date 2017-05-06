@@ -21,6 +21,14 @@
 // CONSTANTS
 ////////////////////////////////////////////////////////////////////////////////
 
+const int DEG_PER_SECOND = 80;
+
+const int TOF_ANGLE_MIN = 80;
+const int TOF_ANGLE_MAX = 140;
+
+//
+const int TOF_PWM = 4;
+
 // pwm pins which drive the motor controllers
 const int MC1 = 3;
 const int MC2 = 2;
@@ -67,6 +75,7 @@ int mc2_val = 0;
 
 Servo mc1, mc2;
 Servo tf1_servo, tf2_servo;
+Servo tof;
 
 //VL53L0X tf1, tf2;
 
@@ -78,6 +87,10 @@ bool mc1_fs_n = false;
 
 bool mc2_fs_p = false;
 bool mc2_fs_n = false;
+
+float rot_timer = 0.0f;
+int tof_angle = 0;
+int inc = 1;
 
 long old_time, new_time;
 float dt;
@@ -112,6 +125,9 @@ void setup()
   
   mc1.attach(MC1);
   mc2.attach(MC2);
+  
+  //tof.attach(TOF_PWM);
+  //tof.writeMicroseconds((int)((tof_angle / 180.0f) * 1000.0f) + 1000);
   
   // initialize the TOF sensors
   //tf1.init();

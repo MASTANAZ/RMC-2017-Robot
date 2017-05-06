@@ -1,5 +1,5 @@
 // follower.h
-// 
+//
 // CREATED BY HARRIS NEWSTEDER AND BLAKE NAZARIO-CASEY
 //
 
@@ -7,28 +7,14 @@
 #define _FOLLOWER_H
 
 #include <vector>
-
-const int PATH_TYPE_HORIZONTAL = 0;
-const int PATH_TYPE_VERTICAL   = 1;
-const int PATH_TYPE_TURN       = 2;
-
-struct Point
-{
-    float x, y;
-};
-
-struct PathSection
-{
-    Point start, end;
-    int type;
-};
+#include "DefinedStructs.h"
 
 class Follower
 {
 public:
     Follower(void);
     ~Follower(void);
-    
+
     void processPath(std::vector<Point> path_points);
 private:
     std::vector<PathSection> path_sequence;

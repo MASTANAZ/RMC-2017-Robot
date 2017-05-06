@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+
 #include "ros/ros.h"
 
 #include "geometry_msgs/Pose2D.h"
@@ -29,8 +30,11 @@
 
 #include "excv.h"
 #include "ttes.h"
+#include "depo.h"
 
 #include "robot.h"
+
+#include "DefinedStructs.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
@@ -59,6 +63,8 @@ const int   GRID_WIDTH = 24;
 const int   GRID_HEIGHT = GRID_WIDTH / 2;
 
 const float CELL_SIZE = (float)FIELD_WIDTH / (float)GRID_WIDTH;
+
+const float FORWARD_VEL = 0.27f; // Forward velocity in meters per second
 
 ////////////////////////////////////////////////////////////////////////////////
 // NODE VARIABLES
@@ -118,8 +124,11 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
 void stateCallback(const std_msgs::Int8::ConstPtr& msg);
 
-//
+// 
 void publishControls(const ros::TimerEvent& timer_event);
+
+//
+void calibrateRotation();
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENTRY POINT
@@ -278,10 +287,13 @@ void stateTTES(void)
     //setState(STATE_EXCV);
     ttes::tick(dt, &self);
     
+    self.mc1 = 100.0;
+    self.mc2 = 100.0;
+    
     if (ttes::changeState())
     {
         ttes::reset();
-        setState(STATE_EXCV);
+        setState(STATE_DEPO);
     }
 }
 
@@ -299,11 +311,19 @@ void stateEXCV(void)
 void stateTTDS(void)
 {
     // follow d-star path deposition area
+    
 }
 
 void stateDEPO(void)
 {
     // arduino handles the deposition cycle
+     // arduino handles the deposition cycle
+    depo::tick(dt, &self);
+    
+    if (depo::changeState()){
+        depo::reset();
+        setState(STATE_TTDS);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -329,7 +349,7 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
     
     if (round_active)
     {
-        setState(STATE_EXCV);
+        setState(STATE_TTES);
     }
 }
 
@@ -354,4 +374,5 @@ void publishControls(const ros::TimerEvent& timer_event)
     send.data = self.mc2;
     mc2_pub.publish(send);
 }
+
 
