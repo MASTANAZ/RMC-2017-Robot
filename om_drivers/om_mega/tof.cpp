@@ -4,19 +4,18 @@
 #include <Servo.h>
 
 #include <Wire.h>
-#include <VL53L0X.h>
+#include "VL53L0X.h"
 
 namespace
 {
     const uint8_t  PWM_PIN        = 5;
-    const uint8_t  DEG_PER_SECOND = 20;
+    const uint8_t  XSHUT_PIN      = 4;
+    const uint8_t  DEG_PER_SECOND = 60;
     const int8_t   ANGLE_MIN      = -30;
     const int8_t   ANGLE_MAX      = 30;
     const int8_t   MS_PER_DEG     = 11;
     const uint16_t MS_CENTER      = 1650;
     const float    ROT_FREQUENCY  = 1.0f / (float)DEG_PER_SECOND;
-    //
-    const uint8_t  XSHUT_PIN      = 4;
     
     Servo sservo;
     

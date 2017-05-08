@@ -1,3 +1,12 @@
+/**
+  Created by Blake Nazario-Casey and Harris Newsteder
+  
+  DESCRIPTION:
+    The depo.cpp/h files are used to command motor controllers for 
+    deposition buckets.
+
+**/
+
 #include "depo.h"
 
 #include <iostream>

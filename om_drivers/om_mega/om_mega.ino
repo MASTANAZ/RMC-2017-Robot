@@ -130,7 +130,7 @@ void loop()
   
   node_handle.spinOnce();
   
-  tof::tick(dt);
+  //tof::tick(dt);
 
   if (control_state == CONTROL_STATE_TRVL)
   {

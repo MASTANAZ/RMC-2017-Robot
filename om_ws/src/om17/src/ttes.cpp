@@ -9,7 +9,9 @@ namespace ttes
     int state = STATE_TRAVEL;
     float timer = 0.0f;
     bool change_state = false;
+    float target_y = 1.89f;
 }
+//poopy hehehehehe
 
 void ttes::init(Robot* robot)
 {
@@ -17,10 +19,21 @@ void ttes::init(Robot* robot)
 }
 
 void ttes::tick(float dt, Robot* robot)
-{
-    timer += dt;
+{   
+    float dy = target_y - robot->y;
+
+    if (dy > 0.0f)
+    {
+        robot->mc1 = 90;
+        robot->mc2 = 100;
+    }
+    else if (dy < 0.0f)
+    {
+        robot->mc1 = 100;
+        robot->mc2 = 90;
+    }
     
-    if (timer > 5.0f)
+    if (robot->x >= 4.4)
     {
         change_state = true;
     }

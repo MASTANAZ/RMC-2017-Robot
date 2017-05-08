@@ -30,6 +30,7 @@
 
 #include "excv.h"
 #include "ttes.h"
+#include "ttds.h"
 #include "depo.h"
 
 #include "robot.h"
@@ -247,6 +248,13 @@ void setState(int new_state, bool external_call)
     // stop all motors on a state switch
     self.mc1 = 0;
     self.mc2 = 0;
+    
+    // force publish controls
+    std_msgs::Int16 send;
+    send.data = self.mc1;
+    mc1_pub.publish(send);
+    send.data = self.mc2;
+    mc2_pub.publish(send);
 
     switch (new_state)
     {
@@ -256,6 +264,7 @@ void setState(int new_state, bool external_call)
         break;
     case STATE_TTDS:
         setControlState(CONTROL_STATE_TRVL);
+        ttds::init(&self);
         break;
     case STATE_EXCV:
         setControlState(CONTROL_STATE_EXCV);
@@ -287,13 +296,10 @@ void stateTTES(void)
     //setState(STATE_EXCV);
     ttes::tick(dt, &self);
     
-    self.mc1 = 100.0;
-    self.mc2 = 100.0;
-    
     if (ttes::changeState())
     {
         ttes::reset();
-        setState(STATE_DEPO);
+        setState(STATE_EXCV);
     }
 }
 
@@ -311,7 +317,13 @@ void stateEXCV(void)
 void stateTTDS(void)
 {
     // follow d-star path deposition area
+    ttds::tick(dt, &self);
     
+    if (ttds::changeState())
+    {
+        ttds::reset();
+        setState(STATE_DEPO);
+    }
 }
 
 void stateDEPO(void)

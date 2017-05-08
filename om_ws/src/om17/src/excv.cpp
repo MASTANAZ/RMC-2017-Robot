@@ -21,23 +21,10 @@ void excv::init(Robot* robot)
 void excv::tick(float dt, Robot* robot)
 {
     timer += dt;
-    if (state == STATE_LOWER)
+    
+    if (timer > 6.0f)
     {
-        robot->mc1 = -50;
-        if (timer > 6.0f)
-        {
-            timer = 0.0f;
-            state = STATE_RAISE;
-        }
-    }
-    else if (state == STATE_RAISE)
-    {
-        robot->mc1 = 50;
-        
-        if (timer > 6.0f)
-        {
-            change_state = true;
-        }
+        change_state = true;
     }
 }
 

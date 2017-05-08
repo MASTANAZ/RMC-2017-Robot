@@ -57,12 +57,18 @@ cv::Mat                  img;
 geometry_msgs::Pose2D    pose;
 ros::Publisher           pose_pub;
 
+//
+ros::Time old_time;
+ros::Duration tick_elapsed;
+float dt = 0.0f;
+float timer = 0.0f;
+
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION DECLARATIONS
 ////////////////////////////////////////////////////////////////////////////////
 
 void init(void);
-void tick(void);
+void tick(ros::NodeHandle* nh);
 void cleanup(void);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +81,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "position");
     ros::NodeHandle node_handle;
     
-    ros::Rate loop_rate(15);
+    ros::Rate loop_rate(10);
     
     pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("pose", 10);
     
@@ -87,9 +93,17 @@ int main(int argc, char **argv)
     // sleep for 1 second
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     
+    // makes sure the initial dt value is zero
+    old_time = ros::Time::now();
+    
     while (ros::ok())
     {
-        tick();
+        // delta time calculation used for stuff
+        tick_elapsed = ros::Time::now() - old_time;
+        dt = tick_elapsed.toSec();
+        old_time = ros::Time::now();
+    
+        tick(&node_handle);
         
         ros::spinOnce();
         loop_rate.sleep();
@@ -137,8 +151,20 @@ void init(void)
     CAM_DISTORTION.at<double>(0, 4) = 0.0f;
 }
 
-void tick(void)
+void tick(ros::NodeHandle* nh)
 {
+    timer += dt;
+    
+    // also check for state here
+    if (timer > 1.5f)
+    {
+        nh->setParam("lost_tracking", true);
+    }
+    else
+    {
+        nh->setParam("lost_tracking", false);
+    }
+
     camera.grab();
     camera.retrieve(img);
 
@@ -151,6 +177,10 @@ void tick(void)
     // at least one marker was found
     if (ids.size() > 0)
     {
+    
+        // reset the lost-tracking timer
+        timer = 0.0f;
+    
         cv::aruco::drawDetectedMarkers(img, corners, ids);
         cv::Mat rvec, tvec;
         int valid = cv::aruco::estimatePoseBoard(corners, ids, board, CAM_INTRINSIC, CAM_DISTORTION, rvec, tvec);
