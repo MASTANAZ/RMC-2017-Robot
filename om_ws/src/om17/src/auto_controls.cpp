@@ -32,6 +32,7 @@
 #include "ttes.h"
 #include "ttds.h"
 #include "depo.h"
+#include "lnch.h"
 
 #include "robot.h"
 
@@ -117,6 +118,7 @@ void stateTTES(void);
 void stateEXCV(void);
 void stateTTDS(void);
 void stateDEPO(void);
+void stateLNCH(void);
 
 // subscribers callbacks
 void worldCostCallback(const om17::CellCost::ConstPtr& msg);
@@ -209,6 +211,7 @@ void tick(void)
 {
     switch (self.current_state) {
     case STATE_LNCH:
+        stateLNCH();
         break;
     case STATE_TTES:
         stateTTES();
@@ -258,6 +261,10 @@ void setState(int new_state, bool external_call)
 
     switch (new_state)
     {
+    case STATE_LNCH:
+        setControlState(CONTROL_STATE_TRVL);
+        lnch::init(&self);
+        break;
     case STATE_TTES:
         setControlState(CONTROL_STATE_TRVL);
         ttes::init(&self);
@@ -289,6 +296,18 @@ void setControlState(int new_control_state)
 ////////////////////////////////////////////////////////////////////////////////
 // STATE FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
+
+void stateLNCH(void)
+{
+    lnch::tick(dt,&self);
+    
+    if (lnch::changeState())
+    {
+        lnch::reset();
+        setState(STATE_TTES);
+    }
+}
+
 
 void stateTTES(void)
 {

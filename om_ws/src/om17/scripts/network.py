@@ -225,7 +225,17 @@ def _parse_incoming():
                 _mc_to_process = _mc_to_process[2:]
             else: break
         elif cbval == _S_STARTING_PARAMS:
-            _mc_to_process = _mc_to_process[1:]
+            if plen >= 2:
+                packed = ord(_mc_to_process[1])
+                
+                zone = (0xF0 & packed) >> 4
+                orientation = (0x0F & packed)
+                
+                print "zone = " + zone
+                print "orientation = " + orientation
+                
+                _mc_to_process = _mc_to_process[2:]
+            else: break
         elif cbval == _S_ROUND_START:
             _round_active_pub.publish(True)
             _mc_to_process = _mc_to_process[1:]
