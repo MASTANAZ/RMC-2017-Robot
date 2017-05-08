@@ -142,13 +142,13 @@ void lnch::tick(float dt, Robot* robot)
             if (timer >= 1) 
             {
                 // Begin turn left
-                mc1 = -100;
-                mc2 = 100;
+                robot->mc1 = -100;
+                robot->mc2 = 100;
                 
                 // Change state
                 if (timer >= 2)
                 {
-                    changeState = true;
+                    change_state = true;
                 } //End change state
             }//End wait for deimos
         }
@@ -200,13 +200,13 @@ void lnch::tick(float dt, Robot* robot)
             if (timer >= 1) 
             {
                 // Begin turn right
-                mc1 = 100;
-                mc2 = -100;
+                robot->mc1 = 100;
+                robot->mc2 = -100;
                 
                 // Change state
                 if (timer >= 2)
                 {
-                    changeState = true;
+                    change_state = true;
                 } //End change state
             }//End wait for deimos
         }
