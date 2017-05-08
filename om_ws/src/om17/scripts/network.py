@@ -231,8 +231,8 @@ def _parse_incoming():
                 zone = (0xF0 & packed) >> 4
                 orientation = (0x0F & packed)
                 
-                print "zone = " + zone
-                print "orientation = " + orientation
+                print "zone = " + str(zone)
+                print "orientation = " + str(orientation)
                 
                 _mc_to_process = _mc_to_process[2:]
             else: break
