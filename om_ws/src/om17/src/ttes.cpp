@@ -11,7 +11,6 @@ namespace ttes
     bool change_state = false;
     float target_y = 1.89f;
 }
-//poopy hehehehehe
 
 void ttes::init(Robot* robot)
 {

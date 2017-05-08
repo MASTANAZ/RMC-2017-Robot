@@ -4,267 +4,220 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 // PHOBOS IS IN FRONT
 // DEIMOS IS IN BACK
 
+// void namespace
+namespace
+{
+// dead reckoning action
+struct DRAction
+{
+    const int DRIVE_FORWARD  = 0;
+    const int DRIVE_BACKWARD = 1;
+    const int TURN_RIGHT     = 2;
+    const int TURN_LEFT      = 3;
+    const int WAIT           = 4;
+    
+    // TUNE THIS
+    const float DURATION_TURN_90 = 2.0f;
+    
+    float timer = 0.0f;
+    float duration = 0.0f;
+    int mc1_set = 0;
+    int mc2_set = 0;
+    
+    DRAction(int type, float action_duration = 0.0f)
+    {
+        duration = action_duration;
+        
+        switch (type)
+        {
+        case DRIVE_FORWARD:
+            mc1_set = 100;
+            mc2_set = 100;
+            break;
+        case DRIVE_BACKWARD:
+            mc1_set = -100;
+            mc2_set = -100;
+            break;
+        case TURN_RIGHT:
+            mc1_set = 100;
+            mc2_set = -100;
+            duration = DURATION_TURN_90;
+            break;
+        case TURN_LEFT:
+            mc1_set = -100;
+            mc2_set = 100;
+            duration = DURATION_TURN_90;
+            break;
+        case WAIT:
+            mc1_set = 0;
+            mc2_set = 0;
+        default:
+            break;
+        }
+    }
+    
+    void setMCValues(Robot* robot)
+    {
+        robot->mc1 = mc1_set;
+        robot->mc2 = mc2_set;
+    }
+};
+}
+
 namespace lnch
 {
-    const int STATE_LOWER = 0;
-    const int STATE_RAISE = 1;
+    const int ZONE_A = 0;
+    const int ZONE_B = 1;
     
-    const float TIME_TURN_90 = 2.0f;
-
-    int state = STATE_LOWER;
+    const int ORIENTATION_NORTH = 0;
+    const int ORIENTATION_SOUTH = 1;
+    const int ORIENTATION_EAST  = 2;
+    const int ORIENTATION_WEST  = 3;
+    
+    const int ID_PHOBOS = 0;
+    const int ID_DEIMOS = 1;
+    
     float timer = 0.0f;
     bool change_state = false;
     
-    int startZone        = 0; // a = 0, b = 1
-    int startOrientation = 0; // 0 = North, 1 = South, 2 = East, 3 = West
-    int robotID = 0; // 0 = Phobos, 1 = Deimos
+    int start_zone        = 0; // a = 0, b = 1
+    int start_orientation = 0; // 0 = North, 1 = South, 2 = East, 3 = West
+    int robot_id          = 0; // 0 = Phobos, 1 = Deimos
     
+    int current_action    = 0;
+    
+    // ACTIONS TO TAKE FOR THE LAUNCH
+    std::vector<DRAction> launch_actions;
 }
 
 void lnch::init(Robot* robot)
 {
-    std::cout << "LAUNCH INIT" << std::endl;    
-    std::string zone, orientation;
+    std::cout << "LNCH INIT" << std::endl;
     
-    
-    
-    ros::param::get("/starting_zone", zone);
-    ros::param::get("/starting_orientation", orientation);
-    
+    ros::param::get("/starting_zone", start_zone);
+    ros::param::get("/starting_orientation", start_orientation);
     #warning This may not be an int. May need to use string and cast to int
-    ros::param::get("id", robotID);
+    ros::param::get("id", robot_id);
     
-    
-    // Check zone
-    // Compare function returns 0 if they are the same, hence the preceeding '!'
-    if (!zone.compare("a"))
-        startZone = 0;
-    
-    else if (!zone.compare("b"))
-        startZone = 1;
-        
-    else 
-        ROS_FATAL("Starting zone does not equal 'a' or 'b'");
-    
-    
-    // Check orientation
-    if (!orientation.compare("north"))
-        startOrientation = 0;
-    
-    else if (!orientation.compare("east"))
-        startOrientation = 1;
-    
-    else if (!orientation.compare("south"))
-        startOrientation = 2;
-    
-    else if (!orientation.compare("west"))
-        startOrientation = 3;
-
-    else 
-        ROS_FATAL("Starting orientation does not equal 'north', 'east', 'south', or 'west'.");
-    
-        
+    if (robot_id == ID_PHOBOS)
+    {
+        if (start_zone == ZONE_A)
+        {
+            if (start_orientation == "north")
+            {
+                launch_actions.push_back(DRAction(DRAction::WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_BACKWARD, 1.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_FORWARD, 2.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+            }
+            else if (start_orientation == "south")
+            {
+                
+            }
+            else if (start_orientation == "east")
+            {
+                
+            }
+            else if (start_orientation == "west")
+            {
+                
+            }
+        }
+        else if (start_zone == ZONE_B)
+        {
+            if (start_orientation == "north")
+            {
+                
+            }
+            else if (start_orientation == "south")
+            {
+                
+            }
+            else if (start_orientation == "east")
+            {
+                
+            }
+            else if (start_orientation == "west")
+            {
+                
+            }
+        }
+    }
+    else if (robot_id == ID_DEIMOS)
+    {
+        if (start_zone == ZONE_A)
+        {
+            if (start_orientation == "north")
+            {
+                
+            }
+            else if (start_orientation == "south")
+            {
+                
+            }
+            else if (start_orientation == "east")
+            {
+                
+            }
+            else if (start_orientation == "west")
+            {
+                
+            }
+        }
+        else if (start_zone == ZONE_B)
+        {
+            if (start_orientation == "north")
+            {
+                
+            }
+            else if (start_orientation == "south")
+            {
+                
+            }
+            else if (start_orientation == "east")
+            {
+                
+            }
+            else if (start_orientation == "west")
+            {
+                
+            }
+        }
+    }
 }
 
 void lnch::tick(float dt, Robot* robot)
 {
-    timer += dt;
+    DRAction current;
     
-    // Robot is phobos (in front)
-    if (robotID == 0)
+    current = launch_actions.at(current_action);
+    
+    current.timer += dt;
+    
+    if (current.timer >= current.duration)
     {
-/******************************************************************************
-    ZONE A
-******************************************************************************/
-        // In zone A, Facing North
-        // Begin turn right
-        if (startZone == 0 && startOrientation == 0)
+        current_action++;
+        if (current_action == launch_actions.size())
         {
-            // wait for deimos to back up
-            if (timer >= 1) 
-            {
-                robot->mc1 = 100;
-                robot->mc2 = -100; 
-            
-                // Start to travel in positive-y
-                if (timer >= 2) 
-                {   // mc1 is already at 100
-                    robot->mc2 = 100;
-                    
-                    // turn right
-                    if (timer >= 5) 
-                    {
-                        robot->mc2 = -100;
-                        
-                        // Change state
-                        if (timer >= 6) 
-                        {
-                            change_state = true;
-                        }//End change state
-                    }//End turn right
-                }//End travel in positive-y
-            }// End wait for Deimos
-        }
-        
-        // In zone A, Facing South
-        else if (startZone == 0 && startOrientation == 1)
-        {
-            // Already facing the direction we need to travel,
-            // and Deimos is behind phobos. So, just travel forward. 
             change_state = true;
         }
-        
-        // In zone A, Facing East
-        else if (startZone == 0 && startOrientation == 2)
+        else
         {
-            // Begin to travel in positive y-direction
-            robot->mc1 = 100; 
-            robot->mc2 = 100; 
-            
-            // Begin to turn right
-            if (timer >= 3)
-            {   // mc1 is already at 100
-                robot->mc2 = -100;
-                
-                // Change state
-                if (timer >= 4)
-                {
-                    change_state = true;
-                }// End change state
-            } // End turn right
-        }
-        
-        // In zone A, Facing West
-        else if (startZone == 0 && startOrientation == 3)
-        {
-            // wait for deimos to back up
-            if (timer >= 1) 
-            {
-                // Begin turn left
-                robot->mc1 = -100;
-                robot->mc2 = 100;
-                
-                // Change state
-                if (timer >= (1.0f + TIME_TURN_90))
-                {
-                    change_state = true;
-                } //End change state
-            }//End wait for deimos
-        }
-        
-/******************************************************************************
-    ZONE B
-******************************************************************************/
-        // In zone B, Facing North
-        else if (startZone == 1 && startOrientation == 0)
-        {
-            // wait for deimos to back up
-            if (timer >= 1) 
-            {
-                robot->mc1 = -100;
-                robot->mc2 = 100; 
-            
-                // Start to travel in positive-y
-                if (timer >= 2) 
-                {   // mc2 is already at 100
-                    robot->mc1 = 100;
-                    
-                    // turn left
-                    if (timer >= 5) 
-                    {
-                        robot->mc1 = -100;
-                        
-                        // Change state
-                        if (timer >= 6) 
-                        {
-                            change_state = true;
-                        }//End change state
-                    }//End turn right
-                }//End travel in positive-y
-            }// End wait for Deimos
-        }
-        
-        // In zone B, Facing South
-        else if (startZone == 1 && startOrientation == 1)
-        {
-            // Already facing the direction we need to travel,
-            // and Deimos is behind phobos. So, just travel forward. 
-            change_state = true;
-        }
-        
-        // In zone B, Facing East
-        else if (startZone == 0 && startOrientation == 2)
-        {
-            // wait for deimos to back up
-            if (timer >= 1) 
-            {
-                // Begin turn right
-                robot->mc1 = 100;
-                robot->mc2 = -100;
-                
-                // Change state
-                if (timer >= 2)
-                {
-                    change_state = true;
-                } //End change state
-            }//End wait for deimos
-        }
-        
-        // In zone A, Facing West
-        else if (startZone == 0 && startOrientation == 3)
-        {
-            // Begin to travel in negative y-direction
-            robot->mc1 = 100; 
-            robot->mc2 = 100; 
-            
-            // Begin to turn right
-            if (timer >= 3)
-            {   // mc1 is already at 100
-                robot->mc2 = -100;
-                
-                // Change state
-                if (timer >= 4)
-                {
-                    change_state = true;
-                }// End change state
-            } // End turn right
-        }
-        
-        else {
-            ROS_FATAL("INVALID STARTING POSITION");
+            launch_actions.at(current_action).setMCValues(robot);
         }
     }
-    
-    
-/******************************************************************************
-    END PHOBOS
-    BEGIN DEIMOS
-******************************************************************************/
-
-    
-    // Robot is deimos (in back)
-    else 
-    {
-        
-    }
-    
-    /**
-    if (timer > 6.0f)
-    {
-        change_state = true;
-    }
-    **/
 }
 
 void lnch::reset(void)
 {
-    std::cout << "LAUNCH RESET" << std::endl;
+    std::cout << "LNCH RESET" << std::endl;
     change_state = false;
-    state = STATE_LOWER;
     timer = 0.0f;
 }
 

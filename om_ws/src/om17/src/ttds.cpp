@@ -15,7 +15,7 @@ namespace ttds
 
 void ttds::init(Robot* robot)
 {
-    std::cout << "ttds INIT" << std::endl;
+    std::cout << "TTDS INIT" << std::endl;
 }
 
 void ttds::tick(float dt, Robot* robot)
@@ -42,7 +42,7 @@ void ttds::tick(float dt, Robot* robot)
 
 void ttds::reset(void)
 {
-    std::cout << "ttds RESET" << std::endl;
+    std::cout << "TTDS RESET" << std::endl;
     change_state = false;
     state = STATE_TRAVEL;
     timer = 0.0f;
