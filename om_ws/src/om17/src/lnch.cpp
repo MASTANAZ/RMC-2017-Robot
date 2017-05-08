@@ -12,18 +12,18 @@
 // void namespace
 namespace
 {
+const int DRACTION_DRIVE_FORWARD  = 0;
+const int DRACTION_DRIVE_BACKWARD = 1;
+const int DRACTION_TURN_RIGHT     = 2;
+const int DRACTION_TURN_LEFT      = 3;
+const int DRACTION_WAIT           = 4;
+
+// TUNE THIS
+const float DRACTION_DURATION_TURN_90 = 2.0f;
+
 // dead reckoning action
 struct DRAction
 {
-    const int DRIVE_FORWARD  = 0;
-    const int DRIVE_BACKWARD = 1;
-    const int TURN_RIGHT     = 2;
-    const int TURN_LEFT      = 3;
-    const int WAIT           = 4;
-    
-    // TUNE THIS
-    const float DURATION_TURN_90 = 2.0f;
-    
     float timer = 0.0f;
     float duration = 0.0f;
     int mc1_set = 0;
@@ -35,25 +35,25 @@ struct DRAction
         
         switch (type)
         {
-        case DRIVE_FORWARD:
+        case DRACTION_DRIVE_FORWARD:
             mc1_set = 100;
             mc2_set = 100;
             break;
-        case DRIVE_BACKWARD:
+        case DRACTION_DRIVE_BACKWARD:
             mc1_set = -100;
             mc2_set = -100;
             break;
-        case TURN_RIGHT:
+        case DRACTION_TURN_RIGHT:
             mc1_set = 100;
             mc2_set = -100;
-            duration = DURATION_TURN_90;
+            duration = DRACTION_DURATION_TURN_90;
             break;
-        case TURN_LEFT:
+        case DRACTION_TURN_LEFT:
             mc1_set = -100;
             mc2_set = 100;
-            duration = DURATION_TURN_90;
+            duration = DRACTION_DURATION_TURN_90;
             break;
-        case WAIT:
+        case DRACTION_WAIT:
             mc1_set = 0;
             mc2_set = 0;
         default:
@@ -108,7 +108,7 @@ void lnch::init(Robot* robot)
     {
         if (start_zone == ZONE_A)
         {
-            if (start_orientation == "north")
+            if (start_orientation == ORIENTATION_NORTH)
             {
                 launch_actions.push_back(DRAction(DRAction::WAIT, 1.0f));
                 launch_actions.push_back(DRAction(DRAction::DRIVE_BACKWARD, 1.0));
@@ -116,34 +116,38 @@ void lnch::init(Robot* robot)
                 launch_actions.push_back(DRAction(DRAction::DRIVE_FORWARD, 2.0));
                 launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
             }
-            else if (start_orientation == "south")
+            else if (start_orientation == ORIENTATION_SOUTH)
             {
                 
             }
-            else if (start_orientation == "east")
+            else if (start_orientation == ORIENTATION_EAST)
             {
                 
             }
-            else if (start_orientation == "west")
+            else if (start_orientation == ORIENTATION_WEST)
             {
                 
             }
         }
         else if (start_zone == ZONE_B)
         {
-            if (start_orientation == "north")
+            if (start_orientation == ORIENTATION_NORTH)
+            {
+                launch_actions.push_back(DRAction(DRAction::WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_BACKWARD, 1.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_FORWARD, 2.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+            }
+            else if (start_orientation == ORIENTATION_SOUTH)
             {
                 
             }
-            else if (start_orientation == "south")
+            else if (start_orientation == ORIENTATION_EAST)
             {
                 
             }
-            else if (start_orientation == "east")
-            {
-                
-            }
-            else if (start_orientation == "west")
+            else if (start_orientation == ORIENTATION_WEST)
             {
                 
             }
@@ -153,38 +157,46 @@ void lnch::init(Robot* robot)
     {
         if (start_zone == ZONE_A)
         {
-            if (start_orientation == "north")
+            if (start_orientation == ORIENTATION_NORTH)
+            {
+                launch_actions.push_back(DRAction(DRAction::WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_BACKWARD, 1.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_FORWARD, 2.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+            }
+            else if (start_orientation == ORIENTATION_SOUTH)
             {
                 
             }
-            else if (start_orientation == "south")
+            else if (start_orientation == ORIENTATION_EAST)
             {
                 
             }
-            else if (start_orientation == "east")
-            {
-                
-            }
-            else if (start_orientation == "west")
+            else if (start_orientation == ORIENTATION_WEST)
             {
                 
             }
         }
         else if (start_zone == ZONE_B)
         {
-            if (start_orientation == "north")
+            if (start_orientation == ORIENTATION_NORTH)
+            {
+                launch_actions.push_back(DRAction(DRAction::WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_BACKWARD, 1.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+                launch_actions.push_back(DRAction(DRAction::DRIVE_FORWARD, 2.0));
+                launch_actions.push_back(DRAction(DRAction::TURN_RIGHT));
+            }
+            else if (start_orientation == ORIENTATION_SOUTH)
             {
                 
             }
-            else if (start_orientation == "south")
+            else if (start_orientation == ORIENTATION_EAST)
             {
                 
             }
-            else if (start_orientation == "east")
-            {
-                
-            }
-            else if (start_orientation == "west")
+            else if (start_orientation == ORIENTATION_WEST)
             {
                 
             }
