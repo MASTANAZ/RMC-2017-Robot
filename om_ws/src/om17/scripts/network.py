@@ -86,7 +86,12 @@ def pose_callback(msg):
     _mc_pending += chr(_S_POSE)
     _mc_pending += _pack_float(msg.x)
     _mc_pending += _pack_float(msg.y)
-    _mc_pending += chr(int(msg.theta * (180.0 / 3.14159)) + 90)
+    if msg.theta > 1.5:
+        _mc_pending += chr(180)
+    elif msg.theta < -1.5:
+        _mc_pending += chr(0)
+    else:
+        _mc_pending += chr(int(msg.theta * (180.0 / 3.14159)) + 90)
 
 def cell_cost_callback(msg):
     global _mc_pending
@@ -244,7 +249,8 @@ def _parse_incoming():
                 elif orientation == 2: rospy.set_param("/starting_orientation", "east")
                 # west
                 elif orientation == 3: rospy.set_param("/starting_orientation", "west")
-                
+                print "zone = " + str(zone)
+                print "orientation = " + str(orientation)
                 _mc_to_process = _mc_to_process[2:]
             else: break
         elif cbval == _S_ROUND_START:

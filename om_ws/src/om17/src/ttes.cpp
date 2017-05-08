@@ -20,18 +20,11 @@ void ttes::init(Robot* robot)
 
 void ttes::tick(float dt, Robot* robot)
 {   
-    float dy = target_y - robot->y;
+    // TODO: line following
 
-    if (dy > 0.0f)
-    {
-        robot->mc1 = 90;
-        robot->mc2 = 100;
-    }
-    else if (dy < 0.0f)
-    {
-        robot->mc1 = 100;
-        robot->mc2 = 90;
-    }
+    robot->mc1 = 100;
+    robot->mc2 = 100;
+
     
     if (robot->x >= 4.4)
     {

@@ -12,6 +12,9 @@ namespace lnch
 {
     const int STATE_LOWER = 0;
     const int STATE_RAISE = 1;
+    
+    const float TIME_TURN_90 = 2.0f;
+
     int state = STATE_LOWER;
     float timer = 0.0f;
     bool change_state = false;
@@ -49,20 +52,20 @@ void lnch::init(Robot* robot)
     
     
     // Check orientation
-    if (!orientation.compare("n"))
+    if (!orientation.compare("north"))
         startOrientation = 0;
     
-    else if (!orientation.compare("e"))
+    else if (!orientation.compare("east"))
         startOrientation = 1;
     
-    else if (!orientation.compare("s"))
+    else if (!orientation.compare("south"))
         startOrientation = 2;
     
-    else if (!orientation.compare("w"))
+    else if (!orientation.compare("west"))
         startOrientation = 3;
 
     else 
-        ROS_FATAL("Starting orientation does not equal 'n', 'e', 's', or 'w'.");
+        ROS_FATAL("Starting orientation does not equal 'north', 'east', 'south', or 'west'.");
     
         
 }
@@ -146,7 +149,7 @@ void lnch::tick(float dt, Robot* robot)
                 robot->mc2 = 100;
                 
                 // Change state
-                if (timer >= 2)
+                if (timer >= (1.0f + TIME_TURN_90))
                 {
                     change_state = true;
                 } //End change state

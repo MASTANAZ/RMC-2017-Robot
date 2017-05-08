@@ -380,7 +380,7 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
     
     if (round_active)
     {
-        setState(STATE_TTES);
+        setState(STATE_LNCH);
     }
 }
 
