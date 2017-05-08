@@ -28,12 +28,12 @@ struct DRAction
     float duration = 0.0f;
     int mc1_set = 0;
     int mc2_set = 0;
-    
-    DRAction(int type, float action_duration = 0.0f)
+    int type = -1;
+    DRAction(int action_type, float action_duration = 0.0f)
     {
         duration = action_duration;
-        
-        switch (type)
+        type = action_type;
+        switch (action_type)
         {
         case DRACTION_DRIVE_FORWARD:
             mc1_set = 100;
@@ -104,6 +104,10 @@ void lnch::init(Robot* robot)
     #warning This may not be an int. May need to use string and cast to int
     ros::param::get("id", robot_id);
     
+    std::cout << "starting_zone = " << start_zone << std::endl;
+    std::cout << "starting_orientation = " << start_orientation << std::endl;
+    std::cout << "robot id = " << robot_id << std::endl;
+
     if (robot_id == ID_PHOBOS)
     {
         if (start_zone == ZONE_A)
@@ -188,17 +192,17 @@ void lnch::init(Robot* robot)
             }
         }
     }
+
+    std::cout << launch_actions.at(0).type << std::endl;
 }
 
 void lnch::tick(float dt, Robot* robot)
 {
-    DRAction current;
+    DRAction* current = &launch_actions.at(current_action);
+    std::cout << current->type << std::endl;
+    current->timer += dt;
     
-    current = launch_actions.at(current_action);
-    
-    current.timer += dt;
-    
-    if (current.timer >= current.duration)
+    if (current->timer >= current->duration)
     {
         current_action++;
         if (current_action == launch_actions.size())
