@@ -231,8 +231,19 @@ def _parse_incoming():
                 zone = (0xF0 & packed) >> 4
                 orientation = (0x0F & packed)
                 
-                print "zone = " + str(zone)
-                print "orientation = " + str(orientation)
+                # zone a
+                if zone == 0: rospy.set_param("/starting_zone", "a")
+                # zone b
+                elif zone == 1: rospy.set_param("/starting_zone", "b")
+                
+                # north
+                if orientation == 0: rospy.set_param("/starting_orientation", "north")
+                # south
+                elif orientation == 1: rospy.set_param("/starting_orientation", "south")
+                # east
+                elif orientation == 2: rospy.set_param("/starting_orientation", "east")
+                # west
+                elif orientation == 3: rospy.set_param("/starting_orientation", "west")
                 
                 _mc_to_process = _mc_to_process[2:]
             else: break
