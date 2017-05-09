@@ -238,9 +238,7 @@ def _parse_incoming():
                 
                 rospy.set_param("/starting_zone", zone)
                 rospy.set_param("/starting_orientation", orientation)
-                print "zone = " + str(zone)
-                print "orientation = " + str(orientation)
-                
+
                 _mc_to_process = _mc_to_process[2:]
             else: break
         elif cbval == _S_ROUND_START:

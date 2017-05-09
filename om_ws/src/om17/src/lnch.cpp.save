@@ -98,15 +98,15 @@ namespace lnch
 
 void lnch::init(Robot* robot)
 {
-    ROS_INFO_STREAM("LNCH INIT");
+    ROS_INFO("LNCH INIT");
     
     ros::param::get("/starting_zone", start_zone);
     ros::param::get("/starting_orientation", start_orientation);
     ros::param::get("id", robot_id);
     
-    ROS_INFO_STREAM("starting_zone = " << start_zone);
-    ROS_INFO_STREAM("starting_orientation = " << start_orientation);
-    ROS_INFO_STREAM("robot id = " << robot_id);
+    ROS_INFO_STREAM("starting_zone = ");
+    ROS_INFO_STREAM("starting_orientation = ");
+    ROS_INFO_STREAM("robot id = " << robot_id << std::endl);
 
     if (robot_id == ID_PHOBOS)
     {
