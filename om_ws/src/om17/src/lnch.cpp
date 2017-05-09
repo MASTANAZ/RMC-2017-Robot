@@ -84,6 +84,7 @@ namespace lnch
     
     float timer = 0.0f;
     bool change_state = false;
+    bool first_action_taken = false;
     
     int start_zone        = 0; // a = 0, b = 1
     int start_orientation = 0; // 0 = North, 1 = South, 2 = East, 3 = West
@@ -97,16 +98,15 @@ namespace lnch
 
 void lnch::init(Robot* robot)
 {
-    std::cout << "LNCH INIT" << std::endl;
+    ROS_DEBUG_STREAM("LNCH INIT" << std::endl);
     
     ros::param::get("/starting_zone", start_zone);
     ros::param::get("/starting_orientation", start_orientation);
-    #warning This may not be an int. May need to use string and cast to int
     ros::param::get("id", robot_id);
     
-    std::cout << "starting_zone = " << start_zone << std::endl;
-    std::cout << "starting_orientation = " << start_orientation << std::endl;
-    std::cout << "robot id = " << robot_id << std::endl;
+    ROS_DEBUG_STREAM("starting_zone = " << start_zone << std::endl);
+    ROS_DEBUG_STREAM("starting_orientation = " << start_orientation << std::endl);
+    ROS_DEBUG_STREAM("robot id = " << robot_id << std::endl);
 
     if (robot_id == ID_PHOBOS)
     {
@@ -192,17 +192,22 @@ void lnch::init(Robot* robot)
             }
         }
     }
-
-    std::cout << launch_actions.at(0).type << std::endl;
 }
 
 void lnch::tick(float dt, Robot* robot)
 {
-    DRAction* current = &launch_actions.at(current_action);
-    std::cout << current->type << std::endl;
-    current->timer += dt;
+    DRAction& current = launch_actions.at(current_action);
     
-    if (current->timer >= current->duration)
+    if (!first_action_taken)
+    {
+        current.setMCValues(robot);
+        first_action_taken = true;
+    }
+    
+    std::cout << current.type << std::endl;
+    current.timer += dt;
+    
+    if (current.timer >= current->duration)
     {
         current_action++;
         if (current_action == launch_actions.size())
@@ -220,6 +225,7 @@ void lnch::reset(void)
 {
     std::cout << "LNCH RESET" << std::endl;
     change_state = false;
+    first_action_taken = false;
     timer = 0.0f;
 }
 
