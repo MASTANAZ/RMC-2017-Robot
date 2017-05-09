@@ -125,33 +125,34 @@ void lnch::init(Robot* robot)
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
         }
         else if (start_zone == ZONE_B)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
         }
     }
@@ -161,37 +162,38 @@ void lnch::init(Robot* robot)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
         }
         else if (start_zone == ZONE_B)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
-                
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
             }
         }
     }
