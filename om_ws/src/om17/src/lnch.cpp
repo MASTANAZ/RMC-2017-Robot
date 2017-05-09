@@ -3,7 +3,6 @@
 #include "ros/ros.h"
 
 #include <iostream>
-#include <string>
 #include <vector>
 
 // PHOBOS IS IN FRONT
@@ -12,6 +11,8 @@
 // void namespace
 namespace
 {
+
+//
 const int DRACTION_DRIVE_FORWARD  = 0;
 const int DRACTION_DRIVE_BACKWARD = 1;
 const int DRACTION_TURN_RIGHT     = 2;
@@ -21,14 +22,16 @@ const int DRACTION_WAIT           = 4;
 // TUNE THIS
 const float DRACTION_DURATION_TURN_90 = 2.0f;
 
-// dead reckoning action
+// DRAction = dead-reckoning action
 struct DRAction
 {
+    // 
     float timer = 0.0f;
     float duration = 0.0f;
     int mc1_set = 0;
     int mc2_set = 0;
     int type = -1;
+    
     DRAction(int action_type, float action_duration = 0.0f)
     {
         duration = action_duration;
@@ -53,10 +56,10 @@ struct DRAction
             mc2_set = 100;
             duration = DRACTION_DURATION_TURN_90;
             break;
+        default:
         case DRACTION_WAIT:
             mc1_set = 0;
             mc2_set = 0;
-        default:
             break;
         }
     }
@@ -206,13 +209,18 @@ void lnch::tick(float dt, Robot* robot)
     
     current.timer += dt;
     
+    // the time is up for the current action in the sequence, move to the next
+    // action
     if (current.timer >= current.duration)
     {
         current_action++;
+        
+        // there is no more actions to take; change state
         if (current_action == launch_actions.size())
         {
             change_state = true;
         }
+        // set the motor controller values accordingly for the next action
         else
         {
             launch_actions.at(current_action).setMCValues(robot);
@@ -222,7 +230,7 @@ void lnch::tick(float dt, Robot* robot)
 
 void lnch::reset(void)
 {
-    std::cout << "LNCH RESET" << std::endl;
+    ROS_INFO_STREAM("LNCH RESET");
     change_state = false;
     first_action_taken = false;
     timer = 0.0f;

@@ -1,5 +1,7 @@
 #include "ttes.h"
 
+#include "ros/ros.h"
+
 #include <iostream>
 
 namespace ttes
@@ -14,7 +16,7 @@ namespace ttes
 
 void ttes::init(Robot* robot)
 {
-    std::cout << "TTES INIT" << std::endl;
+    ROS_INFO_STREAM("TTES INIT");
 }
 
 void ttes::tick(float dt, Robot* robot)
@@ -33,7 +35,7 @@ void ttes::tick(float dt, Robot* robot)
 
 void ttes::reset(void)
 {
-    std::cout << "TTES RESET" << std::endl;
+    ROS_INFO_STREAM("TTES RESET");
     change_state = false;
     state = STATE_TRAVEL;
     timer = 0.0f;

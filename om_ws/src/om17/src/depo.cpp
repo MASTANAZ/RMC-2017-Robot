@@ -9,6 +9,8 @@
 
 #include "depo.h"
 
+#include "ros/ros.h"
+
 #include <iostream>
 
 namespace depo
@@ -23,7 +25,7 @@ namespace depo
 
 void depo::init(Robot* robot)
 {
-    std::cout << "DEPO INIT" << std::endl;
+    ROS_INFO_STREAM("DEPO INIT");
     robot->mc2 = -100;
 }
 
@@ -52,7 +54,7 @@ void depo::tick(float dt, Robot* robot)
 
 void depo::reset(void)
 {
-    std::cout << "DEPO RESET" << std::endl;
+    ROS_INFO_STREAM("DEPO RESET");
     change_state = false;
     state = STATE_LOWER;
     timer = 0.0f;

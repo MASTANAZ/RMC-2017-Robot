@@ -1,5 +1,7 @@
 #include "excv.h"
 
+#include "ros/ros.h"
+
 #include <iostream>
 
 namespace excv
@@ -14,7 +16,7 @@ namespace excv
 
 void excv::init(Robot* robot)
 {
-    std::cout << "EXCV INIT" << std::endl;
+    ROS_INFO_STREAM("EXCV INIT");
     robot->mc2 = -100;
 }
 
@@ -30,7 +32,7 @@ void excv::tick(float dt, Robot* robot)
 
 void excv::reset(void)
 {
-    std::cout << "EXCV RESET" << std::endl;
+    ROS_INFO_STREAM("EXCV RESET");
     change_state = false;
     state = STATE_LOWER;
     timer = 0.0f;
