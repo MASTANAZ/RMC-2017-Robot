@@ -92,7 +92,6 @@ public class Backend {
     private void initialize() {
         Network.initialize();
         ManualControl.initialize();
-        ManualControl.findControllers();
 
         // the Network needs to initialize before the mission does
         mission = new Mission();

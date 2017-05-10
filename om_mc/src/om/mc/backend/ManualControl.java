@@ -113,9 +113,33 @@ public class ManualControl {
 
             // TODO: FIX
 
-            // AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-            double lcv = (double)((float)controllerValues[i].get("y")) * -100;
-            double rcv = (double)((float)controllerValues[i].get("y")) * -100;
+            int controlState = bound.getControlState();
+
+            double mc1 = 0.0, mc2 = 0.0;
+
+            switch (controlState) {
+                case Robot.CONTROL_STATE_TRVL:
+                    mc1 = (double)((float)controllerValues[i].get("y")) * -100;
+                    mc2 = (double)((float)controllerValues[i].get("y")) * -100;
+
+                    double steering = (double)((float)controllerValues[i].get("rx")) * 100;
+
+                    mc1 += steering;
+                    mc2 -= steering;
+
+                    break;
+                case Robot.CONTROL_STATE_EXCV:
+
+                    mc2 = (double)((float)controllerValues[i].get("ry")) * 100;
+                    mc1 = (double)((float)controllerValues[i].get("y")) * -100;
+
+                    break;
+                case Robot.CONTROL_STATE_DEPO:
+
+                    mc2 = (double)((float)controllerValues[i].get("y")) * 100;
+
+                    break;
+            }
 
             if ((float)controllerValues[i].get("3") == 1.0f && !removeme) {
                 removeme = true;
@@ -127,19 +151,14 @@ public class ManualControl {
                 removeme = false;
             }
 
-            double steering = (double)((float)controllerValues[i].get("rx")) * 100;
+            if (mc1 > 100) mc1 = 100;
+            if (mc1 < -100) mc1 = -100;
 
-            lcv += steering;
-            rcv -= steering;
+            if (mc2 > 100) mc2 = 100;
+            if (mc2 < -100) mc2 = -100;
 
-            if (lcv > 100) lcv = 100;
-            if (lcv < -100) lcv = -100;
-
-            if (rcv > 100) rcv = 100;
-            if (rcv < -100) rcv = -100;
-
-            bound.setLCV((int)lcv);
-            bound.setRCV((int)rcv);
+            bound.setMc1((int)mc1);
+            bound.setMc2((int)mc2);
         }
     }
 

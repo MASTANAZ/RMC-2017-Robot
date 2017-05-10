@@ -34,9 +34,9 @@ public class Robot {
     private final int STATE_TTDS = 3;
     private final int STATE_DEPO = 4;
 
-    private final int CONTROL_STATE_TRVL = 0;
-    private final int CONTROL_STATE_EXCV = 1;
-    private final int CONTROL_STATE_DEPO = 2;
+    public static final int CONTROL_STATE_TRVL = 0;
+    public static final int CONTROL_STATE_EXCV = 1;
+    public static final int CONTROL_STATE_DEPO = 2;
 
     private final String STATE_DESCRIPTIONS[] = {
             "LAUNCH CONFIGURATION",
@@ -52,14 +52,15 @@ public class Robot {
     };
 
     private final Color COLOR_CAMERA_FOV = Color.web("#6FC2F2", 0.25);
+    private final Color COLOR_BODY_DC = Color.web("#6495ED", 0.25);
     private final Font FONT = new Font(0.25);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // VARIABLES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private int lcv;
-    private int rcv;
+    private int mc1;
+    private int mc2;
     private String name;
     private Pose pose;
     private float cpuTemp;
@@ -69,22 +70,20 @@ public class Robot {
 
     private int state, controlState;
 
-    private int lcvOld, rcvOld;
+    private int mc1Old, mc2Old;
     private float networkTimer;
 
     private ArrayList<Integer> statementList;
 
     private StatusController controller;
 
-    private int removeme = 0;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // CONSTRUCTOR
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public Robot(int id) {
-        lcv     = 0;
-        rcv     = 0;
+        mc1     = 0;
+        mc2     = 0;
         name    = "";
         pose    = new Pose();
         pose.x = -1.0f;
@@ -102,8 +101,8 @@ public class Robot {
         networkTimer = 0.0f;
 
         // TODO: remove
-        lcvOld = lcv;
-        rcvOld = rcv;
+        mc1Old = mc1;
+        mc2Old = mc2;
 
         statementList = new ArrayList<Integer>();
     }
@@ -113,6 +112,8 @@ public class Robot {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void tick(float dt) {
+        boundClient = Network.getClient(id);
+
         parseStatements();
 
         networkTimer += dt;
@@ -120,16 +121,16 @@ public class Robot {
         if (networkTimer > 0.1f && boundClient.alive) {
             String out = "";
 
-            if (lcv != lcvOld) {
+            if (mc1 != mc1Old) {
                 out += (char)Network.S_MC1;
-                out += (char)((int)(lcv + 100));
-                lcvOld = lcv;
+                out += (char)((int)(mc1 + 100));
+                mc1Old = mc1;
             }
 
-            if (rcv != rcvOld) {
+            if (mc2 != mc2Old) {
                 out += (char)Network.S_MC2;
-                out += (char)((int)(rcv + 100));
-                rcvOld = rcv;
+                out += (char)((int)(mc2 + 100));
+                mc2Old = mc2;
             }
 
             try {
@@ -144,8 +145,8 @@ public class Robot {
     public void draw(GraphicsContext gc) {
         // update the status monitor
         if (controller != null) {
-            controller.lcvSlider.setValue((double)lcv);
-            controller.rcvSlider.setValue((double)rcv);
+            controller.lcvSlider.setValue((double)mc1);
+            controller.rcvSlider.setValue((double)mc2);
             controller.xLabel.setText("X: " + pose.x + "m");
             controller.yLabel.setText("Y: " + pose.y + "m");
             controller.thetaLabel.setText("θ: " + pose.theta + "°");
@@ -164,7 +165,8 @@ public class Robot {
         gc.rotate(-p.theta);
 
         // robot body
-        gc.setFill(Color.CORNFLOWERBLUE);
+        if (boundClient.alive) gc.setFill(Color.CORNFLOWERBLUE);
+        else gc.setFill(COLOR_BODY_DC);
         gc.fillRect(-ROBOT_WIDTH_HALF, -ROBOT_HEIGHT_HALF, ROBOT_WIDTH, ROBOT_HEIGHT);
 
         gc.setLineWidth(0.02f);
@@ -273,6 +275,8 @@ public class Robot {
     }
 
     public void toggleControlState() {
+        if (!boundClient.alive) return;
+
         this.controlState++;
 
         if (controlState > 2) controlState = 0;
@@ -305,19 +309,24 @@ public class Robot {
         return pose;
     }
 
-    public void setLCV(int lcv) {
-        this.lcv = lcv;
+    public void setMc1(int mc1) {
+        this.mc1 = mc1;
     }
 
-    public void setRCV(int rcv) {
-        this.rcv = rcv;
+    public void setMc2(int mc2) {
+        this.mc2 = mc2;
     }
 
-    public int getLCV() {
-        return lcv;
+    public int getMc1() {
+        return mc1;
     }
 
-    public int getRCV() {
-        return rcv;
+    public int getMc2() {
+        return mc2;
+    }
+
+    public int getControlState()
+    {
+        return controlState;
     }
 }

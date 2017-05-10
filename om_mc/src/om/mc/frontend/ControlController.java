@@ -16,6 +16,7 @@ import javafx.stage.PopupBuilder;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import om.mc.Global;
+import om.mc.backend.ManualControl;
 import om.mc.backend.Mission;
 import om.mc.backend.Network;
 import om.mc.backend.Pose;
@@ -33,9 +34,13 @@ public class ControlController implements Initializable {
     @FXML private ChoiceBox zoneChoice;
     @FXML private ChoiceBox directionChoice;
     @FXML private Button controlButton;
+    @FXML private Button manualControlButton;
     @FXML private CheckBox autonomyCheckBox;
 
     private Pose center;
+
+    private int zone = 0;
+    private int orientation = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PUBLIC FUNCTIONS
@@ -74,6 +79,22 @@ public class ControlController implements Initializable {
             @Override
             public void handle(ActionEvent event) {
                 handleControlButton();
+            }
+        });
+
+        manualControlButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                ManualControl.findControllers();
+
+                if (autonomyCheckBox.isSelected()) {
+                    autonomyCheckBox.setSelected(false);
+                    try {
+                        Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_STOP);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
 
@@ -127,12 +148,33 @@ public class ControlController implements Initializable {
             mission.stopRound();
         // button is being used to start a new round
         } else {
+            if (autonomyCheckBox.isSelected()) {
+                try {
+                    Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_START);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_STOP);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             zoneChoice.setDisable(true);
             directionChoice.setDisable(true);
 
             controlButton.setText("ROUND STOP");
 
+            String out = "";
+
+            int packed = (zone << 4) | orientation;
+
+            out += (char)Network.S_STARTING_PARAMS + (char)packed;
+
             try {
+                Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_STARTING_PARAMS + (char)packed);
                 Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_ROUND_START);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -145,10 +187,10 @@ public class ControlController implements Initializable {
     private void handleZoneChoice (String val) {
         switch(val) {
             case "ZONE A":
-
+                zone = 0;
                 break;
             case "ZONE B":
-
+                zone = 1;
                 break;
         }
     }
@@ -160,28 +202,16 @@ public class ControlController implements Initializable {
 
         switch(val) {
             case "NORTH":
-                phobos.theta = (float)Math.PI;
-                deimos.theta = (float)Math.PI;
-                Global.getBackendInstance().getMission().getRobot(0).setPose(phobos);
-                Global.getBackendInstance().getMission().getRobot(1).setPose(deimos);
+                orientation = 0;
                 break;
             case "SOUTH":
-                phobos.theta = 0.0f;
-                deimos.theta = 0.0f;
-                Global.getBackendInstance().getMission().getRobot(0).setPose(phobos);
-                Global.getBackendInstance().getMission().getRobot(1).setPose(deimos);
+                orientation = 1;
                 break;
             case "EAST":
-                phobos.theta = (float)Math.PI * 3.0f / 2.0f;
-                deimos.theta = (float)Math.PI * 3.0f / 2.0f;
-                Global.getBackendInstance().getMission().getRobot(0).setPose(phobos);
-                Global.getBackendInstance().getMission().getRobot(1).setPose(deimos);
+                orientation = 2;
                 break;
             case "WEST":
-                phobos.theta = (float)Math.PI / 2.0f;
-                deimos.theta = (float)Math.PI / 2.0f;
-                Global.getBackendInstance().getMission().getRobot(0).setPose(phobos);
-                Global.getBackendInstance().getMission().getRobot(1).setPose(deimos);
+                orientation = 3;
                 break;
         }
     }
