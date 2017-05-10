@@ -184,38 +184,66 @@ void lnch::init(Robot* robot)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
+                // Deimos needs to backup and turn 180 degrees
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 1.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
+                // Deimos will take the B lane here
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 1.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 3.0));
+                launch_actions.push_back(DRACTION_TURN_RIGHT));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
+                // Deimos will take the A lane here
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Deimos will take the B lane here, and moving first
+                //launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 3.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
             }
         }
         else if (start_zone == ZONE_B)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Deimos will take the A lane here, and move first
+                // launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 1.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 3.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
+                // Deimos will take the A lane here
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
+                launch_actions.push_back(DRACTION_DRIVE_FORWARD, 3.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Deimos will take the B lane here, and moving first
+                //launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 3.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_Right));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
+                // Deimos will be taking the Zone B lane here.
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT);
             }
         }
     }
