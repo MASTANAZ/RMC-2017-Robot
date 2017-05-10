@@ -19,7 +19,7 @@ const int DRACTION_TURN_RIGHT     = 2;
 const int DRACTION_TURN_LEFT      = 3;
 const int DRACTION_WAIT           = 4;
 
-// TUNE THIS
+#warning The DRACTION_DURATION_TURN_90 should be accurately tuned before being pushed to production.
 const float DRACTION_DURATION_TURN_90 = 2.0f;
 
 // DRAction = dead-reckoning action
@@ -125,34 +125,56 @@ void lnch::init(Robot* robot)
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Phobos will be moving first in this position, no need to wait
+                //launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 1.0));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Phobos will be moving first in this position, no need to wait
+                // launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 3.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
+                // Phobos will be taking the Zone A lane here.
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT);                
             }
         }
         else if (start_zone == ZONE_B)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Phobos should take the B lane here, so it will just need to turn
+                // 180 degrees
+                // Waiting 1 second longer to ensure deimos is out of the way enough
+                launch_actions.push_back(DRAction(DRACTION_WAIT, 2.0f));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
+                
             }
             else if (start_orientation == ORIENTATION_SOUTH)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Phobos will be moving first in this position, no need to wait
+                //launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 1.0));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
+                // Phobos will wait for Deimos and then turn 90 degrees clockwise
+                // to face south
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
+                
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
-                launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                // Phobos will be moving first in this position, no need to wait
+                // launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 3.0));
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
             }
         }
     }
