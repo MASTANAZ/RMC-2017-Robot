@@ -109,6 +109,9 @@ public class ManualControl {
             // we can only control two robots at a time, even if we have more than two controllers
             if (i > 1) return;
 
+            // can't control the robot if the round isn't active (taps temple)
+            if (!Global.getBackendInstance().getMission().isRoundActive()) return;
+
             Robot bound = Global.getBackendInstance().getMission().getRobot(i);
 
             // TODO: FIX
