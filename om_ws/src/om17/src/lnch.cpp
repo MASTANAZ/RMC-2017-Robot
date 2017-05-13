@@ -20,7 +20,7 @@ const int DRACTION_TURN_LEFT      = 3;
 const int DRACTION_WAIT           = 4;
 
 #warning The DRACTION_DURATION_TURN_90 should be accurately tuned before being pushed to production.
-const float DRACTION_DURATION_TURN_90 = 2.0f;
+const float DRACTION_DURATION_TURN_90 = 1.68f;
 
 // DRAction = dead-reckoning action
 struct DRAction
@@ -101,6 +101,8 @@ namespace lnch
 
 void lnch::init(Robot* robot)
 {
+    launch_actions.clear();
+
     ROS_INFO_STREAM("LNCH INIT");
     
     ros::param::get("/starting_zone", start_zone);
@@ -120,7 +122,7 @@ void lnch::init(Robot* robot)
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
                 launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 1.0));
                 launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
-                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 2.0));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 5.0));
                 launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
             }
             else if (start_orientation == ORIENTATION_SOUTH)
@@ -140,7 +142,7 @@ void lnch::init(Robot* robot)
             {
                 // Phobos will be taking the Zone A lane here.
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
-                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT);                
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));                
             }
         }
         else if (start_zone == ZONE_B)
@@ -184,6 +186,7 @@ void lnch::init(Robot* robot)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
+                ROS_INFO_STREAM("SOMETHING IS WRONG");
                 // Deimos needs to backup and turn 180 degrees
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
                 launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 1.0));
@@ -197,7 +200,7 @@ void lnch::init(Robot* robot)
                 launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 1.0));
                 launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
                 launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 3.0));
-                launch_actions.push_back(DRACTION_TURN_RIGHT));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
             }
             else if (start_orientation == ORIENTATION_EAST)
             {
@@ -229,7 +232,7 @@ void lnch::init(Robot* robot)
                 // Deimos will take the A lane here
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
                 launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
-                launch_actions.push_back(DRACTION_DRIVE_FORWARD, 3.0));
+                launch_actions.push_back(DRAction(DRACTION_DRIVE_FORWARD, 3.0));
                 launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
             }
             else if (start_orientation == ORIENTATION_EAST)
@@ -237,13 +240,13 @@ void lnch::init(Robot* robot)
                 // Deimos will take the B lane here, and moving first
                 //launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
                 launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 3.0));
-                launch_actions.push_back(DRAction(DRACTION_TURN_Right));
+                launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));
             }
             else if (start_orientation == ORIENTATION_WEST)
             {
                 // Deimos will be taking the Zone B lane here.
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
-                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT);
+                launch_actions.push_back(DRAction(DRACTION_TURN_LEFT));
             }
         }
     }
@@ -251,25 +254,26 @@ void lnch::init(Robot* robot)
 
 void lnch::tick(float dt, Robot* robot)
 {
-    DRAction& current = launch_actions.at(current_action);
+    DRAction* current = &launch_actions.at(current_action);
     
     if (!first_action_taken)
     {
-        current.setMCValues(robot);
+        current->setMCValues(robot);
         first_action_taken = true;
     }
     
-    current.timer += dt;
+    current->timer += dt;
     
     // the time is up for the current action in the sequence, move to the next
     // action
-    if (current.timer >= current.duration)
+    if (current->timer >= current->duration)
     {
         current_action++;
         
         // there is no more actions to take; change state
         if (current_action == launch_actions.size())
         {
+            ROS_INFO_STREAM("CHANGE STATE");
             change_state = true;
         }
         // set the motor controller values accordingly for the next action
