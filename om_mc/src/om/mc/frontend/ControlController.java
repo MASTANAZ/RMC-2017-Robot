@@ -63,13 +63,13 @@ public class ControlController implements Initializable {
                     try {
                         Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_START);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 } else {
                     try {
                         Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_STOP);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
             }
@@ -92,7 +92,7 @@ public class ControlController implements Initializable {
                     try {
                         Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_STOP);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
             }
@@ -125,7 +125,7 @@ public class ControlController implements Initializable {
                 popup.setScene(new Scene(FXMLLoader.load(getClass().getClassLoader().getResource("res/control_warning.fxml"))));
                 popup.show();
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             return;
         }
@@ -142,7 +142,7 @@ public class ControlController implements Initializable {
             try {
                 Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_ROUND_STOP);
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
 
             mission.stopRound();
@@ -152,13 +152,13 @@ public class ControlController implements Initializable {
                 try {
                     Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_START);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             } else {
                 try {
                     Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_AUTONOMY_STOP);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
 
@@ -177,7 +177,7 @@ public class ControlController implements Initializable {
                 Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_STARTING_PARAMS + (char)packed);
                 Network.writeString(Network.getClient(0).outStream, "" + (char)Network.S_ROUND_START);
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
 
             mission.startRound();

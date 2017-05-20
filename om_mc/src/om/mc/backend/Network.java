@@ -212,6 +212,10 @@ public class Network {
     }
 
     public static void writeString(DataOutputStream out, String toWrite) throws Exception {
+        if (out == null) {
+            System.err.println("ERROR: FAILED TO SEND DATA TO NULL CLIENT");
+        }
+
         sent += toWrite.length();
         out.writeBytes(toWrite);
     }

@@ -29,7 +29,7 @@ public class ManualControl {
 
     private static boolean controllerAvailable;
 
-    private static boolean removeme = false;
+    private static boolean yToggle[];
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PUBLIC FUNCTIONS
@@ -43,6 +43,10 @@ public class ManualControl {
         controllerValues = null;
 
         controllerAvailable = false;
+
+        yToggle = new boolean[2];
+        yToggle[0] = false;
+        yToggle[1] = false;
     }
 
     public static void findControllers() {
@@ -139,24 +143,24 @@ public class ManualControl {
                     break;
                 case Robot.CONTROL_STATE_DEPO:
 
-                    mc2 = (double)((float)controllerValues[i].get("y")) * 100;
+                    mc2 = (double)((float)controllerValues[i].get("y")) * -100;
 
                     break;
             }
 
-            if ((float)controllerValues[i].get("3") == 1.0f && !removeme) {
-                removeme = true;
-                // asdf
+            if ((float)controllerValues[i].get("3") == 1.0f && !yToggle[i]) {
+                yToggle[i] = true;
+
                 bound.toggleControlState();
             }
 
             if ((float)controllerValues[i].get("3") == 0.0f) {
-                removeme = false;
+                yToggle[i] = false;
             }
 
+            // limit checks
             if (mc1 > 100) mc1 = 100;
             if (mc1 < -100) mc1 = -100;
-
             if (mc2 > 100) mc2 = 100;
             if (mc2 < -100) mc2 = -100;
 
