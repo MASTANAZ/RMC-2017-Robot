@@ -95,6 +95,10 @@ ros::Subscriber autonomy_active_sub;
 ros::Subscriber round_active_sub;
 ros::Subscriber tof_sensor_sub;
 
+ros::Subscriber ls_excv_ext_sub;
+ros::Subscriber ls_excv_ret_sub;
+ros::Subscriber ls_depo_all_sub;
+
 // publishers
 ros::Publisher mc1_pub, mc2_pub;
 ros::Publisher control_state_pub;
@@ -126,6 +130,9 @@ void autonomyActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg);
 void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg);
 void stateCallback(const std_msgs::Int8::ConstPtr& msg);
+void lsExcvExtCallback(const std_msgs::Bool::ConstPtr& msg);
+void lsExcvRetCallback(const std_msgs::Bool::ConstPtr& msg);
+void lsDepoAllCallback(const std_msgs::Bool::ConstPtr& msg);
 
 // 
 void publishControls(const ros::TimerEvent& timer_event);
@@ -205,6 +212,10 @@ void init(ros::NodeHandle &node_handle)
     round_active_sub = node_handle.subscribe("/round_active", 10, roundActiveCallback);
     pose_sub = node_handle.subscribe("pose", 10, poseCallback);
     autonomy_active_sub = node_handle.subscribe("/autonomy_active", 10, autonomyActiveCallback);
+    
+    ls_excv_ext_sub = node_handle.subscribe("ls_excv_ext", 10, lsExcvExtCallback);
+    ls_excv_ret_sub = node_handle.subscribe("ls_excv_ret", 10, lsExcvRetCallback);
+    ls_depo_all_sub = node_handle.subscribe("ls_depo_all", 10, lsDepoAllCallback);
 }
 
 void tick(void)
@@ -279,6 +290,7 @@ void setState(int new_state, bool external_call)
         break;
     case STATE_DEPO:
         setControlState(CONTROL_STATE_DEPO);
+        depo::init(&self);
         break;
     default:
         break;
@@ -303,7 +315,6 @@ void stateLNCH(void)
     
     if (lnch::changeState())
     {
-        lnch::reset();
         setState(STATE_TTES);
     }
 }
@@ -317,7 +328,6 @@ void stateTTES(void)
     
     if (ttes::changeState())
     {
-        ttes::reset();
         setState(STATE_EXCV);
     }
 }
@@ -328,7 +338,6 @@ void stateEXCV(void)
     
     if (excv::changeState())
     {
-        excv::reset();
         setState(STATE_TTDS);
     }
 }
@@ -340,7 +349,6 @@ void stateTTDS(void)
     
     if (ttds::changeState())
     {
-        ttds::reset();
         setState(STATE_DEPO);
     }
 }
@@ -351,9 +359,9 @@ void stateDEPO(void)
      // arduino handles the deposition cycle
     depo::tick(dt, &self);
     
-    if (depo::changeState()){
-        depo::reset();
-        setState(STATE_TTDS);
+    if (depo::changeState())
+    {
+        setState(STATE_EXCV);
     }
 }
 
@@ -380,7 +388,7 @@ void roundActiveCallback(const std_msgs::Bool::ConstPtr& msg)
     
     if (round_active)
     {
-        setState(STATE_LNCH);
+        setState(STATE_DEPO);
     }
 }
 
@@ -389,6 +397,21 @@ void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     self.x = (float)msg->x;
     self.y = (float)msg->y;
     self.theta = (float)msg->theta;
+}
+
+void lsExcvExtCallback(const std_msgs::Bool::ConstPtr& msg)
+{
+    self.ls_excv_ext = msg->data;
+}
+
+void lsExcvRetCallback(const std_msgs::Bool::ConstPtr& msg)
+{
+    self.ls_excv_ret = msg->data;
+}
+
+void lsDepoAllCallback(const std_msgs::Bool::ConstPtr& msg)
+{
+    self.ls_depo_all = msg->data;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

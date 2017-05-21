@@ -1,0 +1,8 @@
+prefix=/home/phobos/om_ws/devel
+
+Name: om17
+Description: Description of om17
+Version: 0.0.0
+Cflags: -I/home/phobos/om_ws/devel/include
+Libs: -L/home/phobos/om_ws/devel/lib 
+Requires: message_runtime

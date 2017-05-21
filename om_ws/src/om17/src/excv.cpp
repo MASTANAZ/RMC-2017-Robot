@@ -17,7 +17,7 @@ namespace excv
 void excv::init(Robot* robot)
 {
     ROS_INFO_STREAM("EXCV INIT");
-    robot->mc2 = -100;
+    robot->mc2 = 0;
 }
 
 void excv::tick(float dt, Robot* robot)

@@ -119,7 +119,6 @@ void lnch::init(Robot* robot)
         {
             if (start_orientation == ORIENTATION_NORTH)
             {
-                //
                 launch_actions.push_back(DRAction(DRACTION_WAIT, 1.0f));
                 launch_actions.push_back(DRAction(DRACTION_DRIVE_BACKWARD, 1.0));
                 launch_actions.push_back(DRAction(DRACTION_TURN_RIGHT));

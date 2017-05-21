@@ -17,6 +17,9 @@ namespace ttes
 void ttes::init(Robot* robot)
 {
     ROS_INFO_STREAM("TTES INIT");
+    change_state = false;
+    state = STATE_TRAVEL;
+    timer = 0.0f;
 }
 
 void ttes::tick(float dt, Robot* robot)
@@ -35,10 +38,7 @@ void ttes::tick(float dt, Robot* robot)
 
 void ttes::reset(void)
 {
-    ROS_INFO_STREAM("TTES RESET");
-    change_state = false;
-    state = STATE_TRAVEL;
-    timer = 0.0f;
+    
 }
 
 bool ttes::changeState(void)
