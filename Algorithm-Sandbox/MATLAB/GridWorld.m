@@ -9,6 +9,9 @@ addpath('D-Star');
 % Adding path for simulated sensor data
 addpath('Simulated-Data');
 
+% Adding path for objective prioritization
+addpath('Objective-Priority');
+
 
 % Create the set of actions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -229,11 +232,10 @@ if progCmd == 1
       
       % Command exists in 'actions' list
       if find(actions==result)
-        [nextX, nextY, nextTheta, deltaTheta, deltaStep_Theta, deltaStep_Move] = user_update_position(result, spacesToMove, trueRover, actions, pTransSpd, pAngleSpd)
+        [nextX, nextY, nextTheta, deltaTheta, deltaStep_Theta, deltaStep_Move] = user_update_position(result, spacesToMove, trueRover, actions, pTransSpd, pAngleSpd);
         
         % Create persistent distVtime matrix to plot net translation over time steps
-        
-  
+
         % Cycle through the steps here.
         % First, rotate the rover
         for iStep = k+1:1:ceil(deltaStep_Theta + k)
@@ -422,7 +424,7 @@ else
 
     % Plan the path every go around
     
-    start=[round(estiRover.pos(2)*24),round(estiRover.pos(1)*24)]
+    start=[round(estiRover.pos(2)*24),round(estiRover.pos(1)*24)];
     ds = Dstar(graph);    % create navigation object
     
     look_ahead_cost = 0;

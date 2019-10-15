@@ -47,7 +47,7 @@
 %    8 = 315 degrees (south east)
 %    9 = remain stationary
 %
-function [newX, newY, newTheta, deltaTheta, newThetaSteps, newMoveSteps] = user_update_position(theta, spaces, estiRover, actionList, transSpeed, angleSpeed)
+function [newX, newY, newTheta, deltaTheta, newThetaSteps, newMoveSteps] = sim_update_position(theta, spaces, estiRover, actionList, transSpeed, angleSpeed)
 
   disp('Estimated position before executing manual movement command (y, x, orientation): \n')
   disp(estiRover.pos) 
